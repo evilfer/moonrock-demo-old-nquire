@@ -1,0 +1,30 @@
+a.logout:hover {
+	text-decoration: underline;
+}
+
+a.logout {
+	padding: 2px;
+	font-weight: bold;
+}
+
+div.logout {
+	float: right;
+	font-weight: bold;
+}
+
+div.nquire_home {
+	float: left;
+	width: 209px;
+}
+
+div.nquire {
+	float: left;
+}
+
+h1.nquire_home {
+	color: #000000;
+}
+
+h1.nquire {
+	
+}

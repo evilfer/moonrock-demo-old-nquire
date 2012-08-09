@@ -1,0 +1,240 @@
+<?php
+// $Id: moonrock_color.module,v 1.2 2009/06/11 09:55:10 ou_mbg Exp $
+
+/**
+ * @file
+ * Module for creating "moonrock_color" node type
+ */
+
+
+/**
+ * Implementation of hook_node_info().
+ */
+function moonrock_color_node_info() {
+
+  return array(
+      'moonrock_color' => array(
+          'name' => t('Moonrock color'), // Required.
+          'module' => 'moonrock_color',  // Required.
+          'description' => t('Moonrock colour'), // Required.
+          'has_title' => TRUE,
+          'title_label' => t('Moonrock colour'),
+          'has_body' => TRUE,
+          'body_label' => t('Moonrock colour'),
+          'locked' => TRUE)
+  );
+}
+
+
+/**
+ * Implementation of hook_perm().
+ */
+function moonrock_color_perm() {
+}
+
+/**
+ * Implementation of hook_access().
+ */
+function moonrock_color_access($op, $node, $account) {
+  global $user;
+
+  if ($op == 'view') {
+    return true;
+  }
+
+  $details = get_inquiry_details_from_current_path();
+
+  if ($op == 'create') {
+    return check_node_function_of_activity ($details->inquiry_id, $details->activity_id, $user->uid, 'add');
+  }
+
+  if ($op == 'update' || $op == 'delete') {
+    return check_node_function_of_activity ($details->inquiry_id, $details->activity_id, $user->uid, 'edit');
+  }
+}
+
+/**
+ * Implementation of hook_form().
+ */
+function moonrock_color_form(&$node) {
+
+  // Get metadata for this node type
+  // (we use it for labeling title and body fields).
+  // We defined this in pi_wiki_notes_node_info().
+  $type = node_get_types('type', $node);
+  global $user;
+
+  $node_details = get_inquiry_details_from_current_path();
+  if (is_numeric($node_details->activity_id)) {
+    $current_activity = load_activity($node_details->activity_id);
+  }
+
+  if ($current_activity->name) {
+    drupal_set_title(t($current_activity->name));
+  }
+
+  $form['title'] = array(
+      '#type' => 'textfield',
+      '#title' => check_plain($type->title_label),
+      '#required' => FALSE,
+      '#default_value' => $node->title,
+      '#weight' => -5
+  );
+
+  $form['body_filter']['color'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Color'),
+      '#required' => TRUE,
+      '#default_value' => $node->color,
+      '#description' => t('Specify colour in format: #rgb'),
+      '#weight' => -2
+  );
+
+
+  $prefix = "";
+  if ($current_activity->description) {
+    $prefix .= "<p>" . check_plain($current_activity->description) . "</p>";
+  }
+
+  $form['#prefix'] = $prefix;
+
+  return $form;
+
+}
+
+/**
+ * Implementation of hook_insert().
+ */
+function moonrock_color_insert($node) {
+  db_query("INSERT INTO {moonrock_color} (nid, vid, color) VALUES ('%d', '%d', '%s')",
+      $node->nid, $node->vid, $node->color);
+}
+
+/**
+ * Implementation of hook_update().
+ */
+function moonrock_color_update($node) {
+  if ($node->revision) {
+    pi_wiki_notes_insert($node);
+  }
+
+  else {
+    db_query("UPDATE {moonrock_color} SET color = '%s', WHERE vid = %d", $node->color, $node->vid);
+  }
+}
+
+/**
+ * Implementation of hook_delete().
+ */
+function moonrock_color_delete(&$node) {
+  // Delete the related information we were saving for this node.
+  db_query('DELETE FROM {moonrock_color} WHERE nid = %d', $node->nid);
+}
+
+/**
+ * Implementation of hook_load().
+ */
+function moonrock_color_load($node) {
+  return db_fetch_object(db_query('SELECT * FROM {moonrock_color} WHERE vid = %d',
+      $node->vid));
+}
+
+function moonrock_color_link_alter(&$links, $node) {
+  // remove attachment links from upload.module
+  unset($links['upload_attachments']);
+}
+
+
+/**
+ * Implementation of hook_view().
+ */
+function moonrock_color_view($node, $teaser = FALSE, $page = FALSE) {
+  // Use Drupal's default node view.
+  $node = node_prepare($node, $teaser);
+
+  $node->content['moonrock_color'] = array(
+      '#value' => theme('moonrock_color', $node, $teaser),
+      '#weight' => 2
+  );
+
+  return $node;
+}
+
+/**
+ * MISSING
+ *
+ * @return multitype:multitype:multitype:string
+ */
+function moonrock_color_theme() {
+  return array(
+      'moonrock_color' => array(
+          'arguments' => array('node', 'teaser'),
+      ),
+      'moonrock_color_options_form' => array(
+          'arguments' => array('form'),
+      ),
+  );
+}
+
+
+/**
+ * MISSING
+ *
+ * @param unknown_type $node
+ * @return string
+ */
+function theme_moonrock_color($node, $teaser) {
+  $size = 10;
+  $small = $size - 2;
+  $style1 = "display: inline-block; width: {$size}px; height: {$size}px; border: 1px solid #aaa;";
+  $style2 = "display: block; width: {$small}px; height:{$small}px; background-color: {$node->color}; border: 1px solid #ccc;";
+
+  $output = "<div style='$style1'><div style='$style2'></div></div><span style='padding-left:5px;'>{$node->title}</span>";
+  return $output;
+}
+
+function theme_moonrock_color_options_form($form) {
+  $output = "<div class='form-item'>";
+
+  $color_nids = array_keys($form['#options']);
+  $javascript_color_array = '';
+  $javascript_color_keys = '';
+
+  foreach ($color_nids as $i => $nid) {
+    $color_node = node_load(substr($nid, 5));
+    $color = $color_node->color;
+
+    $trimmed_color = str_replace("#", "", $color);
+    $javascript_color_array .= "'$trimmed_color', ";
+    $javascript_color_keys .= "c$trimmed_color: {nid: '$nid', name: '{$color_node->title}'}, ";
+  }
+  $color_input_id = "{$form['#id']}";
+
+  $output .= "<script type='text/javascript'>\n";
+  $output .= "var colorPickerColors = [{$javascript_color_array}];\n";
+  $output .= "var colorPickerFormId = '$color_input_id';\n";
+  $output .= "var colorPickerColorKeys = {{$javascript_color_keys}};\n";
+
+  $output .= "</script>\n";
+
+
+
+  $output .= "<input id='{$color_input_id}-hidden' name='ignore' activename='{$form['#name']}' type='hidden'></input>";
+  $output .= "<div id='{$color_input_id}-textvalue'></div>";
+  $output .= "<input id='moonrockColorPicker'/>";
+  drupal_add_js( drupal_get_path('module', 'moonrock_color') .'/js/jquery-simple-color/jquery.simple-color_m.js');
+  drupal_add_js( drupal_get_path('module', 'moonrock_color') .'/js/moonrockColorSelect.js');
+
+
+  $output .= "</div>";
+  return $output;
+}
+
+
+function moonrock_color_nquire_display_as_measure($node, $teaser) {
+  return theme_moonrock_color($node, $teaser);
+}
+
+function moonrock_color_nquire_display_as_key_measure($node, $teaser) {
+  return t($node->title);
+}

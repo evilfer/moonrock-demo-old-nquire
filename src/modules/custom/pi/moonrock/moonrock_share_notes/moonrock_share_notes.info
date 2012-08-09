@@ -1,0 +1,8 @@
+; $Id: moonrock_share_notes.info,v 1.2 2009/06/11 09:55:10 ou_mbg Exp $
+name = nQuire shared notes for Moonrock
+project = nquire
+description = nQuire shared notes module: allows a group to edit the same set of text
+package = nQuire / moonrock
+dependencies[] = pi
+core = 6.x
+version = "6.x-10.08-dev"

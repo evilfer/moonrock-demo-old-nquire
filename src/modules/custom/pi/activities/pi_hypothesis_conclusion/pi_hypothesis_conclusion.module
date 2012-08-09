@@ -1,0 +1,223 @@
+<?php
+// $Id: pi_hypothesis_conclusion.module,v 1.2 2009/06/11 09:55:10 ou_mbg Exp $
+
+/**
+ * @file
+ * Module to create "pi_hypothesis_conclusion" node type
+ */
+
+
+/**
+ * Implementation of hook_node_info().
+ */
+function pi_hypothesis_conclusion_node_info() {
+    return array(
+	    'pi_hypothesis_conclusion' => array(
+		    'name' => t('Inquiry hypothesis conclusion'), // Required.
+		    'module' => 'pi_hypothesis_conclusion',  // Required.
+		    'description' => t('What is your conclusion?'), // Required.
+		    'has_title' => TRUE,
+		    'title_label' => t('Inquiry conclusion'),
+		    'has_body' => TRUE,
+		    'body_label' => t('My conclusion is'),
+		    'locked' => TRUE
+    	)
+    );
+
+}
+
+
+/**
+ * Implementation of hook_perm().
+ */
+function pi_hypothesis_conclusion_perm() {
+    return array('create pi_hypothesis_conclusion content', 'edit pi_hypothesis_conclusion');
+}
+
+/**
+ * Implementation of hook_access().
+ */
+function pi_hypothesis_conclusion_access($op, $node, $account) {
+    global $user;
+    $details = get_inquiry_details_from_current_path();
+
+    if ($op == 'create') {
+        return check_node_function_of_activity ($details->inquiry_id, $details->activity_id, $user->uid, 'add');
+    //return (user_access('create pi_hypothesis_conclusion'));
+    }
+
+    if ($op == 'update') {
+        return check_node_function_of_activity ($details->inquiry_id, $details->activity_id, $user->uid, 'edit');
+    //return (user_access('edit own pi_hypothesis_conclusion'));
+    }
+}
+
+/**
+ * hook_theme() for pi_hypothesis_conclusion - defines theme function 
+ * for viewing a pi_hypothesis conclusion
+ * @return array as per drupal hook_theme() api.   
+ */
+function pi_hypothesis_conclusion_theme() {
+	return array(
+	    'pi_hypothesis_conclusion' => array(
+		    'arguments' => array('node', 'teaser'),
+		),
+	);
+}
+
+
+
+
+/**
+ * Implementation of hook_form() for pi_hypothesis_conclusion
+ */
+function pi_hypothesis_conclusion_form(&$node) {
+	global $user;
+	$details = get_inquiry_details_from_current_path();
+	$type = node_get_types('type', $node);    
+
+  	if (is_numeric($details->activity_id))
+  	{
+  		$current_activity = load_activity($details->activity_id);
+  	}
+  	
+  	if ($current_activity->name)
+  	{
+  		$users_group = get_group_of_type($user->uid, $current_activity->audience, 
+  		$details->inquiry_id, $details->stage_id, $details->phase_id, $details->activity_id); 
+  		if($users_group!=false)
+  		{
+  			$group = node_load($users_group);
+  			$sort_for = $group->title;
+		}
+  		else
+  		{
+  			$sort_for = $user->name;
+  		}
+  		$node_title = check_plain(t('Conclusion for ') . $sort_for);
+  	}
+  	else
+  	{
+  		$node_title = $type->name;
+  	}
+  	
+	$form['title'] = array(
+		'#type' => 'hidden',
+		'#title' => check_plain($type->title_label),
+		'#required' => FALSE,
+		'#default_value' => $node_title,
+		'#weight' => -5
+	);
+
+	$form['conclusion'] = array(
+		'#type' => 'textarea',
+		'#title' => $type->body_label,
+		'#required' => TRUE,
+		'#default_value' => $node->conclusion,
+		'#description' => t('Type your answer into the above box and click on the Save button when you are finished'),
+		'#resizable' => FALSE,
+		'#rows' => 8,
+		'#cols' => 40,
+		'#weight' => -2
+	);
+
+	$prefix = '';
+
+	$hypothesis_param = find_hypothesis_nid_for_uid_and_inquiry($user->uid, $details->inquiry_id);
+	if ($hypothesis_param)
+	{
+		$hypothesis_node = node_load($hypothesis_param);
+		if ($hypothesis_node)
+		{
+			$prefix .= theme('pi_hypothesis', $hypothesis_node);
+		}
+	}
+
+	$form['#prefix'] = $prefix;
+	return $form;
+}
+
+/**
+ * Implementation of hook_insert().
+ */
+function pi_hypothesis_conclusion_insert($node) {
+    db_query("INSERT INTO {pi_hypothesis_conclusion} (nid, vid, conclusion) VALUES ('%d', '%d', '%s')",
+        $node->nid, $node->vid, $node->conclusion);
+}
+
+/**
+ * Implementation of hook_update().
+ */
+function pi_hypothesis_conclusion_update($node) {
+    if ($node->revision) {
+        pi_hypothesis_conclusion_insert($node);
+    }
+
+    else {
+        db_query("UPDATE {pi_hypothesis_conclusion} SET conclusion = '%s' WHERE vid = %d", $node->conclusion, $node->vid);
+    }
+}
+
+/**
+ * Implementation of hook_delete().
+ */
+function pi_hypothesis_conclusion_delete(&$node) {
+// Delete the related information we were saving for this node.
+    db_query('DELETE FROM {pi_hypothesis_conclusion} WHERE nid = %d', $node->nid);
+}
+
+/**
+ * Implementation of hook_load().
+ */
+function pi_hypothesis_conclusion_load($node) {
+    return db_fetch_object(db_query('SELECT * FROM {pi_hypothesis_conclusion} WHERE vid = %d',
+    $node->vid));
+}
+
+/**
+ * Implementation of hook_view().
+ */
+function pi_hypothesis_conclusion_view($node, $teaser = FALSE, $page = FALSE) {
+    global $user;
+	$details = get_inquiry_details_from_current_path();
+	$node = node_prepare($node, $teaser);
+
+	if(!$teaser)
+	{
+		$hypothesis_nid = find_hypothesis_nid_for_uid_and_inquiry($user->uid, $details->inquiry_id);
+		if ($hypothesis_nid)
+		{
+			$hypothesis_node = node_load($hypothesis_nid);
+			$node->content['pi_hypothesis'] = array(
+				'#value' => node_view($hypothesis_node, TRUE, TRUE),
+				'#weight' => 1
+			);
+		}
+	}
+	 
+	// Use Drupal's default node view.
+	$node->content['pi_hypothesis_conclusion'] = array(
+		'#value' => theme('pi_hypothesis_conclusion', $node, $teaser),
+		'#weight' => 2
+	);
+
+    return $node;
+}
+
+
+/**
+ * Theme function to display the pi_hypothesis_conclusion view page (uses drupal theme_hook()) 
+ * @param object(node) $node Drupal node of type pi_hypothesis_conlcusion
+ * @param object(pi_activity) $current_activity default NULL, pi_activity object that's linked to this node
+ * @return string HTML for the page content added for hypothesis conclusion data
+ */
+function theme_pi_hypothesis_conclusion($node, $teaser) {
+	$output = '<strong>' . t('Conclusion:') . '</strong> ' . nl2br($node->conclusion);
+    return $output;
+
+    return $output;
+}
+
+
+
+

@@ -1,0 +1,78 @@
+<?php
+
+// $Id: pi_wiki_notes.install,v 1.2 2009/06/11 09:55:10 ou_mbg Exp $
+
+/**
+ * @file
+ * Install....
+ */
+
+
+/**
+ * Implementation of moonrock_color_install().
+ *
+ * @return unknown_type
+ */
+function moonrock_color_install() {
+	// Create tables.
+	drupal_install_schema('moonrock_color');
+
+	variable_set("node_options_moonrock_color", array('status','revision'));
+	variable_set("comment_moonrock_color", COMMENT_NODE_DISABLED);
+	variable_set("upload_moonrock_color", 0);
+}
+
+/**
+ * Implementation of moonrock_color_uninstall().
+ */
+function moonrock_color_uninstall() {
+	// Remove tables.
+	drupal_uninstall_schema('moonrock_color');
+	variable_del('moonrock_color');
+
+	variable_del("node_options_moonrock_color");
+	variable_del("comment_moonrock_color");
+	variable_del("upload_moonrock_color");
+
+}
+
+/**
+ * Implementation of moonrock_color_schema().
+ */
+function moonrock_color_schema() {
+
+	$schema['moonrock_color'] = array(
+			'description' => t('Moonrock colour'),
+			'fields' => array(
+					'nid' => array(
+							'description' => t('node id'),
+							'type' => 'int',
+							'unsigned' => TRUE,
+							'not null' => TRUE,
+							'size' => 'small',
+							'default' => 0,
+					),
+					'vid' => array(
+							'description' => t('The current vid version identifier'),
+							'type' => 'int',
+							'unsigned' => TRUE,
+							'not null' => TRUE,
+							'size' => 'small',
+							'default' => 0,
+					),
+					'color' => array(
+							'description' => t('Colour'),
+							'type' => 'text',
+							'size' => 'normal',
+							'not null' => TRUE,
+					)
+			),
+			'primary key' => array('vid'),
+			'indexes' => array(
+					'nid' => array('nid'),
+			),
+	);
+
+	return $schema;
+
+}

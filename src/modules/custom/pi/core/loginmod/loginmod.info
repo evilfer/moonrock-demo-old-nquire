@@ -1,0 +1,7 @@
+; $Id$
+name = nQuire login module
+project = nquire
+description = This module changes the default login block so it doesn't contain the 'request new password' field.
+package = nQuire Core - required
+core = 6.x
+version = "6.x-10.08-dev"

@@ -1,0 +1,205 @@
+<?php
+// $Id: pi_hypothesis.module,v 1.2 2009/06/11 09:55:10 ou_mbg Exp $
+
+/**
+ * @file Module for "pi_hypothesis" node type, works with pi_hypothesis_conclusion
+ */
+
+
+/**
+ * Implementation of hook_node_info().
+ */
+function pi_hypothesis_node_info() {
+    return array(
+	    'pi_hypothesis' => array(
+	    'name' => t('Inquiry hypothesis'), // Required.
+	    'module' => 'pi_hypothesis',  // Required.
+	    'description' => t('What is your hypothesis?'), // Required.
+	    'has_title' => TRUE,
+	    'title_label' => t('Inquiry hypothesis'),
+	    'has_body' => TRUE,
+	    'body_label' => t('Hypothesis'),
+	    'locked' => TRUE)
+    );
+}
+
+/**
+ * Hide node revisions box - this is a node type often set to keep revisions
+ * if form alter not included then user sees the log message box
+ * 
+ * @param unknown_type $form
+ * @param unknown_type $form_state
+ * @param unknown_type $form_id
+ * @return unknown_type
+ */
+function pi_hypothesis_form_alter(&$form, $form_state, $form_id) 
+{
+  global $user; // Bring $user object into scope if displaying shall depend on userid or role
+  #if ( $user->uid != 1 ) // 0 -> Anonymous, 1 -> SuperAdmin, 2+ -> Authenticated users
+  if ( !in_array('USER ROLE NAME', $user->roles) ) // Check for role (using role name)
+  {
+    // add class 'hideme' to elements which shall be hidden
+    $form['revision_information']['#attributes'] = array('class' => 'hideme'); // Revision information
+    // This class has been added to the CSS file:
+   //  .hideme { display: none; }
+  }
+}
+
+/**
+ * Implementation of hook_perm().
+ */
+function pi_hypothesis_perm() {
+    return array('create pi_hypothesis content', 'edit pi_hypothesis');
+}
+
+/**
+ * Implementation of hook_access().
+ */
+function pi_hypothesis_access($op, $node, $account) {
+    global $user;
+    $details = get_inquiry_details_from_current_path();
+
+    if ($op == 'create') {
+        return check_node_function_of_activity ($details->inquiry_id, $details->activity_id, $user->uid, 'add');
+    }
+
+    if ($op == 'update') {
+        return check_node_function_of_activity ($details->inquiry_id, $details->activity_id, $user->uid, 'edit');
+    }
+}
+
+/**
+ * Implementation of hook_form().
+ */
+function pi_hypothesis_form(&$node) {
+
+	global $user;
+    $type = node_get_types('type', $node);
+  	$node_details = get_inquiry_details_from_current_path();
+
+  	if (is_numeric($node_details->activity_id)) {
+  		$current_activity = load_activity($node_details->activity_id);
+  	}
+  	
+    $form['title'] = array(
+        '#type' => 'hidden',
+        '#title' => check_plain($type->title_label),
+        '#required' => FALSE,
+        '#default_value' => $type->title_label,
+        '#weight' => -5
+    );
+    
+    $form['hypothesis'] = array(
+        '#type' => 'textarea',
+        '#title' => t('My hypothesis is'),
+        '#required' => TRUE,
+        '#default_value' => $node->hypothesis,
+        '#description' => t('A hypothesis is a prediction that you can test. Write your hypothesis here.'),
+        '#resizable' => TRUE,
+        '#rows' => 5,
+        '#cols' => 40,
+        '#weight' => -2
+    );
+
+    $prefix = '';
+    $form['#prefix'] = $prefix;
+    return $form;
+
+}
+
+/**
+ * Implementation of hook_insert().
+ */
+function pi_hypothesis_insert($node) {
+    db_query("INSERT INTO {pi_hypothesis} (nid, vid, hypothesis) VALUES ('%d', '%d', '%s')",
+        $node->nid, $node->vid, $node->hypothesis);
+}
+ 
+/**
+ * Implementation of hook_update().
+ */
+function pi_hypothesis_update($node) {
+    if ($node->revision) {
+        pi_hypothesis_insert($node);
+    }
+
+    else {
+        db_query("UPDATE {pi_hypothesis} SET hypothesis = '%s' WHERE vid = %d", $node->hypothesis, $node->vid);
+    }
+}
+
+/**
+ * Implementation of hook_delete().
+ */
+function pi_hypothesis_delete(&$node) 
+{
+	// Delete the related information we were saving for this node.
+    db_query('DELETE FROM {pi_hypothesis} WHERE nid = %d', $node->nid);
+}
+
+/**
+ * Implementation of hook_load().
+ */
+function pi_hypothesis_load($node) {
+    return db_fetch_object(db_query('SELECT * FROM {pi_hypothesis} WHERE vid = %d', $node->vid));
+}
+
+/**
+ * Implementation of hook_view().
+ */
+function pi_hypothesis_view($node, $teaser = FALSE, $page = FALSE) {
+    // Use Drupal's default node view.
+	$node = node_prepare($node, $teaser);
+	$activity_id = get_activity_id_for_nid($node->nid);
+	
+	if(!is_numeric($activity_id))
+	{
+		$details = get_inquiry_details_from_current_path();
+		$activity_id = $details->activity_id;
+	}
+	if(!is_numeric($activity_id))
+	{
+		$activity = NULL;
+	}
+	else
+	{
+		$activity = load_activity($activity_id);
+		if(isset($activity))
+		{
+			if(isset($activity->name) && !$teaser)
+			{
+				drupal_set_title(check_plain($activity->name));
+			}
+		}
+	}
+
+	$node->content['pi_hypothesis'] = array(
+		'#value' => theme('pi_hypothesis', $node, $activity, $teaser),
+		'#weight' => 2
+	);
+    return $node;
+}
+
+/**
+ * Implementation of hook_theme() to define the available theme functions fot pi_hypothesis
+ * Currently defines 1 theme, to show the hypothesis view.
+ * @return array of theme data   
+ */
+function pi_hypothesis_theme() {
+    return array(
+	    'pi_hypothesis' => array(
+		    'arguments' => array('node', 'current_activity', 'teaser'),
+	    )
+    );
+}
+
+/**
+ * Theme function to display the pi_hypothesis view page (uses drupal theme_hook()) 
+ * @param object(node) $node Drupal node of type pi_hypothesis
+ * @param object(pi_activity) $current_activity default NULL, pi_activity object that's linked to this node
+ * @return string HTML for the page content added for hypothesis data
+ */
+function theme_pi_hypothesis($node, $current_activity=NULL, $teaser=NULL) {
+	$output = '<strong>Hypothesis:</strong> ' . nl2br($node->hypothesis);
+    return $output;
+}

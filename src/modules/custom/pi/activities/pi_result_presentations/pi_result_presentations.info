@@ -1,0 +1,9 @@
+; $Id: pi_result_presentations.info,v 1.2 2009/10/20 09:55:10 ou_tdc Exp $
+name = nQuire  result presentations
+project = nquire
+description = nQuire result presentation module: generate graphs and tables from collected data
+package = nQuire Activities - optional
+dependencies[] = pi
+dependencies[] = pi_data
+core = 6.x
+version = "6.x-10.08-dev"

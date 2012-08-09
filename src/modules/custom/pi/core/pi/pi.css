@@ -1,0 +1,154 @@
+/*
+* pi css specialisation
+*/
+
+/* Hide second breadcrumb
+----------------------------------*/
+div#content div#content-inner div#content-header div.breadcrumb { 
+	display: none; 
+}
+
+/* Hide Revision information - Log message
+----------------------------------*/
+.hideme { 
+	display: none;
+}
+
+/* Hide preview button
+----------------------------------*/
+#edit-preview {
+	display: none;
+}
+
+div#content div.content {
+	font-size: 12px;
+}
+
+textarea {
+	font-size: 111%;
+}
+
+div#content h1.title {
+	margin: 0 0 0.4em 0;
+}
+
+/* Hide region message div
+----------------------------------*/
+tr.region-populated {
+	display: none;
+}
+
+th.measures_theading_status {
+	display: none;
+}
+
+th.measures_theading_weight {
+	display: none;
+}
+
+td.measures_status {
+	display: none;
+}
+
+td.measures_weight {
+	display: none;
+}
+
+td.sort_item_region {
+	display: none;
+}
+
+td.sort_item_weight {
+	display: none;
+}
+
+th.sort_theading_status {
+	display: none;
+}
+
+th.sort_theading_weight {
+	display: none;
+}
+
+tr.region {
+	font-size: 110%;
+	font-weight: bold;
+	border: 1px solid transparent;
+}
+
+th.region {
+	background: white;
+}
+
+
+td.region, th.region {
+	padding: 1em 0 0.4em 0;
+}
+
+
+
+div.teaser_table_cell {
+	margin-top: 11px;
+	white-space:nowrap;
+	font-size:130%;
+	font-weight:bold;
+}
+
+
+/* PI view layout - inquiries
+----------------------------------*/
+ul.inquiry { list-style-type: none; }
+
+ul.inquiry li.inquiry {
+    clear: both;
+    list-style: none;
+    border: solid 1px white;
+    background: white;
+    padding: 0.8em 0em;
+    margin: 1px 1px 1px -24px;
+}
+
+ul.inquiry li.inquiry a.heading { display: block; clear: both; font-weight: bold; }
+
+
+/* PI view layout - phases
+----------------------------------*/
+ul.phase { list-style-type: none; }
+
+ul.phase li.phase {
+    clear: both;
+    list-style: none;
+    border: solid 1px white;
+    background: white;
+    padding: 0.8em 0em;
+    margin: 1px 1px 1px -24px;
+}
+
+ul.phase li.phase a.heading { display: block; clear: both; font-weight: bold; }
+
+/* PI view layout - phases
+----------------------------------*/
+ul.activity { list-style-type: none; }
+
+ul.activity li.activity {
+    clear: both;
+    list-style: none;
+    border: solid 1px white;
+    background: white;
+    padding: 0.8em 0em;
+    margin: 1px 1px 1px -24px;
+}
+
+ul.activity li.activity ul.activity li.activity {
+    clear: both;
+    list-style: disc;
+    border: solid 1px white;
+    background: white;
+    padding: 0.8em 0em;
+    margin: 1px 1px 1px 0px;
+}
+
+ul.activity li.activity a.heading { display: block; clear: both; font-weight: bold; }
+
+div.add_activity_link { display: block; float: right; margin: 0 1em 0 1em; clear:left; }
+
