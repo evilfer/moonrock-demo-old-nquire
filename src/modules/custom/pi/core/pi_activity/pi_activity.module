@@ -42,6 +42,7 @@ function pi_activity_access($op, $node, $account)
  * @return TRUE or FALSE to indicate whether access is allowed for that function
  */
 function pi_activity_item_access($activity, $op) {
+ 
 	$return_value = false;
 	if(isset($activity->activity_id))
 	{
@@ -567,6 +568,22 @@ function get_phase_of_inquiry_and_activity($inquiry_id, $activity_id, $uid) {
 }
 
 
+function get_nid_for_inquiry_activity_and_any_user($inquiry_id, $activity_id) {
+ $query1 = "SELECT {pi_activity_node}.nid FROM {pi_activity_node} "
+	. "LEFT JOIN {node} ON {node}.nid = {pi_activity_node}.nid "
+	. "WHERE {pi_activity_node}.inquiry_id = %d "
+	. "AND {pi_activity_node}.activity_id = %d "
+	. "ORDER BY {pi_activity_node}.pan_id DESC"; 
+ 
+ 	$result = db_fetch_object(db_query($query1, $inquiry_id, $activity_id, $uid));
+	if (isset($result))
+	{
+		if(isset($result->nid))
+		{
+			return $result->nid;
+		}
+	}
+}
 /**
  * get_nid_for_inquiry_activity_and_user
  **/
@@ -1234,6 +1251,10 @@ function delete_activity_type_for_user($activity_type, $user) {
 
 /**
  * Create the url to a particular activity
+ * 
+ * TRICK 
+ * added forced_link_function to support individually shared items
+ * 
  * @param uint $inquiry_id
  * @param uint $stage_id
  * @param uint $phase_id
@@ -1241,7 +1262,7 @@ function delete_activity_type_for_user($activity_type, $user) {
  * @param uint $uid
  * @return array ['url'] and ['title'] countaining link url (via drupal url()) and title (via chaeck_plain())
  */
-function pi_activity_get_link($inquiry_id, $stage_id, $phase_id, $activity_id, $uid)
+function pi_activity_get_link($inquiry_id, $stage_id, $phase_id, $activity_id, $uid, $forced_link_function)
 {
 	$url = array('url'=>'', 'title'=>'');
 
@@ -1253,7 +1274,11 @@ function pi_activity_get_link($inquiry_id, $stage_id, $phase_id, $activity_id, $
 
 	$loaded_activity = load_activity($activity_id);
 	$visible_status = get_visible_status_of_activity($inquiry_id, $activity_id, $uid);
-	$node_function = get_node_function_of_activity($inquiry_id, $activity_id, $uid);
+	
+  /*
+   * TRICK
+   */
+  $node_function = $forced_link_function ? $forced_link_function : get_node_function_of_activity($inquiry_id, $activity_id, $uid);
 
 	switch ($loaded_activity->destination)
 	{
@@ -1289,15 +1314,18 @@ function pi_activity_get_link($inquiry_id, $stage_id, $phase_id, $activity_id, $
 
 /**
  * Create a link to a particular activity with associated icon
+ * 
+ * TRICK: added $force_link_function to support individually shared items
+ * 
  * @param uint $inquiry_id
  * @param uint $stage_id
  * @param uint $phase_id
  * @param uint $activity_id
  * @param uint $uid
  */
-function build_activity_link($inquiry_id, $stage_id, $phase_id, $activity_id, $uid, $class = 'menu') 
+function build_activity_link($inquiry_id, $stage_id, $phase_id, $activity_id, $uid, $class = 'menu', $force_link_function = null) 
 {
-	$link = pi_activity_get_link($inquiry_id, $stage_id, $phase_id, $activity_id, $uid);
+	$link = pi_activity_get_link($inquiry_id, $stage_id, $phase_id, $activity_id, $uid, $force_link_function);
 
 	$options['html'] = TRUE;
 	$options['query'] = $link['destination'];

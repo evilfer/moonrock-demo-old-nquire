@@ -1,3 +1,4 @@
+// $Id: ahah_helper.js,v 1.1 2008/08/29 18:58:21 wimleers Exp $
 
 (function($) {
 

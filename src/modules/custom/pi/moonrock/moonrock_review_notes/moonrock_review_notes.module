@@ -1,0 +1,312 @@
+<?php
+
+// $Id: moonrock_review_notes.module,v 1.2 2009/06/11 09:55:10 ou_mbg Exp $
+
+/**
+ * @file
+ * Module for creating "moonrock_review_notes" node type
+ */
+
+/**
+ * Implementation of hook_node_info().
+ */
+function moonrock_review_notes_node_info() {
+
+  return array(
+      'moonrock_review_notes' => array(
+          'name' => t('Inquiry shared notes'), // Required.
+          'module' => 'moonrock_review_notes', // Required.
+          'description' => t('Keep notes related to a topic'), // Required.
+          'has_title' => TRUE,
+          'title_label' => t('Group notes'),
+          'has_body' => TRUE,
+          'body_label' => t('Group notes'),
+          'locked' => TRUE)
+  );
+}
+
+/**
+ * Implementation of hook_perm().
+ */
+function moonrock_review_notes_perm() {
+  
+}
+
+/**
+ * Implementation of hook_access().
+ */
+function moonrock_review_notes_access($op, $node, $account) {
+  global $user;
+  $details = get_inquiry_details_from_current_path();
+  if ($op == 'view') {
+    return true;
+  } else if ($op == 'create') {
+    return check_node_function_of_activity($details->inquiry_id, $details->activity_id, $user->uid, 'add');
+  } else if ($op == 'update' || $op == 'delete') {
+    return check_node_function_of_activity($details->inquiry_id, $details->activity_id, $user->uid, 'edit');
+  }
+}
+
+/**
+ * Implementation of hook_form().
+ */
+function moonrock_review_notes_form(&$node) {
+
+  // Get metadata for this node type
+  // (we use it for labeling title and body fields).
+  // We defined this in moonrock_review_notes_node_info().
+  $type = node_get_types('type', $node);
+  global $user;
+
+  $node_details = get_inquiry_details_from_current_path();
+  if (is_numeric($node_details->activity_id)) {
+    $current_activity = load_activity($node_details->activity_id);
+  }
+
+  if ($current_activity->name) {
+    drupal_set_title(t($current_activity->name));
+  }
+
+  $form['title'] = array(
+      '#type' => 'textfield',
+      '#title' => check_plain($type->title_label),
+      '#required' => TRUE,
+      '#default_value' => $type->title_label,
+      '#weight' => -5
+  );
+
+  $form['body_filter']['body'] = array(
+      '#type' => 'textarea',
+      '#title' => t('Body'),
+      '#required' => TRUE,
+      '#default_value' => $node->body,
+      '#description' => t('Type your introduction to the shared notes here.'),
+      '#resizable' => TRUE,
+      '#rows' => 8,
+      '#cols' => 40,
+      '#weight' => -2
+  );
+
+  $prefix = "";
+  if ($current_activity->description) {
+    $prefix .= "<p>" . check_plain($current_activity->description) . "</p>";
+  }
+
+  $form['#prefix'] = $prefix;
+
+  return $form;
+}
+
+/**
+ * Implementation of hook_insert().
+ */
+function moonrock_review_notes_insert($node) {
+  
+}
+
+/**
+ * Implementation of hook_update().
+ */
+function moonrock_review_notes_update($node) {
+  
+}
+
+/**
+ * Implementation of hook_delete().
+ */
+function moonrock_review_notes_delete(&$node) {
+  
+}
+
+/**
+ * Implementation of hook_load().
+ */
+function moonrock_review_notes_load($node) {
+  return array();
+}
+
+function moonrock_review_notes_link_alter(&$links, $node) {
+  // remove attachment links from upload.module
+  unset($links['upload_attachments']);
+}
+
+/**
+ * Implementation of hook_view().
+ */
+function moonrock_review_notes_view($node, $teaser = FALSE, $page = FALSE) {
+  // Use Drupal's default node view.
+  $node = node_prepare($node, $teaser);
+
+  $node->content['moonrock_review_notes'] = array(
+      '#value' => theme('moonrock_review_notes', $node, $teaser),
+      '#weight' => 2
+  );
+
+  return $node;
+}
+
+function moonrock_review_notes_search_form() {
+  $ahax = array(
+      'path' => 'moonrock_review_notes/search',
+      'wrapper' => 'moonrock_review_notes_results',
+      'method' => 'replace',
+      'keypress' => TRUE,
+      'progress' => array(
+          'type' => 'throbber',
+      ),
+  );
+
+  $form['#attributes'] = array('class' => 'search-form');
+
+  $form['words'] = array(
+      '#type' => 'textfield',
+      '#title' => "<br/>" . t('Words'),
+      '#size' => 60,
+      '#maxlength' => 64,
+      '#weight' => 1,
+          //    '#ahah' => $ahax,
+  );
+
+  $users = array(0 => "Any") + _moonrock_review_notes_get_possible_users();
+
+  $form['users'] = array(
+      '#type' => 'select',
+      '#title' => t('Author'),
+      '#options' => $users,
+      '#multiple' => false,
+      '#attributes' => array('size' => min(4, count($users))),
+      '#weight' => 2,
+          //    '#ahah' => $ahax,
+  );
+
+  $form['submit'] = array(
+      '#type' => 'hidden',
+      '#ahah' => array(
+          'path' => 'moonrock_review_notes/search',
+          'wrapper' => 'moonrock_review_notes_results',
+          'method' => 'replace',
+          'event' => 'click',
+      ),
+  );
+
+
+
+  return $form;
+}
+
+function moonrock_review_notes_theme() {
+  return array(
+      'moonrock_review_notes' => array(
+          'arguments' => array('node', 'teaser'),
+      ),
+      'moonrock_review_notes_search_form' => array(
+          'arguments' => array('form'),
+      ),
+  );
+}
+
+function theme_moonrock_review_notes_search_form($form) {
+  drupal_add_css(drupal_get_path('module', 'moonrock_review_notes') . '/css/search_form.css');
+  drupal_add_js(drupal_get_path('module', 'moonrock_review_notes') . '/js/search.js');
+
+  $output = "<table class='moonrock_review_notes_search_table'><tr>";
+  $output .= '<td>' . drupal_render($form['users']) . '</td>';
+  $output .= '<td>' . drupal_render($form['words']) . '</td>';
+  $output .= '</tr></table>';
+  $output .= '<div>' . drupal_render($form['submit']) . '</div></br>';
+
+  $output .= drupal_render($form); // Render rest of form components.
+  return $output;
+}
+
+function theme_moonrock_review_notes($node, $teaser) {
+  $node_details = get_inquiry_details_from_current_path();
+  if (is_numeric($node_details->activity_id)) {
+    $current_activity = load_activity($node_details->activity_id);
+  }
+
+  if ($current_activity->name) {
+    drupal_set_title(t($current_activity->name));
+  }
+
+  if ($teaser) {
+    $break_position = strpos($node->body, '<!--break-->');
+    if ($break_position) {
+      $output = substr($node->body, 0, $break_position);
+    } else {
+      $output = $node->body;
+    }
+  } else {
+    $output = $node->body;
+  }
+
+  if (!$teaser) {
+    $output .= '</br>';
+    $output .= drupal_get_form("moonrock_review_notes_search_form");
+    $output .= "<div id='moonrock_review_notes_results'></div>";
+  }
+  return $output;
+}
+
+function moonrock_review_notes_menu() {
+  $items = array();
+  $items['moonrock_review_notes/search'] = array(
+      'page callback' => 'moonrock_review_notes_search',
+      'access callback' => 'moonrock_review_notes_search_access',
+      'type' => MENU_CALLBACK,
+  );
+  return $items;
+}
+
+function moonrock_review_notes_search_access() {
+  return true;
+}
+
+function _moonrock_review_notes_get_possible_users() {
+  $query = "SELECT DISTINCT {users}.uid, {users}.name FROM {node} "
+          . "LEFT JOIN {users} on {node}.uid = {users}.uid "
+          . "WHERE {node}.type='moonrock_share_notes'";
+
+  $result = db_query($query);
+  $user_list = array();
+  while ($object = db_fetch_object($result)) {
+    $user_list[$object->uid] = $object->name;
+  }
+  return $user_list;
+}
+
+function moonrock_review_notes_search() {
+
+  $author = $_POST['users'];
+  $words = $_POST['words'];
+
+  $query = "SELECT DISTINCT {users}.name, {moonrock_share_notes}.notes "
+          . "FROM users "
+          . "LEFT JOIN node ON users.uid = node.uid "
+          . "LEFT JOIN moonrock_share_notes ON node.nid = moonrock_share_notes.nid "
+          . "WHERE node.type = 'moonrock_share_notes' ";
+
+  $parameters = array();
+  if ($words && strlen($words) > 0) {
+    $query .= "AND {moonrock_share_notes}.notes LIKE '%%%s%%' ";
+    $parameters[] = $words;
+  }
+  if ($author) {
+    $query .= "AND {users}.uid=%d ";
+    $parameters[] = $author;
+  }
+
+  $result = db_query($query, $parameters);
+  $findings = array();
+  while ($object = db_fetch_object($result)) {
+    $findings[] = array(
+        t("Notes by ") . check_plain($object->name),
+        check_plain($object->notes),
+    );
+  }
+
+  drupal_json(array(
+      'status' => true,
+      'data' => theme_table(array(t("Author"), t("Findings")), $findings),
+  ));
+}

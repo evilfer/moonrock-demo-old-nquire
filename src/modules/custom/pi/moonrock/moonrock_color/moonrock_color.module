@@ -1,11 +1,11 @@
 <?php
+
 // $Id: moonrock_color.module,v 1.2 2009/06/11 09:55:10 ou_mbg Exp $
 
 /**
  * @file
  * Module for creating "moonrock_color" node type
  */
-
 
 /**
  * Implementation of hook_node_info().
@@ -15,7 +15,7 @@ function moonrock_color_node_info() {
   return array(
       'moonrock_color' => array(
           'name' => t('Moonrock color'), // Required.
-          'module' => 'moonrock_color',  // Required.
+          'module' => 'moonrock_color', // Required.
           'description' => t('Moonrock colour'), // Required.
           'has_title' => TRUE,
           'title_label' => t('Moonrock colour'),
@@ -25,11 +25,11 @@ function moonrock_color_node_info() {
   );
 }
 
-
 /**
  * Implementation of hook_perm().
  */
 function moonrock_color_perm() {
+  
 }
 
 /**
@@ -45,11 +45,11 @@ function moonrock_color_access($op, $node, $account) {
   $details = get_inquiry_details_from_current_path();
 
   if ($op == 'create') {
-    return check_node_function_of_activity ($details->inquiry_id, $details->activity_id, $user->uid, 'add');
+    return check_node_function_of_activity($details->inquiry_id, $details->activity_id, $user->uid, 'add');
   }
 
   if ($op == 'update' || $op == 'delete') {
-    return check_node_function_of_activity ($details->inquiry_id, $details->activity_id, $user->uid, 'edit');
+    return check_node_function_of_activity($details->inquiry_id, $details->activity_id, $user->uid, 'edit');
   }
 }
 
@@ -99,15 +99,13 @@ function moonrock_color_form(&$node) {
   $form['#prefix'] = $prefix;
 
   return $form;
-
 }
 
 /**
  * Implementation of hook_insert().
  */
 function moonrock_color_insert($node) {
-  db_query("INSERT INTO {moonrock_color} (nid, vid, color) VALUES ('%d', '%d', '%s')",
-      $node->nid, $node->vid, $node->color);
+  db_query("INSERT INTO {moonrock_color} (nid, vid, color) VALUES ('%d', '%d', '%s')", $node->nid, $node->vid, $node->color);
 }
 
 /**
@@ -115,10 +113,8 @@ function moonrock_color_insert($node) {
  */
 function moonrock_color_update($node) {
   if ($node->revision) {
-    pi_wiki_notes_insert($node);
-  }
-
-  else {
+    moonrock_color_insert($node);
+  } else {
     db_query("UPDATE {moonrock_color} SET color = '%s', WHERE vid = %d", $node->color, $node->vid);
   }
 }
@@ -135,15 +131,13 @@ function moonrock_color_delete(&$node) {
  * Implementation of hook_load().
  */
 function moonrock_color_load($node) {
-  return db_fetch_object(db_query('SELECT * FROM {moonrock_color} WHERE vid = %d',
-      $node->vid));
+  return db_fetch_object(db_query('SELECT * FROM {moonrock_color} WHERE vid = %d', $node->vid));
 }
 
 function moonrock_color_link_alter(&$links, $node) {
   // remove attachment links from upload.module
   unset($links['upload_attachments']);
 }
-
 
 /**
  * Implementation of hook_view().
@@ -176,7 +170,6 @@ function moonrock_color_theme() {
   );
 }
 
-
 /**
  * MISSING
  *
@@ -199,14 +192,18 @@ function theme_moonrock_color_options_form($form) {
   $color_nids = array_keys($form['#options']);
   $javascript_color_array = '';
   $javascript_color_keys = '';
-
-  foreach ($color_nids as $i => $nid) {
-    $color_node = node_load(substr($nid, 5));
+  $default_color = NULL;
+  
+  foreach ($color_nids as $i => $option_id) {
+    $color_node = node_load(substr($option_id, 5));
     $color = $color_node->color;
+    if (strcasecmp($option_id, $form['#default_value']) == 0) {
+      $default_color = substr($color_node->color, 1);
+    } 
 
     $trimmed_color = str_replace("#", "", $color);
     $javascript_color_array .= "'$trimmed_color', ";
-    $javascript_color_keys .= "c$trimmed_color: {nid: '$nid', name: '{$color_node->title}'}, ";
+    $javascript_color_keys .= "c$trimmed_color: {nid: '$option_id', name: '{$color_node->title}'}, ";
   }
   $color_input_id = "{$form['#id']}";
 
@@ -214,7 +211,9 @@ function theme_moonrock_color_options_form($form) {
   $output .= "var colorPickerColors = [{$javascript_color_array}];\n";
   $output .= "var colorPickerFormId = '$color_input_id';\n";
   $output .= "var colorPickerColorKeys = {{$javascript_color_keys}};\n";
-
+  if ($default_color) {
+    $output .= "var colorPickerDefaultValue = '{$default_color}';";
+  }
   $output .= "</script>\n";
 
 
@@ -222,14 +221,13 @@ function theme_moonrock_color_options_form($form) {
   $output .= "<input id='{$color_input_id}-hidden' name='ignore' activename='{$form['#name']}' type='hidden'></input>";
   $output .= "<div id='{$color_input_id}-textvalue'></div>";
   $output .= "<input id='moonrockColorPicker'/>";
-  drupal_add_js( drupal_get_path('module', 'moonrock_color') .'/js/jquery-simple-color/jquery.simple-color_m.js');
-  drupal_add_js( drupal_get_path('module', 'moonrock_color') .'/js/moonrockColorSelect.js');
+  drupal_add_js(drupal_get_path('module', 'moonrock_color') . '/js/jquery-simple-color/jquery.simple-color_m.js');
+  drupal_add_js(drupal_get_path('module', 'moonrock_color') . '/js/moonrockColorSelect.js');
 
 
   $output .= "</div>";
   return $output;
 }
-
 
 function moonrock_color_nquire_display_as_measure($node, $teaser) {
   return theme_moonrock_color($node, $teaser);

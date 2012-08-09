@@ -50,9 +50,6 @@ function pi_activity_nodeapi(&$node, $op)
           case 'pi_result_presentations':
             add_activity_when_activity_node_created($node, 'edit', 'edit', $node->title, $details);
             break;
-          case 'moonrock_share_notes':
-            add_activity_when_activity_node_created($node, 'edit', 'edit', $node->title, $details);
-            break;
           case 'pi_data':
             //get_inquiry_details_from_current_path() does not work for datalogger
             if( arg(1) == 'datalogger_data' )
@@ -110,10 +107,7 @@ function pi_activity_nodeapi(&$node, $op)
           case 'pi_result_presentations':
             update_activity_when_activity_node_updated($node, $node->title);
             break;
-          case 'moonrock_share_notes':
-            update_activity_when_activity_node_updated($node, $node->title);
-            break;
-            case 'pi_data':
+          case 'pi_data':
             //none come from datalogger as it is not used to update existing data
             update_activity_when_activity_node_updated($node, $node->title);
             break;
