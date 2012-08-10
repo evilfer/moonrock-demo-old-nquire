@@ -1,0 +1,291 @@
+<?php
+
+// $Id: moonrock_sample.module,v 1.2 2009/06/11 09:55:10 ou_mbg Exp $
+
+/**
+ * @file
+ * Module for creating "moonrock_sample" node type
+ */
+
+/**
+ * Implementation of hook_node_info().
+ */
+function moonrock_sample_node_info() {
+
+  return array(
+      'moonrock_sample' => array(
+          'name' => t('Moonrock sample'), // Required.
+          'module' => 'moonrock_sample', // Required.
+          'description' => t('Moonrock sample'), // Required.
+          'has_title' => TRUE,
+          'title_label' => t('Moonrock sample'),
+          'has_body' => FALSE,
+          'body_label' => t('Moonrock sample'),
+          'locked' => TRUE)
+  );
+}
+
+/**
+ * Implementation of hook_perm().
+ */
+function moonrock_sample_perm() {
+  
+}
+
+/**
+ * Implementation of hook_access().
+ */
+function moonrock_sample_access($op, $node, $account) {
+  global $user;
+
+  if ($op == 'view') {
+    return true;
+  }
+
+  $details = get_inquiry_details_from_current_path();
+
+  if ($op == 'create') {
+    return check_node_function_of_activity($details->inquiry_id, $details->activity_id, $user->uid, 'add');
+  }
+
+  if ($op == 'update' || $op == 'delete') {
+    return check_node_function_of_activity($details->inquiry_id, $details->activity_id, $user->uid, 'edit');
+  }
+}
+
+/**
+ * Implementation of hook_form().
+ */
+function moonrock_sample_form(&$node) {
+
+  // Get metadata for this node type
+  // (we use it for labeling title and body fields).
+  // We defined this in pi_wiki_notes_node_info().
+  $type = node_get_types('type', $node);
+  global $user;
+
+  $node_details = get_inquiry_details_from_current_path();
+  if (is_numeric($node_details->activity_id)) {
+    $current_activity = load_activity($node_details->activity_id);
+  }
+
+  if ($current_activity->name) {
+    drupal_set_title(t($current_activity->name));
+  }
+
+  $form['title'] = array(
+      '#type' => 'textfield',
+      '#title' => check_plain($type->title_label),
+      '#required' => FALSE,
+      '#default_value' => $node->title,
+      '#weight' => -5
+  );
+
+  $form['body_filter']['vm'] = array(
+      '#type' => 'textfield',
+      '#title' => check_plain($type->vm_label),
+      '#required' => TRUE,
+      '#default_value' => $node->vm,
+      '#description' => t('Specify the URL where the VM for this sample can be found'),
+      '#weight' => -4
+  );
+
+  $form['body_filter']['snapshot'] = array(
+      '#type' => 'textfield',
+      '#title' => check_plain($type->snapshot_label),
+      '#required' => TRUE,
+      '#default_value' => $node->snapshot,
+      '#description' => t('Specify the URL where a snapshot image for this sample can be found'),
+      '#weight' => -3
+  );
+
+  $form['body_filter']['location'] = array(
+      '#type' => 'textfield',
+      '#title' => check_plain($type->location_label),
+      '#required' => TRUE,
+      '#default_value' => $node->location,
+      '#description' => t('Specify the location where this sample was found'),
+      '#weight' => -2
+  );
+
+  $prefix = "";
+  if ($current_activity->description) {
+    $prefix .= "<p>" . check_plain($current_activity->description) . "</p>";
+  }
+
+  $form['#prefix'] = $prefix;
+
+  return $form;
+}
+
+/**
+ * Implementation of hook_insert().
+ */
+function moonrock_sample_insert($node) {
+  db_query("INSERT INTO {moonrock_sample} (nid, vid, vm, snapshot, location) VALUES ('%d', '%d', '%s', '%s', '%s')", $node->nid, $node->vid, $node->vm, $node->snapshot, $node->location);
+}
+
+/**
+ * Implementation of hook_update().
+ */
+function moonrock_sample_update($node) {
+  if ($node->revision) {
+    moonrock_sample_insert($node);
+  } else {
+    db_query("UPDATE {moonrock_sample} SET vm='%s', snapshot='%s', location='%s' WHERE vid = %d", $node->vm, $node->snapshot, $node->location, $node->vid);
+  }
+}
+
+/**
+ * Implementation of hook_delete().
+ */
+function moonrock_sample_delete(&$node) {
+  // Delete the related information we were saving for this node.
+  db_query('DELETE FROM {moonrock_sample} WHERE nid = %d', $node->nid);
+}
+
+/**
+ * Implementation of hook_load().
+ */
+function moonrock_sample_load($node) {
+  return db_fetch_object(db_query('SELECT * FROM {moonrock_sample} WHERE vid = %d', $node->vid));
+}
+
+function moonrock_sample_link_alter(&$links, $node) {
+  // remove attachment links from upload.module
+  unset($links['upload_attachments']);
+}
+
+/**
+ * Implementation of hook_view().
+ */
+function moonrock_sample_view($node, $teaser = FALSE, $page = FALSE) {
+  // Use Drupal's default node view.
+  $node = node_prepare($node, $teaser);
+
+  $node->content['moonrock_sample'] = array(
+      '#value' => theme('moonrock_sample', $node, $teaser),
+      '#weight' => 2
+  );
+
+  return $node;
+}
+
+/**
+ * MISSING
+ *
+ * @return multitype:multitype:multitype:string
+ */
+function moonrock_sample_theme() {
+  return array(
+      'moonrock_sample' => array(
+          'arguments' => array('node', 'teaser'),
+      ),
+      'moonrock_sample_options_form' => array(
+          'arguments' => array('form'),
+      ),
+  );
+}
+
+/**
+ * MISSING
+ *
+ * @param unknown_type $node
+ * @return string
+ */
+function theme_moonrock_sample($node, $teaser) {
+  $size = 10;
+  $small = $size - 2;
+  $style1 = "display: inline-block; width: {$size}px; height: {$size}px; border: 1px solid #aaa;";
+  $style2 = "display: block; width: {$small}px; height:{$small}px; background-color: {$node->color}; border: 1px solid #ccc;";
+
+  $output = "<div style='$style1'><div style='$style2'></div></div><span style='padding-left:5px;'>{$node->title}</span>";
+  return $output;
+}
+
+function theme_moonrock_sample_options_form($form) {
+
+  $output = "<div class='form-item'>";
+  $output .= "<input id='moonrock_sample_input' type='hidden' name='{$form['#name']}' value='{$form['#default_value']}' />";
+
+  global $user;
+  $node_details = get_inquiry_details_from_current_path();
+  $sample_view_nid = find_unique_node_type_for_uid_and_inquiry('moonrock_seesamples', $user->uid, $node_details->inquiry_id);
+  if ($sample_view_nid) {
+    module_load_include('inc', 'moonrock_seesamples', 'moonrock_seesamples.table');
+    $samples = moonrock_seesamples_retrieve_samples(node_load($sample_view_nid));
+  } else {
+    
+  }
+
+  $output .= moonrock_sample_display_table($samples, "moonrock_sample_selection");
+  $output .= "</div>";
+
+  drupal_add_js(drupal_get_path('module', 'moonrock_sample') . '/js/moonrockSampleSelect.js');
+  return $output;
+
+  return drupal_render($form);
+
+  $color_nids = array_keys($form['#options']);
+  $javascript_color_array = '';
+  $javascript_color_keys = '';
+  $default_color = NULL;
+
+  foreach ($color_nids as $i => $option_id) {
+    $color_node = node_load(substr($option_id, 5));
+    $color = $color_node->color;
+    if (strcasecmp($option_id, $form['#default_value']) == 0) {
+      $default_color = substr($color_node->color, 1);
+    }
+
+    $trimmed_color = str_replace("#", "", $color);
+    $javascript_color_array .= "'$trimmed_color', ";
+    $javascript_color_keys .= "c$trimmed_color: {nid: '$option_id', name: '{$color_node->title}'}, ";
+  }
+  $color_input_id = "{$form['#id']}";
+
+  $output .= "<script type='text/javascript'>\n";
+  $output .= "var colorPickerColors = [{$javascript_color_array}];\n";
+  $output .= "var colorPickerFormId = '$color_input_id';\n";
+  $output .= "var colorPickerColorKeys = {{$javascript_color_keys}};\n";
+  if ($default_color) {
+    $output .= "var colorPickerDefaultValue = '{$default_color}';";
+  }
+  $output .= "</script>\n";
+
+
+
+  $output .= "<input id='{$color_input_id}-hidden' name='ignore' activename='{$form['#name']}' type='hidden'></input>";
+  $output .= "<div id='{$color_input_id}-textvalue'></div>";
+  $output .= "<input id='moonrockColorPicker'/>";
+
+  drupal_add_js(drupal_get_path('module', 'moonrock_sample') . '/js/moonrockSampleSelect.js');
+
+
+  $output .= "</div>";
+  return $output;
+}
+
+function moonrock_sample_nquire_display_as_link($node) {
+  return moonrock_sample_nquire_display_as_measure($node, false);
+}
+
+function moonrock_sample_nquire_display_as_measure($node, $teaser = true) {
+  global $user;
+  $node_details = get_inquiry_details_from_current_path();
+  $sample_view_nid = find_unique_node_type_for_uid_and_inquiry('moonrock_seesamples', $user->uid, $node_details->inquiry_id);
+  if ($sample_view_nid) {
+    module_load_include('inc', 'moonrock_seesamples', 'moonrock_seesamples.table');
+    $title = moonrock_seesamples_specific_sample_title(node_load($sample_view_nid), $node);
+  }
+
+  return check_plain($title ? $title : $node->title);
+}
+
+function moonrock_sample_nquire_display_as_key_measure($node, $teaser = true) {
+  return moonrock_sample_nquire_display_as_measure($node);
+}
+
+function moonrock_sample_nquire_measure_choose_explanation() {
+  return t("Choose one rock sample from the list");
+}

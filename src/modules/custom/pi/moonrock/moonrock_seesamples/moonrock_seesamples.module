@@ -1,4 +1,5 @@
 <?php
+
 // $Id: pi_wiki_notes.module,v 1.2 2009/06/11 09:55:10 ou_mbg Exp $
 
 /**
@@ -6,47 +7,45 @@
  * Module for creating "pi_wiki_notes" node type
  */
 
-
 /**
  * Implementation of hook_node_info().
  */
 function moonrock_seesamples_node_info() {
 
-	return array(
-			'moonrock_seesamples' => array(
-					'name' => t('Moonrock see samples'), // Required.
-					'module' => 'moonrock_seesamples',  // Required.
-					'description' => t('See Moon rock samples'), // Required.
-					'has_title' => TRUE,
-					'title_label' => t('Title'),
-					'has_body' => TRUE,
-					'body_label' => t('Body'),
-					'locked' => TRUE)
-	);
-
+  return array(
+      'moonrock_seesamples' => array(
+          'name' => t('Moonrock see samples'), // Required.
+          'module' => 'moonrock_seesamples', // Required.
+          'description' => t('See Moon rock samples'), // Required.
+          'has_title' => TRUE,
+          'title_label' => t('Title'),
+          'has_body' => TRUE,
+          'body_label' => t('Body'),
+          'locked' => TRUE)
+  );
 }
-
 
 /**
  * Implementation of hook_perm().
  */
 function moonrock_seesamples_perm() {
+  
 }
 
 /**
  * Implementation of hook_access().
  */
 function moonrock_seesamples_access($op, $node, $account) {
-	global $user;
-	$details = get_inquiry_details_from_current_path();
+  global $user;
+  $details = get_inquiry_details_from_current_path();
 
-	if ($op == 'create') {
-		return check_node_function_of_activity ($details->inquiry_id, $details->activity_id, $user->uid, 'add');
-	}
+  if ($op == 'create') {
+    return check_node_function_of_activity($details->inquiry_id, $details->activity_id, $user->uid, 'add');
+  }
 
-	if ($op == 'update' || $op == 'delete') {
-		return check_node_function_of_activity ($details->inquiry_id, $details->activity_id, $user->uid, 'edit');
-	}
+  if ($op == 'update' || $op == 'delete') {
+    return check_node_function_of_activity($details->inquiry_id, $details->activity_id, $user->uid, 'edit');
+  }
 }
 
 /**
@@ -54,108 +53,102 @@ function moonrock_seesamples_access($op, $node, $account) {
  */
 function moonrock_seesamples_form(&$node) {
 
-	// Get metadata for this node type
-	// (we use it for labeling title and body fields).
-	// We defined this in pi_wiki_notes_node_info().
-	$type = node_get_types('type', $node);
-	global $user;
+  // Get metadata for this node type
+  // (we use it for labeling title and body fields).
+  // We defined this in pi_wiki_notes_node_info().
+  $type = node_get_types('type', $node);
+  global $user;
 
-	$node_details = get_inquiry_details_from_current_path();
-	if (is_numeric($node_details->activity_id)) {
-		$current_activity = load_activity($node_details->activity_id);
-	}
+  $node_details = get_inquiry_details_from_current_path();
+  if (is_numeric($node_details->activity_id)) {
+    $current_activity = load_activity($node_details->activity_id);
+  }
 
-	if ($current_activity->name) {
-		drupal_set_title(t($current_activity->name));
-	}
+  if ($current_activity->name) {
+    drupal_set_title(t($current_activity->name));
+  }
 
-	$form['title'] = array(
-			'#type' => 'hidden',
-			'#title' => check_plain($type->title_label),
-			'#required' => FALSE,
-			'#default_value' => $type->title_label,
-			'#weight' => -5
-	);
+  $form['title'] = array(
+      '#type' => 'hidden',
+      '#title' => check_plain($type->title_label),
+      '#required' => FALSE,
+      '#default_value' => $type->title_label,
+      '#weight' => -5
+  );
 
-	$form['body_filter']['samples'] = array(
-			'#type' => 'textarea',
-			'#title' => t('Samples'),
-			'#required' => TRUE,
-			'#default_value' => $node->samples,
-			'#description' => t('Type the URLs of the samples and click the Save button when you are finished'),
-			'#resizable' => TRUE,
-			'#rows' => 8,
-			'#cols' => 40,
-			'#weight' => -2
-	);
+  $form['body_filter']['samples'] = array(
+      '#type' => 'textarea',
+      '#title' => t('Samples'),
+      '#required' => TRUE,
+      '#default_value' => $node->samples,
+      '#description' => t('Type the URLs of the samples and click the Save button when you are finished'),
+      '#resizable' => TRUE,
+      '#rows' => 8,
+      '#cols' => 40,
+      '#weight' => -2
+  );
 
-	$prefix = "";
-	if ($current_activity->description) {
-		$prefix .= "<p>" . check_plain($current_activity->description) . "</p>";
-	}
+  $prefix = "";
+  if ($current_activity->description) {
+    $prefix .= "<p>" . check_plain($current_activity->description) . "</p>";
+  }
 
-	$form['#prefix'] = $prefix;
+  $form['#prefix'] = $prefix;
 
-	return $form;
-
+  return $form;
 }
 
 /**
  * Implementation of hook_insert().
  */
 function moonrock_seesamples_insert($node) {
-	db_query("INSERT INTO {moonrock_seesamples} (nid, vid, samples) VALUES ('%d', '%d', '%s')",
-			$node->nid, $node->vid, $node->samples);
+  db_query("INSERT INTO {moonrock_seesamples} (nid, vid, samples) VALUES ('%d', '%d', '%s')", $node->nid, $node->vid, $node->samples);
 }
 
 /**
  * Implementation of hook_update().
  */
 function moonrock_seesamples_update($node) {
-	if ($node->revision) {
-		moonrock_seesamples_insert($node);
-	}
-
-	else {
-		db_query("UPDATE {moonrock_seesamples} SET samples = '%s' WHERE vid = %d", $node->samples, $node->vid);
-	}
+  if ($node->revision) {
+    moonrock_seesamples_insert($node);
+  } else {
+    db_query("UPDATE {moonrock_seesamples} SET samples = '%s' WHERE vid = %d", $node->samples, $node->vid);
+  }
 }
 
 /**
  * Implementation of hook_delete().
  */
 function moonrock_seesamples_delete(&$node) {
-	// Delete the related information we were saving for this node.
-	db_query('DELETE FROM {moonrock_seesamples} WHERE nid = %d', $node->nid);
+  // Delete the related information we were saving for this node.
+  db_query('DELETE FROM {moonrock_seesamples} WHERE nid = %d', $node->nid);
 }
 
 /**
  * Implementation of hook_load().
  */
 function moonrock_seesamples_load($node) {
-	return db_fetch_object(db_query('SELECT * FROM {moonrock_seesamples} WHERE vid = %d',
-			$node->vid));
+  return db_fetch_object(db_query('SELECT * FROM {moonrock_seesamples} WHERE vid = %d', $node->vid));
 }
 
 function moonrock_seesamples_link_alter(&$links, $node) {
-	// remove attachment links from upload.module
-	unset($links['upload_attachments']);
+  // remove attachment links from upload.module
+  unset($links['upload_attachments']);
 }
-
 
 /**
  * Implementation of hook_view().
  */
 function moonrock_seesamples_view($node, $teaser = FALSE, $page = FALSE) {
-	// Use Drupal's default node view.
-	$node = node_prepare($node, $teaser);
+  // Use Drupal's default node view.
+  $node = node_prepare($node, $teaser);
 
-	$node->content['moonrock_seesamples'] = array(
-			'#value' => theme('moonrock_seesamples', $node, $teaser),
-			'#weight' => 2
-	);
+  $node->content['moonrock_seesamples'] = array(
+      '#value' => theme('moonrock_seesamples', $node, $teaser),
+      '#weight' => 2
+  );
 
-	return $node;
+  return $node;
 }
 
 /**
@@ -164,13 +157,12 @@ function moonrock_seesamples_view($node, $teaser = FALSE, $page = FALSE) {
  * @return multitype:multitype:multitype:string
  */
 function moonrock_seesamples_theme() {
-	return array(
-			'moonrock_seesamples' => array(
-					'arguments' => array('node', 'teaser'),
-			),
-	);
+  return array(
+      'moonrock_seesamples' => array(
+          'arguments' => array('node', 'teaser'),
+      ),
+  );
 }
-
 
 /**
  * MISSING
@@ -179,21 +171,22 @@ function moonrock_seesamples_theme() {
  * @return string
  */
 function theme_moonrock_seesamples($node, $teaser) {
-	$node_details = get_inquiry_details_from_current_path();
-	if (is_numeric($node_details->activity_id)) {
-		$current_activity = load_activity($node_details->activity_id);
-	}
+  $node_details = get_inquiry_details_from_current_path();
+  if (is_numeric($node_details->activity_id)) {
+    $current_activity = load_activity($node_details->activity_id);
+  }
 
-	if ($current_activity->name) {
-		drupal_set_title(t($current_activity->name));
-	}
+  if ($current_activity->name) {
+    drupal_set_title(t($current_activity->name));
+  }
 
-	if ($teaser) {
-		$output = "Here you can examine three different samples of rocks collected from the Moon under the microscope.";
-	} else {
-		module_load_include('inc', 'moonrock_seesamples', 'moonrock_seesamples.table');
-		$output = moonrock_seesamples_create_sample_table($node);
-
-	}
-	return $output;
+  if ($teaser) {
+    $output = "Here you can examine three different samples of rocks collected from the Moon under the microscope.";
+  } else {
+    module_load_include('inc', 'moonrock_seesamples', 'moonrock_seesamples.table');
+    $output = moonrock_seesamples_create_sample_table($node);
+  }
+  return $output;
 }
+
+

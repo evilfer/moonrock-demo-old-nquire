@@ -1,11 +1,11 @@
 <?php
+
 // $Id: pi_result_presentations.module,v 1.2 2009/06/11 09:55:10 ou_mbg Exp $
 
 /**
  * @file
  * Module for creating "result presentations" node type
  */
-
 
 /**
  * Implementation of hook_node_info().
@@ -14,7 +14,7 @@ function pi_result_presentations_node_info() {
   return array(
       'pi_result_presentations' => array(
           'name' => t('Inquiry result presentations'), // Required.
-          'module' => 'pi_result_presentations',  // Required.
+          'module' => 'pi_result_presentations', // Required.
           'description' => t('A presentation for exploring part of a collected dataset?'), // Required.
           'has_title' => TRUE,
           'title_label' => t('Short title'),
@@ -24,7 +24,6 @@ function pi_result_presentations_node_info() {
       )
   );
 }
-
 
 /**
  * Implementation of hook_perm().
@@ -41,11 +40,11 @@ function pi_result_presentations_access($op, $node, $account) {
   $details = get_inquiry_details_from_current_path();
 
   if ($op == 'create') {
-    return check_node_function_of_activity ($details->inquiry_id, $details->activity_id, $user->uid, 'add');
+    return check_node_function_of_activity($details->inquiry_id, $details->activity_id, $user->uid, 'add');
   }
 
   if ($op == 'update') {
-    return check_node_function_of_activity ($details->inquiry_id, $details->activity_id, $user->uid, 'edit');
+    return check_node_function_of_activity($details->inquiry_id, $details->activity_id, $user->uid, 'edit');
   }
   if ($op == 'delete') {
     if (arg(0) == 'node' && arg(2) == 'delete') {
@@ -53,15 +52,13 @@ function pi_result_presentations_access($op, $node, $account) {
       $nid = arg(1);
       $activity_id = get_activity_id_for_nid($nid);
       $inquiry_id = get_inquiry_id_for_activity_id($activity_id);
-      if($inquiry_id && $activity_id) {
-        return check_node_function_of_activity ($inquiry_id, $activity_id, $uid, 'edit');
-      }
-      else {
+      if ($inquiry_id && $activity_id) {
+        return check_node_function_of_activity($inquiry_id, $activity_id, $uid, 'edit');
+      } else {
         return FALSE;
       }
-    }
-    else {
-      return check_node_function_of_activity ($details->inquiry_id, $details->activity_id, $user->uid, 'edit');
+    } else {
+      return check_node_function_of_activity($details->inquiry_id, $details->activity_id, $user->uid, 'edit');
     }
   }
 }
@@ -80,13 +77,10 @@ function pi_result_presentations_form(&$node) {
   //**Pick up the key questions
   // Add the categories of existing nodes and the options list for new nodes
   $key_questions_nid = find_sort_key_questions_nid_for_uid_and_inquiry($user->uid, $node_details->inquiry_id);
-  if(isset($key_questions_nid))
-  {
+  if (isset($key_questions_nid)) {
     $key_questions_node = node_load($key_questions_nid);
     $sorted_key_questions = $key_questions_node->categories;
-  }
-  else
-  {
+  } else {
     $sorted_key_questions = array();
   }
 
@@ -95,8 +89,7 @@ function pi_result_presentations_form(&$node) {
   $key_questions_to_show = pi_merge_content_item_lists($sorted_key_questions, $all_key_questions);
 
   $key_question_options = array();
-  foreach($key_questions_to_show as $key => $question)
-  {
+  foreach ($key_questions_to_show as $key => $question) {
     $key_question_options[$key] = $question['#title'];
   }
 
@@ -133,17 +126,14 @@ function pi_result_presentations_form(&$node) {
 
   // onepageprofile_categories and tree used for draggable menu items
   $form['onepageprofile_categories'] = array(
-      '#tree'   => TRUE,
+      '#tree' => TRUE,
       '#weight' => 0
   );
 
   // Add the categories of existing nodes and the options list for new nodes
-  if(isset($node->nid))
-  {
+  if (isset($node->nid)) {
     $selected_results_measures = $node->categories;
-  }
-  else
-  {
+  } else {
     $selected_results_measures = array();
   }
   $all_results_measures = pi_result_presentations_get_options();
@@ -153,18 +143,15 @@ function pi_result_presentations_form(&$node) {
   // set $tree to point to the above $form['onepageprofile_categories'] object
   $tree = &$form['onepageprofile_categories'];
 
-  foreach ($results_measures_to_show as $key => $category)
-  {
+  foreach ($results_measures_to_show as $key => $category) {
     $measure = node_load($key);
 
     // format the measure units
-    if (isset($measure->units_short) AND ($measure->units_short !='')) {
+    if (isset($measure->units_short) AND ($measure->units_short != '')) {
       $units = " (" . $measure->units_short . ")";
-    }
-    elseif (isset($measure->units) AND ($measure->units !='')) {
+    } elseif (isset($measure->units) AND ($measure->units != '')) {
       $units = " (" . $measure->units . ")";
-    }
-    else {
+    } else {
       $units = "";
     };
 
@@ -174,32 +161,32 @@ function pi_result_presentations_form(&$node) {
     );
 
     $tree[$key]['weight'] = array(
-        '#type'          => 'weight',
-        '#delta'         => max(10, count($results_measures_to_show)),
+        '#type' => 'weight',
+        '#delta' => max(10, count($results_measures_to_show)),
         '#default_value' => $category['#weight'],
     );
 
     $tree[$key]['status'] = array(
-        '#type'          => 'select',
+        '#type' => 'select',
         '#default_value' => $category['#status'],
         '#options' => array('0' => 'unselected', '1' => 'selected'),
     );
   }
   $prefix = '';
-  /*	$hypothesis_param = find_hypothesis_nid_for_uid_and_inquiry($user->uid, $node_details->inquiry_id);
+  /* 	$hypothesis_param = find_hypothesis_nid_for_uid_and_inquiry($user->uid, $node_details->inquiry_id);
 
-  if ($hypothesis_param) {
-  $hypothesis_node = node_load($hypothesis_param);
+    if ($hypothesis_param) {
+    $hypothesis_node = node_load($hypothesis_param);
 
-  $prefix .= theme_pi_hypothesis($hypothesis_node, FALSE, FALSE);
-  }*/
+    $prefix .= theme_pi_hypothesis($hypothesis_node, FALSE, FALSE);
+    } */
   //$prefix .= '<p>' . t('Enter a short title, select a set of your measures to generate a data table you can use to answer your question, and enter what you would predict to find.') . '</p>';
 
   $form['#prefix'] = $prefix;
 
   return $form;
-
 }
+
 /**
  * This function validates the presentaion the user wants to create.
  * It checks that non of the selected y axis measures are non numeric.
@@ -207,8 +194,7 @@ function pi_result_presentations_form(&$node) {
  * @param $form
  * @param $form_state
  */
-function pi_result_presentations_validate(&$form, &$form_state)
-{
+function pi_result_presentations_validate(&$form, &$form_state) {
   global $user;
   $details = get_inquiry_details_from_current_path();
 
@@ -221,12 +207,9 @@ function pi_result_presentations_validate(&$form, &$form_state)
 
   $categories = $form->onepageprofile_categories;
 
-  if(is_array($categories))
-  {
-    foreach($categories as $measure_id => $category)
-    {
-      if($category['status'] != 0 )
-      {
+  if (is_array($categories)) {
+    foreach ($categories as $measure_id => $category) {
+      if ($category['status'] != 0) {
         $selectedMeasure++;
         $weights[$selectedMeasure] = $category['weight'];
 
@@ -234,17 +217,14 @@ function pi_result_presentations_validate(&$form, &$form_state)
 
         $is_numeric = TRUE;
 
-        foreach($x_axis_labels as $x_axis_label)
-        {
-           
-          if(!empty($x_axis_label) && !is_numeric($x_axis_label))
-          {
+        foreach ($x_axis_labels as $x_axis_label) {
+
+          if (!empty($x_axis_label) && !is_numeric($x_axis_label)) {
             $is_numeric = FALSE;
           }
         }
 
-        if($is_numeric == FALSE)
-        {
+        if ($is_numeric == FALSE) {
           $non_numeric[] = intval($category['weight']);
           $is_y_scale_numeric = FALSE;
         }
@@ -252,12 +232,10 @@ function pi_result_presentations_validate(&$form, &$form_state)
     }
   }
 
-  if(count($non_numeric)==1)
-  {
+  if (count($non_numeric) == 1) {
     //Check if the non numeric selected measure is the first one (x axis)
     //In case it is, the selection is OK.
-    if($non_numeric[0] <= min($weights))
-    {
+    if ($non_numeric[0] <= min($weights)) {
       $is_y_scale_numeric = TRUE;
     }
   }
@@ -265,697 +243,656 @@ function pi_result_presentations_validate(&$form, &$form_state)
   //	if($is_y_scale_numeric == FALSE)
   //	{
   //		form_set_error('Selected Measure',t('One or more measues can not be displayed because they are not numeric. Only the first selection can be non numeric.'));
-    //	}
+  //	}
 
-    if($selectedMeasure < 2)
-    {
-      form_set_error('Selected Measure',t('At least two measures have to be selected'));
-    }
+  if ($selectedMeasure < 2) {
+    form_set_error('Selected Measure', t('At least two measures have to be selected'));
   }
+}
 
-  /**
-   * Implementation of hook_insert().
-   */
-  function pi_result_presentations_insert($node)
-  {
-    while ($measure = current($node->onepageprofile_categories))
-    {
-      $sql = "INSERT INTO {pi_result_presentations} (nid, vid, key_question_id, available_measure, status, weight)
+/**
+ * Implementation of hook_insert().
+ */
+function pi_result_presentations_insert($node) {
+  while ($measure = current($node->onepageprofile_categories)) {
+    $sql = "INSERT INTO {pi_result_presentations} (nid, vid, key_question_id, available_measure, status, weight)
       VALUES ( %d, %d, %d, %d, '%s', %d )";
 
-      db_query($sql, $node->nid, $node->vid, $node->key_question_id, key($node->onepageprofile_categories), $measure['status'], $measure['weight']);
+    db_query($sql, $node->nid, $node->vid, $node->key_question_id, key($node->onepageprofile_categories), $measure['status'], $measure['weight']);
 
-      next($node->onepageprofile_categories);
-    }
-    reset($node->onepageprofile_categories);
+    next($node->onepageprofile_categories);
   }
+  reset($node->onepageprofile_categories);
+}
 
-  /**
-   * Implementation of hook_update().
-   */
-  function pi_result_presentations_update($node)
-  {
-    // if this is a new node or we're adding a new revision,
-    if ($node->revision)
-    {
-      pi_result_presentations_insert($node);
-    }
-    else
-    {
-      db_query("DELETE FROM {pi_result_presentations} WHERE vid = %d", $node->vid);
-      pi_result_presentations_insert($node);
-    }
+/**
+ * Implementation of hook_update().
+ */
+function pi_result_presentations_update($node) {
+  // if this is a new node or we're adding a new revision,
+  if ($node->revision) {
+    pi_result_presentations_insert($node);
+  } else {
+    db_query("DELETE FROM {pi_result_presentations} WHERE vid = %d", $node->vid);
+    pi_result_presentations_insert($node);
   }
+}
 
-  /**
-   * Implementation of hook_delete().
-   */
-  function pi_result_presentations_delete(&$node)
-  {
-    db_query("DELETE FROM {pi_result_presentations} WHERE nid = %d", $node->nid);
-  }
+/**
+ * Implementation of hook_delete().
+ */
+function pi_result_presentations_delete(&$node) {
+  db_query("DELETE FROM {pi_result_presentations} WHERE nid = %d", $node->nid);
+}
 
-  /**
-   * Implementation of hook_load().
-   */
-  function pi_result_presentations_load($node) {
-    $result = new stdClass;
+/**
+ * Implementation of hook_load().
+ */
+function pi_result_presentations_load($node) {
+  $result = new stdClass;
 
-    $result->key_question_id = db_result(db_query('SELECT key_question_id FROM {pi_result_presentations} WHERE vid = %d',
-        $node->vid));
+  $result->key_question_id = db_result(db_query('SELECT key_question_id FROM {pi_result_presentations} WHERE vid = %d', $node->vid));
 
-    $result->categories = pi_result_presentations_get_choice($node);
+  $result->categories = pi_result_presentations_get_choice($node);
 
-    return $result;
-  }
+  return $result;
+}
 
+/**
+ * Implementation of hook_view().
+ */
+function pi_result_presentations_view($node, $teaser = FALSE, $page = FALSE) {
 
-  /**
-   * Implementation of hook_view().
-   */
-  function pi_result_presentations_view($node, $teaser = FALSE, $page = FALSE) {
-
-    /*
-     //In case standard node view is used, the answer to the key question is
+  /*
+    //In case standard node view is used, the answer to the key question is
     //displayed first...
 
     // Use Drupal's default node view.
     $node = node_prepare($node, $teaser);
-    */
-    $node->content['pi_result_presentations'] = array(
-        '#value' => theme('pi_result_presentations', $node, $teaser),
-        '#weight' => 10
-    );
+   */
+  $node->content['pi_result_presentations'] = array(
+      '#value' => theme('pi_result_presentations', $node, $teaser),
+      '#weight' => 10
+  );
 
 
-    return $node;
+  return $node;
+}
+
+/**
+ * Implementation of hook_theme().
+ */
+function pi_result_presentations_theme() {
+  return array(
+      'pi_result_presentations_node_form' => array(
+          'arguments' => array('form'),
+      ),
+      'pi_result_presentations' => array(
+          'arguments' => array('node', 'teaser'),
+      ),
+  );
+}
+
+/**
+ * implementation of theme_hook().
+ */
+function theme_pi_result_presentations($node, $teaser) {
+  global $user;
+  $details = get_inquiry_details_from_current_path();
+
+  $chart_activity_id = $details->activity_id;
+
+  //In case node has activity ID info, use it.
+  //This is the case in the summary page
+  if ($node->activity_id) {
+    $chart_activity_id = $node->activity_id;
+  }
+
+  $output = "";
+
+  if (!$teaser) {
+    if (isset($node->key_question_id) AND ($node->key_question_id > 0)) {
+      $loaded_key_question = node_load($node->key_question_id);
+      $output .= "<p><strong>Key question:</strong> " . check_plain($loaded_key_question->title) . "</p>";
+    }
+
+    $output .= $node->body;
+  } else {
+    $output .= $node->teaser;
   }
 
 
-  /**
-   * Implementation of hook_theme().
+  $selected_measures = "";
+  $delim = "";
+
+  $query = "SELECT available_measure FROM {pi_result_presentations} WHERE nid = %d AND vid = %d AND status = '1' ORDER BY weight ASC";
+  $measures = db_query($query, $node->nid, $node->vid);
+  while ($measure = db_fetch_object($measures)) {
+    $selected_measures .= $delim . $measure->available_measure;
+    if ($delim == "") {
+      $delim = ",";
+      $first_measure = $measure->available_measure;
+    }
+  }
+  $header = get_selected_measures_headings_for_inquiry_and_user($details->inquiry_id, $selected_measures, $user->uid);
+  $rows = get_selected_measures_data_for_inquiry_and_user($details->inquiry_id, $selected_measures, $user->uid);
+
+  /* CANDIDATE_FIX
+   * change content_option values into readable values
    */
-  function pi_result_presentations_theme() {
-    return array(
-        'pi_result_presentations_node_form' => array(
-            'arguments' => array('form'),
-        ),
-        'pi_result_presentations' => array(
-            'arguments' => array('node','teaser'),
-        ),
-    );
+  module_load_include('inc', 'pi_data', 'pi_data.content_options');
+  for ($i = 0; $i < count($rows); $i++) {
+    for ($j = 0; $j < count($rows[$i]); $j++) {
+      $rows[$i][$j] = pi_data_content_options_as_key_measure($rows[$i][$j]);
+    }
   }
 
-  /**
-   * implementation of theme_hook().
+  if (!$teaser) {
+    $table_output .= theme('table', $header, $rows);
+  }
+
+  $data = spin_array($rows);
+
+  $x_axis_labels_heading = $header[0]; //array_shift($header);
+  $x_axis_labels = array_shift($data);
+
+  /* FIX
+   * to check whether there are numeric and non-numeric data
    */
-  function theme_pi_result_presentations($node, $teaser) {
-    global $user;
-    $details = get_inquiry_details_from_current_path();
-
-    $chart_activity_id = $details->activity_id;
-
-    //In case node has activity ID info, use it.
-    //This is the case in the summary page
-    if($node->activity_id)
-    {
-      $chart_activity_id = $node->activity_id;
-    }
-
-    $output = "";
-
-    if(!$teaser)
-    {
-      if (isset($node->key_question_id) AND ($node->key_question_id > 0))
-      {
-        $loaded_key_question = node_load($node->key_question_id);
-        $output .= "<p><strong>Key question:</strong> " . check_plain($loaded_key_question->title) . "</p>";
-      }
-
-      $output .= $node->body;
-    }
-    else
-    {
-      $output .= $node->teaser;
-    }
-
-
-    $selected_measures = "";
-    $delim = "";
-
-    $query = "SELECT available_measure FROM {pi_result_presentations} WHERE nid = %d AND vid = %d AND status = '1' ORDER BY weight ASC";
-    $measures = db_query($query, $node->nid, $node->vid);
-    while ($measure = db_fetch_object($measures))
-    {
-      $selected_measures .= $delim . $measure->available_measure;
-      if ($delim == "")
-      {
-        $delim = ",";
-        $first_measure = $measure->available_measure;
-      }
-    }
-    $header = get_selected_measures_headings_for_inquiry_and_user($details->inquiry_id, $selected_measures, $user->uid);
-    $rows = get_selected_measures_data_for_inquiry_and_user($details->inquiry_id, $selected_measures, $user->uid);
-    
-    if(!$teaser)
-    {
-      $table_output .= theme('table', $header, $rows);
-    }
-
-    $data = spin_array($rows);
-
-    $x_axis_labels_heading = $header[0];//array_shift($header);
-    $x_axis_labels = array_shift($data);
-
-    /* FIX
-     * to check whether there are numeric and non-numeric data
-    */
-    for ($i = 0; $i < count($data); $i++) {
-      for ($j = 0; $j < count($data[$i]); $j++) {
-        if (strlen($data[$i][$j]) > 0) {
-          if (is_numeric($data[$i][$j])) {
-            $there_is_numeric_data = true;
-          } else {
-            $there_is_nonnumeric_data = true;
-          }
+  for ($i = 0; $i < count($data); $i++) {
+    for ($j = 0; $j < count($data[$i]); $j++) {
+      if (strlen($data[$i][$j]) > 0) {
+        if (is_numeric($data[$i][$j])) {
+          $there_is_numeric_data = true;
+        } else {
+          $there_is_nonnumeric_data = true;
         }
       }
     }
-
-    if($there_is_numeric_data) {
-      $output .= "<p><img class='chart_image' src='?q=activity/" . $chart_activity_id . "/chart.png'></p>";
-    }
-
-   // if ($there_is_nonnumeric_data) {
-      $output .= pi_chart_create_data_table($rows, $header);
-   // }
-
-    if(!$teaser)
-    {
-      $output .= $table_output;
-    }
-
-    if(!$teaser)
-    {
-      $output  .= '<p>' . l('Download (csv) data file', 'export/' . $details->activity_id . '/csv') . '</p>';
-
-      $first_measure_node = node_load($first_measure);
-      if (($first_measure_node->content_options == 'pi_location_lat_long') || ($first_measure_node->content_options == 'pi_location_lat_long_2')) {
-        $output  .= '<p>' . l('Download (kml) data file', 'export/' . $details->activity_id . '/kml') . '</p>';
-      }
-    }
-
-    return $output;
   }
 
-  function spin_array ($data_array) {
+  if ($there_is_numeric_data) {
+    $output .= "<p><img class='chart_image' src='?q=activity/" . $chart_activity_id . "/chart.png'></p>";
+  }
 
-    // spin data table
-    $row = 0;
+  // if ($there_is_nonnumeric_data) {
+  $output .= pi_chart_create_data_table($rows, $header);
+  // }
 
-    $spin_array = array();
-    foreach($data_array as $data_row) {
-      $col = 0;
-      foreach($data_row as $data_value) {
-        $spin_array[$col][$row] = $data_value;
-        $col++;
-      };
-      $row++;
+  if (!$teaser) {
+    $output .= $table_output;
+  }
+
+  if (!$teaser) {
+    $output .= '<p>' . l('Download (csv) data file', 'export/' . $details->activity_id . '/csv') . '</p>';
+
+    $first_measure_node = node_load($first_measure);
+    if (($first_measure_node->content_options == 'pi_location_lat_long') || ($first_measure_node->content_options == 'pi_location_lat_long_2')) {
+      $output .= '<p>' . l('Download (kml) data file', 'export/' . $details->activity_id . '/kml') . '</p>';
+    }
+  }
+
+  return $output;
+}
+
+function spin_array($data_array) {
+
+  // spin data table
+  $row = 0;
+
+  $spin_array = array();
+  foreach ($data_array as $data_row) {
+    $col = 0;
+    foreach ($data_row as $data_value) {
+      $spin_array[$col][$row] = $data_value;
+      $col++;
     };
-    return $spin_array;
+    $row++;
+  };
+  return $spin_array;
+}
 
+function Gradient($HexFrom, $HexTo, $ColorSteps) {
+
+  // Gradient function code from - http://www.geekpedia.com/code163_Generate-Gradient-Within-Hex-Range-In-PHP.html
+
+
+  $FromRGB['r'] = hexdec(substr($HexFrom, 0, 2));
+
+  $FromRGB['g'] = hexdec(substr($HexFrom, 2, 2));
+
+  $FromRGB['b'] = hexdec(substr($HexFrom, 4, 2));
+
+
+  $ToRGB['r'] = hexdec(substr($HexTo, 0, 2));
+
+  $ToRGB['g'] = hexdec(substr($HexTo, 2, 2));
+
+  $ToRGB['b'] = hexdec(substr($HexTo, 4, 2));
+
+
+  $StepRGB['r'] = ($FromRGB['r'] - $ToRGB['r']) / ($ColorSteps + 1);
+
+  $StepRGB['g'] = ($FromRGB['g'] - $ToRGB['g']) / ($ColorSteps + 1);
+
+  $StepRGB['b'] = ($FromRGB['b'] - $ToRGB['b']) / ($ColorSteps + 1);
+
+
+  $GradientColors = array();
+
+
+  for ($i = 0; $i <= $ColorSteps; $i++) {
+
+    $RGB['r'] = floor($FromRGB['r'] - ($StepRGB['r'] * $i));
+
+    $RGB['g'] = floor($FromRGB['g'] - ($StepRGB['g'] * $i));
+
+    $RGB['b'] = floor($FromRGB['b'] - ($StepRGB['b'] * $i));
+
+
+    $HexRGB['r'] = sprintf('%02x', ($RGB['r']));
+
+    $HexRGB['g'] = sprintf('%02x', ($RGB['g']));
+
+    $HexRGB['b'] = sprintf('%02x', ($RGB['b']));
+
+
+    $GradientColors[] = implode(NULL, $HexRGB);
   }
 
-  function Gradient($HexFrom, $HexTo, $ColorSteps) {
+  return $GradientColors;
+}
 
-    // Gradient function code from - http://www.geekpedia.com/code163_Generate-Gradient-Within-Hex-Range-In-PHP.html
+function result_presentations_teaser_view($node) {
 
+  global $user;
+  $details = get_inquiry_details_from_current_path();
 
-    $FromRGB['r'] = hexdec(substr($HexFrom, 0, 2));
+  drupal_set_title(t($node->title));
 
-    $FromRGB['g'] = hexdec(substr($HexFrom, 2, 2));
+  $output = "";
 
-    $FromRGB['b'] = hexdec(substr($HexFrom, 4, 2));
+  $selected_measures = "";
+  $delim = "";
 
+  $sql = "SELECT available_measure FROM {pi_result_presentations} WHERE nid = %d AND vid = %d AND status = '1' ORDER BY weight ASC";
 
-    $ToRGB['r'] = hexdec(substr($HexTo, 0, 2));
+  $measures = db_query($sql, $node->nid, $node->vid);
 
-    $ToRGB['g'] = hexdec(substr($HexTo, 2, 2));
-
-    $ToRGB['b'] = hexdec(substr($HexTo, 4, 2));
-
-
-    $StepRGB['r'] = ($FromRGB['r'] - $ToRGB['r']) / ($ColorSteps + 1);
-
-    $StepRGB['g'] = ($FromRGB['g'] - $ToRGB['g']) / ($ColorSteps + 1);
-
-    $StepRGB['b'] = ($FromRGB['b'] - $ToRGB['b']) / ($ColorSteps + 1);
-
-
-    $GradientColors = array();
-
-
-    for($i = 0; $i <= $ColorSteps; $i++) {
-
-      $RGB['r'] = floor($FromRGB['r'] - ($StepRGB['r'] * $i));
-
-      $RGB['g'] = floor($FromRGB['g'] - ($StepRGB['g'] * $i));
-
-      $RGB['b'] = floor($FromRGB['b'] - ($StepRGB['b'] * $i));
-
-
-      $HexRGB['r'] = sprintf('%02x', ($RGB['r']));
-
-      $HexRGB['g'] = sprintf('%02x', ($RGB['g']));
-
-      $HexRGB['b'] = sprintf('%02x', ($RGB['b']));
-
-
-      $GradientColors[] = implode(NULL, $HexRGB);
-
+  while ($measure = db_fetch_object($measures)) {
+    $selected_measures .= $delim . $measure->available_measure;
+    if ($delim == "") {
+      $delim = ",";
     }
-
-    return $GradientColors;
-
   }
 
+  $header = get_selected_measures_headings_for_inquiry_and_user($details->inquiry_id, $selected_measures, $user->uid);
+  $rows = get_selected_measures_data_for_inquiry_and_user($details->inquiry_id, $selected_measures, $user->uid);
 
+  $data = spin_array($rows);
 
-  function result_presentations_teaser_view($node) {
+  $x_axis_labels_heading = array_shift($header);
+  $x_axis_labels = array_shift($data);
 
-    global $user;
-    $details = get_inquiry_details_from_current_path();
+  $counter = 0;
+  $min_y_value = 99999;
+  $max_y_value = -99999;
+  $colour_array = Gradient("FF0000", "0000FF", count($x_axis_labels) - 1);
 
-    drupal_set_title(t($node->title));
-
-    $output = "";
-
-    $selected_measures = "";
-    $delim = "";
-
-    $sql = "SELECT available_measure FROM {pi_result_presentations} WHERE nid = %d AND vid = %d AND status = '1' ORDER BY weight ASC";
-
-    $measures = db_query($sql, $node->nid, $node->vid);
-
-    while ($measure = db_fetch_object($measures))
-    {
-      $selected_measures .= $delim . $measure->available_measure;
-      if($delim == "")
-      {
-        $delim = ",";
-      }
-    }
-
-    $header = get_selected_measures_headings_for_inquiry_and_user ($details->inquiry_id, $selected_measures, $user->uid);
-    $rows = get_selected_measures_data_for_inquiry_and_user ($details->inquiry_id, $selected_measures, $user->uid);
-
-    $data = spin_array($rows);
-
-    $x_axis_labels_heading = array_shift($header);
-    $x_axis_labels = array_shift($data);
-
-    $counter = 0;
-    $min_y_value = 99999;
-    $max_y_value = -99999;
-    $colour_array = Gradient("FF0000", "0000FF", count($x_axis_labels)-1);
-
-    $scatter_graph_check = 0;
-    foreach ($x_axis_labels as $x_axis_label) {
-      if (is_numeric($x_axis_label)) {
-        $scatter_graph_check = 1;
-      };
+  $scatter_graph_check = 0;
+  foreach ($x_axis_labels as $x_axis_label) {
+    if (is_numeric($x_axis_label)) {
+      $scatter_graph_check = 1;
     };
+  };
 
-    // now make the chart
-    if ($scatter_graph_check) {
+  // now make the chart
+  if ($scatter_graph_check) {
 
-      foreach($data as $data_row) {
+    foreach ($data as $data_row) {
 
-        unset($chart);
+      unset($chart);
 
-        $chart = array(
-            '#chart_id' => t($node->title . '-' . $counter),
-            '#title' => chart_title(t($header[$counter] . ' versus ' . $x_axis_labels_heading), '444444', 14),
-            '#type' => CHART_TYPE_SCATTER,
-            '#size' => chart_size(700, 200),
-            '#adjust_resolution' => TRUE,
-        );
-
-        // $chart['#shape_markers'][] = array('o',$colour_array[$counter],0,0,8);
-        $chart['#data'][] = $x_axis_labels;
-
-        $text_data = 0;
-        foreach ($data_row as $data_item) {
-          if (!(is_numeric($data_item))) {
-            $text_data = 1;
-          };
-        };
-
-        if ($text_data == 0) {
-           
-          // add data sets to chart
-          $chart['#data'][] = $data_row;
-
-          // add chart legend for each data set
-          // $chart['#legends'][] = $header[$counter];
-
-          // colour each data set differently
-          $chart['#data_colors'][] = $colour_array[$counter];
-           
-          // record minimum data value
-          if (min($data_row) < $min_y_value) {
-            $min_y_value = min($data_row);
-          };
-          // record maximum data value
-          if (max($data_row) > $max_y_value) {
-            $max_y_value = max($data_row);
-          };
-
-          // y axis - heading and max value
-          $chart['#mixed_axis_labels'][CHART_AXIS_Y_LEFT][0][] = chart_mixed_axis_range_label(0, $max_y_value);
-          $chart['#mixed_axis_labels'][CHART_AXIS_Y_LEFT][1][] = chart_mixed_axis_label(t('  '));
-          $chart['#mixed_axis_labels'][CHART_AXIS_Y_LEFT][2][] = chart_mixed_axis_label(t($header[$counter]), 95);
-
-          // x axis - heading and values
-          $chart['#mixed_axis_labels'][CHART_AXIS_X_BOTTOM][0][] = chart_mixed_axis_range_label(0, max($x_axis_labels));
-          $chart['#mixed_axis_labels'][CHART_AXIS_X_BOTTOM][1][] = chart_mixed_axis_label(t($x_axis_labels_heading), 50);
-           
-          // render chart
-          $output .= chart_render($chart);
-          $output .= t('<p> </p>');
-
-          $counter++;
-
-        };
-
-      };
-
-    }
-    else {
-      $chart_1 = array(
-          '#chart_id' => t($node->title),
-          '#title' => chart_title(t($node->title), '444444', 14),
-          '#type' => CHART_TYPE_BAR_V_GROUPED,
+      $chart = array(
+          '#chart_id' => t($node->title . '-' . $counter),
+          '#title' => chart_title(t($header[$counter] . ' versus ' . $x_axis_labels_heading), '444444', 14),
+          '#type' => CHART_TYPE_SCATTER,
           '#size' => chart_size(700, 200),
           '#adjust_resolution' => TRUE,
       );
 
-      foreach($data as $data_row) {
+      // $chart['#shape_markers'][] = array('o',$colour_array[$counter],0,0,8);
+      $chart['#data'][] = $x_axis_labels;
 
-        $text_data = 0;
-        foreach ($data_row as $data_item) {
-          if (!(is_numeric($data_item))) {
-            $text_data = 1;
-          };
+      $text_data = 0;
+      foreach ($data_row as $data_item) {
+        if (!(is_numeric($data_item))) {
+          $text_data = 1;
         };
-
-        if ($text_data == 0) {
-           
-          // add data sets to chart
-          $chart_1['#data'][] = $data_row;
-
-          // add chart legend for each data set
-          $chart_1['#legends'][] = $header[$counter];
-
-          // colour each data set differently
-          $chart_1['#data_colors'][] = $colour_array[$counter];
-           
-          // record minimum data value
-          if (min($data_row) < $min_y_value) {
-            $min_y_value = min($data_row);
-          };
-          // record maximum data value
-          if (max($data_row) > $max_y_value) {
-            $max_y_value = max($data_row);
-          };
-
-          $counter++;
-
-        };
-
       };
 
-      // y axis - heading and max value
-      $chart_1['#mixed_axis_labels'][CHART_AXIS_Y_LEFT][1][] = chart_mixed_axis_label(t('Value'), 95);
-      $chart_1['#mixed_axis_labels'][CHART_AXIS_Y_LEFT][0][] = chart_mixed_axis_range_label($min_y_value, $max_y_value);
+      if ($text_data == 0) {
 
-      // x axis - heading and values
-      $chart_1['#mixed_axis_labels'][CHART_AXIS_X_BOTTOM][2][] = chart_mixed_axis_label(t($x_axis_labels_heading), 50);
-      foreach ($x_axis_labels as $x_axis_label) {
-        $chart_1['#mixed_axis_labels'][CHART_AXIS_X_BOTTOM][1][] = chart_mixed_axis_label(t(substr($x_axis_label, 0, 3)));
+        // add data sets to chart
+        $chart['#data'][] = $data_row;
+
+        // add chart legend for each data set
+        // $chart['#legends'][] = $header[$counter];
+        // colour each data set differently
+        $chart['#data_colors'][] = $colour_array[$counter];
+
+        // record minimum data value
+        if (min($data_row) < $min_y_value) {
+          $min_y_value = min($data_row);
+        };
+        // record maximum data value
+        if (max($data_row) > $max_y_value) {
+          $max_y_value = max($data_row);
+        };
+
+        // y axis - heading and max value
+        $chart['#mixed_axis_labels'][CHART_AXIS_Y_LEFT][0][] = chart_mixed_axis_range_label(0, $max_y_value);
+        $chart['#mixed_axis_labels'][CHART_AXIS_Y_LEFT][1][] = chart_mixed_axis_label(t('  '));
+        $chart['#mixed_axis_labels'][CHART_AXIS_Y_LEFT][2][] = chart_mixed_axis_label(t($header[$counter]), 95);
+
+        // x axis - heading and values
+        $chart['#mixed_axis_labels'][CHART_AXIS_X_BOTTOM][0][] = chart_mixed_axis_range_label(0, max($x_axis_labels));
+        $chart['#mixed_axis_labels'][CHART_AXIS_X_BOTTOM][1][] = chart_mixed_axis_label(t($x_axis_labels_heading), 50);
+
+        // render chart
+        $output .= chart_render($chart);
+        $output .= t('<p> </p>');
+
+        $counter++;
       };
-
-      // render chart
-      $output .= chart_render($chart_1);
-
     };
-
-    return $output;
-
-  }
-
-
-  /**
-   * Theme pi_results_presentations form
-   */
-  function theme_pi_result_presentations_node_form($form) {
-    drupal_add_tabledrag('onepageprofile-categories', 'order', 'sibling', 'onepageprofile-element');
-
-    // Header
-    $header = array(
-        t('Measure'),
-        t('Status'),
-        t('Weight'),
+  } else {
+    $chart_1 = array(
+        '#chart_id' => t($node->title),
+        '#title' => chart_title(t($node->title), '444444', 14),
+        '#type' => CHART_TYPE_BAR_V_GROUPED,
+        '#size' => chart_size(700, 200),
+        '#adjust_resolution' => TRUE,
     );
 
-    // Rows for the tabledrag
-    $rows = array();
-    $tree = &$form['onepageprofile_categories'];
-    foreach (element_children($tree) as $key)
-    {
-      $tree[$key]['weight']['#attributes']['class'] = 'onepageprofile-element';
+    foreach ($data as $data_row) {
 
-      $row = array();
-      $row[] = drupal_render($tree[$key]['title']);
-      $row[] = drupal_render($tree[$key]['status']);
-      $row[] = drupal_render($tree[$key]['weight']);
+      $text_data = 0;
+      foreach ($data_row as $data_item) {
+        if (!(is_numeric($data_item))) {
+          $text_data = 1;
+        };
+      };
 
-      $rows[] = array('data' => $row, 'class' => 'draggable');
-    }
+      if ($text_data == 0) {
 
-    // Build the output
+        // add data sets to chart
+        $chart_1['#data'][] = $data_row;
 
-    if(count($rows) > 0) {
-      $output  = '<br/><strong>' . t('Select and order  measures for your presentation:') . '</strong>';
-      $output .= theme('table', $header, $rows, array('id' => 'onepageprofile-categories'));
-      $output .= drupal_render($form);
-    }
-    else {
-      $output  = '<p>' . t('No chosen measures are available.') . '</p>';
-    }
-    return $output;
-  }
+        // add chart legend for each data set
+        $chart_1['#legends'][] = $header[$counter];
 
+        // colour each data set differently
+        $chart_1['#data_colors'][] = $colour_array[$counter];
 
-  /**
-   * Load the user edit form and grab all of the fieldsets
-   */
-  function pi_result_presentations_get_choice($node)
-  {
-    $query = "SELECT * FROM {pi_result_presentations} WHERE nid = %d AND vid = %d ORDER BY status DESC, weight ASC";
-    $result = db_query($query, $node->nid, $node->vid);
+        // record minimum data value
+        if (min($data_row) < $min_y_value) {
+          $min_y_value = min($data_row);
+        };
+        // record maximum data value
+        if (max($data_row) > $max_y_value) {
+          $max_y_value = max($data_row);
+        };
 
-    $categories = array();
-    while($row = db_fetch_object($result))
-    {
-      $loaded_node = node_load($row->available_measure);
-      $categories[$row->available_measure] = array(	'#weight' => count($categories),
-          '#title'  => t($loaded_node->title),
-          '#status'  => $row->status
-      );
-    }
-    return $categories;
-  }
-
-
-  /**
-   * Load the user edit form and grab all of the fieldsets
-   */
-  function pi_result_presentations_get_options() {
-    global $user;
-    $details = get_inquiry_details_from_current_path();
-
-
-    $measures = find_selected_measures_nid_for_uid_and_inquiry($user->uid, $details->inquiry_id);
-    $measures_obj = node_load($measures);
-
-    $categories = array();
-    if(count($measures_obj->categories) > 0)
-    {
-      foreach($measures_obj->categories as $key => $measure)
-      {
-        $measure_node = node_load($key);
-        if($measure['#status'] == 'key' || $measure['#status'] == 'selected')
-        {
-          $categories[$key] = array (
-              '#weight' => 1,
-              '#title'  => t($measure_node->title),
-              '#status'  => 'none'
-          );
-        }
-      }
-    }
-
-    return $categories;
-  }
-
-  function pi_data_export_csv () {
-
-    global $user;
-    $details = get_inquiry_details_from_current_path();
-
-    $nid = get_nid_for_inquiry_activity_and_user($details->inquiry_id, $details->activity_id, $user->uid);
-    $node = node_load($nid);
-
-    $selected_measures = "";
-    $delim = "";
-
-    $sql = "SELECT available_measure FROM {pi_result_presentations} WHERE nid = %d AND vid = %d AND status = '1' ORDER BY weight ASC";
-    $measures = db_query($sql, $node->nid, $node->vid);
-
-    while ($measure = db_fetch_object($measures)) {
-      $selected_measures .= $delim . $measure->available_measure;
-      if ($delim == "") {
-        $delim = ", ";
+        $counter++;
       };
     };
 
-    $header = get_selected_measures_headings_for_inquiry_and_user ($details->inquiry_id, $selected_measures, $user->uid);
-    $rows = get_selected_measures_data_for_inquiry_and_user ($details->inquiry_id, $selected_measures, $user->uid);
+    // y axis - heading and max value
+    $chart_1['#mixed_axis_labels'][CHART_AXIS_Y_LEFT][1][] = chart_mixed_axis_label(t('Value'), 95);
+    $chart_1['#mixed_axis_labels'][CHART_AXIS_Y_LEFT][0][] = chart_mixed_axis_range_label($min_y_value, $max_y_value);
 
-
-    $name = str_replace (' ', '_', $node->title);
-
-    $filename = 'csv_data-' . $name . '.csv';
-
-
-    header('Content-type: text/csv');
-
-    header('Content-Disposition: attachment; filename=' . $filename);
-
-    echo create_csv_from_table ($header, $rows);
-
-    module_invoke_all('exit');
-    exit();
-  }
-
-  //
-  function create_csv_from_table ($header, $rows) {
-
-    $output = "";
-
-    // print out headers
-    $output .= "\"" . implode ("\",\"", $header) . "\"\r\n";
-
-    // now the data
-    $count = 1;
-    foreach ($rows as $row) {
-      $elements = array();
-      foreach ($row as $item) {
-        $elements[] = $item;
-      }
-      $output .= "\"" . implode ("\",\"", $elements) . "\"\r\n";
-      $count++;
-    }
-
-    return $output;
-
-  }
-
-
-  function pi_data_export_kml () {
-
-
-    global $user;
-    $details = get_inquiry_details_from_current_path();
-     
-    $nid = get_nid_for_inquiry_activity_and_user($details->inquiry_id, $details->activity_id, $user->uid);
-    $node = node_load($nid);
-
-
-    $selected_measures = "";
-    $delim = "";
-
-    $measures = db_query("SELECT available_measure FROM {pi_result_presentations} WHERE nid = %d AND vid = %d AND status = '1' ORDER BY weight ASC",
-        $node->nid, $node->vid);
-
-    while ($measure = db_fetch_object($measures)) {
-      $selected_measures .= $delim . $measure->available_measure;
-      if ($delim == "") {
-        $delim = ",";
-        $first_measure = $measure->available_measure;
-      };
+    // x axis - heading and values
+    $chart_1['#mixed_axis_labels'][CHART_AXIS_X_BOTTOM][2][] = chart_mixed_axis_label(t($x_axis_labels_heading), 50);
+    foreach ($x_axis_labels as $x_axis_label) {
+      $chart_1['#mixed_axis_labels'][CHART_AXIS_X_BOTTOM][1][] = chart_mixed_axis_label(t(substr($x_axis_label, 0, 3)));
     };
 
+    // render chart
+    $output .= chart_render($chart_1);
+  };
 
-    $header = get_selected_measures_headings_for_inquiry_and_user ($details->inquiry_id, $selected_measures, $user->uid);
-    $rows = get_selected_measures_data_for_inquiry_and_user ($details->inquiry_id, $selected_measures, $user->uid);
+  return $output;
+}
 
-    $name = str_replace (' ', '_', $node->title);
-    $filename = 'kml_data-' . $name . '.kml';
+/**
+ * Theme pi_results_presentations form
+ */
+function theme_pi_result_presentations_node_form($form) {
+  drupal_add_tabledrag('onepageprofile-categories', 'order', 'sibling', 'onepageprofile-element');
 
-    $lat = array();
-    $long = array();
+  // Header
+  $header = array(
+      t('Measure'),
+      t('Status'),
+      t('Weight'),
+  );
 
-    $first_measure_node = node_load($first_measure);
+  // Rows for the tabledrag
+  $rows = array();
+  $tree = &$form['onepageprofile_categories'];
+  foreach (element_children($tree) as $key) {
+    $tree[$key]['weight']['#attributes']['class'] = 'onepageprofile-element';
 
-    header('Content-type: text/kml');
-    header('Content-Disposition: attachment; filename=' . $filename);
+    $row = array();
+    $row[] = drupal_render($tree[$key]['title']);
+    $row[] = drupal_render($tree[$key]['status']);
+    $row[] = drupal_render($tree[$key]['weight']);
 
-    // print_r($location_nids);
-    echo create_kml_from_table ($header, $rows, $first_measure_node->content_options);
-    module_invoke_all('exit');
-    exit();
-
+    $rows[] = array('data' => $row, 'class' => 'draggable');
   }
 
-  function create_kml_from_table ($header, $rows, $content_type) {
-    $output = "";
-    $output .= '<?xml version="1.0" encoding="UTF-8"?>';
-    $output .= '<kml xmlns="http://earth.google.com/kml/2.2">';
-    $output .= '<Document>';
+  // Build the output
+
+  if (count($rows) > 0) {
+    $output = '<br/><strong>' . t('Select and order  measures for your presentation:') . '</strong>';
+    $output .= theme('table', $header, $rows, array('id' => 'onepageprofile-categories'));
+    $output .= drupal_render($form);
+  } else {
+    $output = '<p>' . t('No chosen measures are available.') . '</p>';
+  }
+  return $output;
+}
+
+/**
+ * Load the user edit form and grab all of the fieldsets
+ */
+function pi_result_presentations_get_choice($node) {
+  $query = "SELECT * FROM {pi_result_presentations} WHERE nid = %d AND vid = %d ORDER BY status DESC, weight ASC";
+  $result = db_query($query, $node->nid, $node->vid);
+
+  $categories = array();
+  while ($row = db_fetch_object($result)) {
+    $loaded_node = node_load($row->available_measure);
+    $categories[$row->available_measure] = array('#weight' => count($categories),
+        '#title' => t($loaded_node->title),
+        '#status' => $row->status
+    );
+  }
+  return $categories;
+}
+
+/**
+ * Load the user edit form and grab all of the fieldsets
+ */
+function pi_result_presentations_get_options() {
+  global $user;
+  $details = get_inquiry_details_from_current_path();
+
+
+  $measures = find_selected_measures_nid_for_uid_and_inquiry($user->uid, $details->inquiry_id);
+  $measures_obj = node_load($measures);
+
+  $categories = array();
+  if (count($measures_obj->categories) > 0) {
+    foreach ($measures_obj->categories as $key => $measure) {
+      $measure_node = node_load($key);
+      if ($measure['#status'] == 'key' || $measure['#status'] == 'selected') {
+        $categories[$key] = array(
+            '#weight' => 1,
+            '#title' => t($measure_node->title),
+            '#status' => 'none'
+        );
+      }
+    }
+  }
+
+  return $categories;
+}
+
+function pi_data_export_csv() {
+
+  global $user;
+  $details = get_inquiry_details_from_current_path();
+
+  $nid = get_nid_for_inquiry_activity_and_user($details->inquiry_id, $details->activity_id, $user->uid);
+  $node = node_load($nid);
+
+  $selected_measures = "";
+  $delim = "";
+
+  $sql = "SELECT available_measure FROM {pi_result_presentations} WHERE nid = %d AND vid = %d AND status = '1' ORDER BY weight ASC";
+  $measures = db_query($sql, $node->nid, $node->vid);
+
+  while ($measure = db_fetch_object($measures)) {
+    $selected_measures .= $delim . $measure->available_measure;
+    if ($delim == "") {
+      $delim = ", ";
+    };
+  };
+
+  $header = get_selected_measures_headings_for_inquiry_and_user($details->inquiry_id, $selected_measures, $user->uid);
+  $rows = get_selected_measures_data_for_inquiry_and_user($details->inquiry_id, $selected_measures, $user->uid);
+
+
+  $name = str_replace(' ', '_', $node->title);
+
+  $filename = 'csv_data-' . $name . '.csv';
+
+
+  header('Content-type: text/csv');
+
+  header('Content-Disposition: attachment; filename=' . $filename);
+
+  echo create_csv_from_table($header, $rows);
+
+  module_invoke_all('exit');
+  exit();
+}
+
+//
+function create_csv_from_table($header, $rows) {
+
+  $output = "";
+
+  // print out headers
+  $output .= "\"" . implode("\",\"", $header) . "\"\r\n";
+
+  // now the data
+  $count = 1;
+  foreach ($rows as $row) {
+    $elements = array();
+    foreach ($row as $item) {
+      $elements[] = $item;
+    }
+    $output .= "\"" . implode("\",\"", $elements) . "\"\r\n";
+    $count++;
+  }
+
+  return $output;
+}
+
+function pi_data_export_kml() {
+
+
+  global $user;
+  $details = get_inquiry_details_from_current_path();
+
+  $nid = get_nid_for_inquiry_activity_and_user($details->inquiry_id, $details->activity_id, $user->uid);
+  $node = node_load($nid);
+
+
+  $selected_measures = "";
+  $delim = "";
+
+  $measures = db_query("SELECT available_measure FROM {pi_result_presentations} WHERE nid = %d AND vid = %d AND status = '1' ORDER BY weight ASC", $node->nid, $node->vid);
+
+  while ($measure = db_fetch_object($measures)) {
+    $selected_measures .= $delim . $measure->available_measure;
+    if ($delim == "") {
+      $delim = ",";
+      $first_measure = $measure->available_measure;
+    };
+  };
+
+
+  $header = get_selected_measures_headings_for_inquiry_and_user($details->inquiry_id, $selected_measures, $user->uid);
+  $rows = get_selected_measures_data_for_inquiry_and_user($details->inquiry_id, $selected_measures, $user->uid);
+
+  $name = str_replace(' ', '_', $node->title);
+  $filename = 'kml_data-' . $name . '.kml';
+
+  $lat = array();
+  $long = array();
+
+  $first_measure_node = node_load($first_measure);
+
+  header('Content-type: text/kml');
+  header('Content-Disposition: attachment; filename=' . $filename);
+
+  // print_r($location_nids);
+  echo create_kml_from_table($header, $rows, $first_measure_node->content_options);
+  module_invoke_all('exit');
+  exit();
+}
+
+function create_kml_from_table($header, $rows, $content_type) {
+  $output = "";
+  $output .= '<?xml version="1.0" encoding="UTF-8"?>';
+  $output .= '<kml xmlns="http://earth.google.com/kml/2.2">';
+  $output .= '<Document>';
+  $x = 0;
+  $y = 0;
+  $loc_count = 1;
+  foreach ($rows as $row) {
     $x = 0;
-    $y = 0;
-    $loc_count = 1;
-    foreach ($rows as $row) {
-      $x = 0;
-       
-      $query = "SELECT nid FROM {node} WHERE type = '%s' AND title = '%s' ORDER BY nid DESC LIMIT 1";
-      $location_nid = db_result(db_query($query, $content_type, $row[0]));
-       
-      $loc = node_load($location_nid);
-      if ($loc->field_location_latitude && $loc->field_location_longitude) {
-        $lat = $loc->field_location_latitude;
-        $long = $loc->field_location_longitude;
-      }
-       
-      $output .= '<Placemark>';
-      $output .= '<name>' . $loc_count . '. ' . $row[0] . '</name>';
-      $output .= '<description>';
-      foreach ($row as $item) {
-        $output .= '<strong>' . $header[$x] . '</strong>: ' . $item . '<br />';
-        $x = $x + 1;
-      }
-      $output .= '</description>';
-      $output .= '<Point>';
-      $output .= '<coordinates>' . $long[0]['value'] . ',' . $lat[0]['value'] . ',0</coordinates>';
-      $output .= '</Point>';
-      $output .= '</Placemark>';
-      $y = $y + 1;
-      $loc_count = $loc_count + 1;
-    };
-    $output .= '</Document>';
-    $output .= '</kml>';
-    return $output;
-  }
+
+    $query = "SELECT nid FROM {node} WHERE type = '%s' AND title = '%s' ORDER BY nid DESC LIMIT 1";
+    $location_nid = db_result(db_query($query, $content_type, $row[0]));
+
+    $loc = node_load($location_nid);
+    if ($loc->field_location_latitude && $loc->field_location_longitude) {
+      $lat = $loc->field_location_latitude;
+      $long = $loc->field_location_longitude;
+    }
+
+    $output .= '<Placemark>';
+    $output .= '<name>' . $loc_count . '. ' . $row[0] . '</name>';
+    $output .= '<description>';
+    foreach ($row as $item) {
+      $output .= '<strong>' . $header[$x] . '</strong>: ' . $item . '<br />';
+      $x = $x + 1;
+    }
+    $output .= '</description>';
+    $output .= '<Point>';
+    $output .= '<coordinates>' . $long[0]['value'] . ',' . $lat[0]['value'] . ',0</coordinates>';
+    $output .= '</Point>';
+    $output .= '</Placemark>';
+    $y = $y + 1;
+    $loc_count = $loc_count + 1;
+  };
+  $output .= '</Document>';
+  $output .= '</kml>';
+  return $output;
+}
 

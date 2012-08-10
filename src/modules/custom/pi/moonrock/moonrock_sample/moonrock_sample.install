@@ -1,0 +1,87 @@
+<?php
+
+// $Id: moonrock_sample.install,v 1.2 2009/06/11 09:55:10 ou_mbg Exp $
+
+/**
+ * @file
+ * Install....
+ */
+
+/**
+ * Implementation of moonrock_sample_install().
+ *
+ * @return unknown_type
+ */
+function moonrock_sample_install() {
+  // Create tables.
+  drupal_install_schema('moonrock_sample');
+
+  variable_set("node_options_moonrock_sample", array('status', 'revision'));
+  variable_set("comment_moonrock_sample", COMMENT_NODE_DISABLED);
+  variable_set("upload_moonrock_sample", 0);
+}
+
+/**
+ * Implementation of moonrock_sample_uninstall().
+ */
+function moonrock_sample_uninstall() {
+  // Remove tables.
+  drupal_uninstall_schema('moonrock_sample');
+  variable_del('moonrock_sample');
+
+  variable_del("node_options_moonrock_sample");
+  variable_del("comment_moonrock_sample");
+  variable_del("upload_moonrock_sample");
+}
+
+/**
+ * Implementation of moonrock_sample_schema().
+ */
+function moonrock_sample_schema() {
+
+  $schema['moonrock_sample'] = array(
+      'description' => t('Moonrock sample'),
+      'fields' => array(
+          'nid' => array(
+              'description' => t('node id'),
+              'type' => 'int',
+              'unsigned' => TRUE,
+              'not null' => TRUE,
+              'size' => 'small',
+              'default' => 0,
+          ),
+          'vid' => array(
+              'description' => t('The current vid version identifier'),
+              'type' => 'int',
+              'unsigned' => TRUE,
+              'not null' => TRUE,
+              'size' => 'small',
+              'default' => 0,
+          ),
+          'vm' => array(
+              'description' => t('URL to Virtual Microscope'),
+              'type' => 'text',
+              'size' => 'normal',
+              'not null' => TRUE,
+          ),
+          'snapshot' => array(
+              'description' => t('URL to snapshot'),
+              'type' => 'text',
+              'size' => 'normal',
+              'not null' => TRUE,
+          ),
+          'location' => array(
+              'description' => t('Sample origin'),
+              'type' => 'text',
+              'size' => 'normal',
+              'not null' => TRUE,
+          ),
+      ),
+      'primary key' => array('vid'),
+      'indexes' => array(
+          'nid' => array('nid'),
+      ),
+  );
+
+  return $schema;
+}

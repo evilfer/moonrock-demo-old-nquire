@@ -1303,13 +1303,21 @@ function pi_activity_get_link($inquiry_id, $stage_id, $phase_id, $activity_id, $
 	$url['destination'] = $destination;
 
 	$teacher_gid = check_teacher_activity_for_inquiry_activity_user($inquiry_id, $activity_id, $uid);
-	$activity_name_text = check_plain($loaded_activity->name) . teacher_only_flag($teacher_gid);
+  
+  module_load_include('inc', 'pi_data', 'pi_data.content_options');
+	$activity_name_text = pi_data_content_options_as_link_title($loaded_activity->name) . teacher_only_flag($teacher_gid);
 
 	$label_icon = "<img width='12' src='" . $image_path . $status_image[$visible_status] . "'/>";
-	$url['title'] = $activity_name_text . '&nbsp;' . $label_icon;
+
+  /* CANDIDATE_FIX
+   * to allow content node specific texts
+   */
+  if (strlen($activity_name_text) > 5)
+  $url['title'] = $activity_name_text . '&nbsp;' . $label_icon;
 
 	return $url;
 }
+
 
 
 /**

@@ -1,0 +1,41 @@
+<?php
+
+function moonrock_sample_display_table($samples, $selection_name = NULL, $selected_item = NULL) {
+  drupal_add_css(drupal_get_path('module', 'moonrock_sample_display') . '/css/moonrock_table.css');
+  drupal_add_css(drupal_get_path('module', 'moonrock_sample_display') . '/css/moonrock_sample.css');
+
+  $output = '<table><tr>';
+
+  foreach ($samples as $sample) {
+    $output .= "<td class='moonrocksamplecell'>";
+    $output .= moonrock_sample_display_sample($sample, $selection_name);
+    $output .= "</td>";
+  }
+
+  $output .= '</tr></table>';
+  return $output;
+}
+
+function moonrock_sample_display_sample($sample, $selection_name = NULL, $selector_checked = FALSE) {
+  drupal_add_css(drupal_get_path('module', 'moonrock_sample_display') . '/css/moonrock_sample.css');
+  $option_id = "node_{$sample->nid}";
+  $name_attr = $selection_name ? "name='$selection_name'" : "";
+  
+  $output = '';
+  $output .= "<div class='moonrocksample'>";
+  $output .= "<div class='moonrocksampleiframecontainer'><a class='colorbox-load sample-link' id='node_{$sample->nid} ' href='{$sample->vm}?width=100%&height=100%&iframe=true'>";
+  $output .= "<img src='{$sample->snapshot}' sample='$option_id' $name_attr></img>";
+  $output .= "</a></div>";
+
+  $output .= '<div><center>';
+  if ($selection_name) {
+    $id = "{$selection_name}-node_{$sample->nid}";
+    $output .= "<input $name_attr id='$id' type='radio' value='$option_id'/>";
+    $output .= "<label class='option' for='$id'><b>{$sample->title}</b></label>";
+  } else {
+    $output .= "<b>{$sample->title}</b>";
+  }
+
+  $output .= "</center></div></div>";
+  return $output;
+}

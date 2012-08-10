@@ -1,22 +1,20 @@
 <?php
 
-
 require_once( 'lib/pChart/pData.class.php');
 require_once( 'lib/pChart/pChart.class.php');
 require_once( 'lib/pChart/pCache.class.php');
 
 /*
- require_once( 'lib/pChart/pData.class.1.26.php');
-require_once( 'lib/pChart/pChart.class.1.26.php');
-*/
+  require_once( 'lib/pChart/pData.class.1.26.php');
+  require_once( 'lib/pChart/pChart.class.1.26.php');
+ */
 
-function pi_chart_menu()
-{
+function pi_chart_menu() {
   $items['activity/%/chart.png'] = array(
-    		'page callback' => 'pi_chart_show_chart_as_png',
+      'page callback' => 'pi_chart_show_chart_as_png',
       'page arguments' => array(1, 2),
-    		'access arguments' => array('access content'),
-    		'type' => MENU_CALLBACK,
+      'access arguments' => array('access content'),
+      'type' => MENU_CALLBACK,
   );
 
   return $items;
@@ -34,7 +32,7 @@ function _pi_chart_format_one_variable_table($data_rows, $headings) {
   }
   $output .= '</tr>';
 
-  for ($v = 1; ; $v++) {
+  for ($v = 1;; $v++) {
     $row = '';
     for ($i = 0; $i < count($data); $i++) {
       if (isset($data[$i]['variables'][$v])) {
@@ -50,8 +48,7 @@ function _pi_chart_format_one_variable_table($data_rows, $headings) {
 
     if (strlen($row) > 0) {
       $output .= "<tr><td class='pi_chart_table_type' scope='row'>{$headings[$v]}</td>$row</tr>";
-    }
-    else {
+    } else {
       break;
     }
   }
@@ -86,18 +83,10 @@ function _pi_chart_get_grouped_data($rows) {
 }
 
 function _pi_chart_format_table_value($value, $is_chart_key = FALSE) {
-  if (strlen($value) > 5 && substr_compare($value, "node_", 0, 5, false) == 0) {
-    $node = node_load(substr($value, 5));
-    if ($node) {
-      $suffix = $is_chart_key ? '_nquire_display_as_key_measure' : '_nquire_display_as_measure';
-      $function = $node->type . $suffix;
-      if (function_exists($function)) {
-        return $function($node, true);
-      }
-    }
-  }
-
-  return t($value);
+  module_load_include('inc', 'pi_data', 'pi_data.content_options');
+  return $is_chart_key ?
+          pi_data_content_options_as_key_measure($value) :
+          pi_data_content_options_as_measure($value);
 }
 
 function _pi_chart_format_several_variables_table($data_rows, $variable_count, $headings) {
@@ -124,7 +113,7 @@ function _pi_chart_format_several_variables_table($data_rows, $variable_count, $
   $output .= '</tr>';
 
   $row_count = 0;
-  foreach($data as $values) {
+  foreach ($data as $values) {
     if (count($values) > $row_count) {
       $row_count = count($values);
     }
@@ -138,8 +127,7 @@ function _pi_chart_format_several_variables_table($data_rows, $variable_count, $
         foreach ($values as $value) {
           $output .= strlen($value) > 0 ? ('<td>' . _pi_chart_format_table_value($value) . '</td>') : "<td  class='pi_chart_table_empty' />";
         }
-      }
-      else {
+      } else {
         $output .= str_repeat("<td  class='pi_chart_table_empty' />", $variable_count);
       }
     }
@@ -152,7 +140,7 @@ function _pi_chart_format_several_variables_table($data_rows, $variable_count, $
 
 function pi_chart_create_data_table($data_rows, $headings) {
 
-  drupal_add_css(drupal_get_path('module', 'pi_chart') .'/css/pi_chart_table.css');
+  drupal_add_css(drupal_get_path('module', 'pi_chart') . '/css/pi_chart_table.css');
   $variable_count = count($headings) - 1;
   $output = $variable_count == 1 ? _pi_chart_format_one_variable_table($data_rows, $headings) : _pi_chart_format_several_variables_table($data_rows, $variable_count, $headings);
 
@@ -168,8 +156,7 @@ function _pi_chart_decide_graph_type($series_for_variable) {
   return "bar_graph";
 }
 
-function pi_chart_show_chart_as_png($activity_id, $arg_node_function)
-{
+function pi_chart_show_chart_as_png($activity_id, $arg_node_function) {
   global $user;
 
   $uid = $user->uid;
@@ -184,19 +171,17 @@ function pi_chart_show_chart_as_png($activity_id, $arg_node_function)
 
   $SQL = "SELECT {available_measure} FROM {pi_result_presentations} WHERE nid = %d AND vid = %d AND status = '1' ORDER BY weight ASC";
 
-  $measures = db_query($SQL, $node->nid , $node->vid);
+  $measures = db_query($SQL, $node->nid, $node->vid);
 
-  while ($measure = db_fetch_object($measures))
-  {
+  while ($measure = db_fetch_object($measures)) {
     $selected_measures .= $delim . $measure->available_measure;
-    if ($delim == "")
-    {
+    if ($delim == "") {
       $delim = ", ";
     };
   }
 
-  $header = get_selected_measures_headings_for_inquiry_and_user ($details->inquiry_id, $selected_measures, $user->uid);
-  $rows = get_selected_measures_data_for_inquiry_and_user ($details->inquiry_id, $selected_measures, $user->uid);
+  $header = get_selected_measures_headings_for_inquiry_and_user($details->inquiry_id, $selected_measures, $user->uid);
+  $rows = get_selected_measures_data_for_inquiry_and_user($details->inquiry_id, $selected_measures, $user->uid);
 
   $data = _pi_chart_get_data($rows);
   $series_for_variable = _pi_chart_get_series($data);
@@ -210,13 +195,13 @@ function pi_chart_show_chart_as_png($activity_id, $arg_node_function)
 
   $data_set = new pData;
 
-  foreach($series_for_variable as $variable => $series) {
+  foreach ($series_for_variable as $variable => $series) {
     $dontshow = false;
-    foreach($series as $i => $data_row) {
+    foreach ($series as $i => $data_row) {
       $serie_name = "Serie_{$variable}_{$i}";
       $data_set->AddPoint($data_row, $serie_name);
       $serie_names[$serie_name] = array(
-          'label' => $header[$variable],//$header[$counter],
+          'label' => $header[$variable], //$header[$counter],
           'color' => get_color($variable),
           'hide_legend' => $dontshow,
       );
@@ -232,7 +217,7 @@ function pi_chart_show_chart_as_png($activity_id, $arg_node_function)
 
 function _pi_chart_get_x_labels($data) {
   $x_axis_labels = array();
-  for($i = 0; $i < count($data); $i++) {
+  for ($i = 0; $i < count($data); $i++) {
     $x_axis_labels[$i] = _pi_chart_format_table_value($data[$i]['key'], TRUE);
   }
   return $x_axis_labels;
@@ -263,7 +248,7 @@ function _pi_chart_get_data($rows) {
 
   $key_i = 0;
   $data = array();
-  foreach($keydata as $key => $variables) {
+  foreach ($keydata as $key => $variables) {
     $data[$key_i] = array(
         'key' => $key,
         'variables' => $variables,
@@ -277,9 +262,9 @@ function _pi_chart_get_series($data) {
   $series_for_variable = array();
   for ($key_i = 0; $key_i < count($data); $key_i++) {
     $variables = $data[$key_i]['variables'];
-    foreach($variables as $variable => $values) {
+    foreach ($variables as $variable => $values) {
       $is_numeric = true;
-      foreach($values as $i => $value) {
+      foreach ($values as $i => $value) {
         if (!is_numeric($value)) {
           $is_numeric = false;
         }
@@ -302,16 +287,12 @@ function _pi_chart_get_series($data) {
   return $series_for_variable;
 }
 
-function shorten_lables($labels, $length)
-{
-  if(is_array($labels))
-  {
+function shorten_lables($labels, $length) {
+  if (is_array($labels)) {
     $array_length = count($labels) - 1;
-    for($i=$array_length; $i >= 0; $i-- )
-    {
-      if(strlen($labels[$i])>$length)
-      {
-        $labels[$i] = substr( $labels[$i], 0, $length ). ".";
+    for ($i = $array_length; $i >= 0; $i--) {
+      if (strlen($labels[$i]) > $length) {
+        $labels[$i] = substr($labels[$i], 0, $length) . ".";
       }
     }
   }
@@ -319,30 +300,24 @@ function shorten_lables($labels, $length)
   return $labels;
 }
 
-function check_labels($labels)
-{
+function check_labels($labels) {
   $renamed_labels = array();
 
-  if(is_array($labels))
-  {
+  if (is_array($labels)) {
     $array_length = count($labels) - 1;
-    for($i=$array_length; $i >= 0; $i-- )
-    {
+    for ($i = $array_length; $i >= 0; $i--) {
       $keys = array_keys($labels, $labels[$i]);
-      if(count($keys)>1)
-      {
+      if (count($keys) > 1) {
         $renamed_labels[] = $labels[$i];
         $labels[$i] = $labels[$i] . " (" . (count($keys) ) . ")";
       }
     }
   }
 
-  foreach( $renamed_labels as $renamed_label )
-  {
+  foreach ($renamed_labels as $renamed_label) {
     $key = array_search($renamed_label, $labels);
 
-    if($key !== FALSE && $key !== NULL)
-    {
+    if ($key !== FALSE && $key !== NULL) {
       $labels[$key] = $labels[$key] . " (1)";
     }
   }
@@ -351,104 +326,92 @@ function check_labels($labels)
   return $labels;
 }
 
-
-function get_color( $counter )
-{
-  switch($counter)
-  {
-    case 0:	$color = array( 'red' => 200, 'green' => 0, 'blue' => 0 );
-    break;
-    case 1:	$color = array( 'red' => 100, 'green' => 200, 'blue' => 50 );
-    break;
-    case 2:	$color = array( 'red' => 200, 'green' => 255, 'blue' => 100 );
-    break;
+function get_color($counter) {
+  switch ($counter) {
+    case 0: $color = array('red' => 200, 'green' => 0, 'blue' => 0);
+      break;
+    case 1: $color = array('red' => 100, 'green' => 200, 'blue' => 50);
+      break;
+    case 2: $color = array('red' => 200, 'green' => 255, 'blue' => 100);
+      break;
   }
 
   return $color;
 }
 
-function pi_chart_generate( $graph_type, $chart, $data_set, $serie_names, $x_axis_label )
-{
+function pi_chart_generate($graph_type, $chart, $data_set, $serie_names, $x_axis_label) {
 
   // Initialise the graph
-  $graph = new pChart( $chart['width'], $chart['height'] );
-  $graph->setFontProperties(dirname( __FILE__) . '/lib/Fonts/tahoma.ttf',8);
-  $graph->setGraphArea(50,30,600,200);
-  $graph->drawFilledRoundedRectangle(7,7,693,223,5,240,240,240);
-  $graph->drawRoundedRectangle(5,5,695,225,5,230,230,230);
-  $graph->drawGraphArea(255,255,255,TRUE);
+  $graph = new pChart($chart['width'], $chart['height']);
+  $graph->setFontProperties(dirname(__FILE__) . '/lib/Fonts/tahoma.ttf', 8);
+  $graph->setGraphArea(50, 30, 600, 200);
+  $graph->drawFilledRoundedRectangle(7, 7, 693, 223, 5, 240, 240, 240);
+  $graph->drawRoundedRectangle(5, 5, 695, 225, 5, 230, 230, 230);
+  $graph->drawGraphArea(255, 255, 255, TRUE);
 
 
   $counter = 0;
 
-  if(is_array($serie_names))
-  {
-    foreach($serie_names as $serie => $label_info)
-    {
+  if (is_array($serie_names)) {
+    foreach ($serie_names as $serie => $label_info) {
       $data_set->AddSerie($serie);
       $data_set->SetSerieName($label_info['label'], $serie);
 
-      $graph->setColorPalette($counter,$label_info['color']['red'], $label_info['color']['green'], $label_info['color']['blue']);
+      $graph->setColorPalette($counter, $label_info['color']['red'], $label_info['color']['green'], $label_info['color']['blue']);
       $counter++;
     }
   }
 
   //$data_set->AddAllSeries();
   $data_set->SetAbsciseLabelSerie('x_label');
-  $data_set->AddPoint($x_axis_label, 'x_label' );
+  $data_set->AddPoint($x_axis_label, 'x_label');
 
 
-  $graph->drawScale($data_set->GetData(),$data_set->GetDataDescription(),SCALE_NORMAL,0,0,0,TRUE,0,0,TRUE);
-  $graph->drawGrid(4,TRUE,230,230,230,50);
+  $graph->drawScale($data_set->GetData(), $data_set->GetDataDescription(), SCALE_START0, 0, 0, 0, TRUE, 0, 0, TRUE);
+  $graph->drawGrid(4, TRUE, 230, 230, 230, 50);
 
   // Draw the 0 line
-  $graph->setFontProperties(dirname( __FILE__) . '/lib/Fonts/tahoma.ttf',6);
-  $graph->drawTreshold(0,143,55,72,TRUE,TRUE);
+  $graph->setFontProperties(dirname(__FILE__) . '/lib/Fonts/tahoma.ttf', 6);
+  $graph->drawTreshold(0, 143, 55, 72, TRUE, TRUE);
 
   // Draw the bar graph
-  if(count($serie_names)>0)
-  {
-    switch( $graph_type )
-    {
-      case 'bar_graph' : 	$graph->drawBarGraph($data_set->GetData(),$data_set->GetDataDescription(),TRUE);
-      //_pi_chart_drwa_datapoint_label($graph, $serie_names);
-      break;
-      case 'line_graph' :	$graph->drawPlotGraph($data_set->GetData(),$data_set->GetDataDescription(),3,1,0,0,0);
-      _pi_chart_drwa_datapoint_label($graph, $data_set, $serie_names);
-      break;
-      default:	$graph->drawPlotGraph($data_set->GetData(),$data_set->GetDataDescription(),3,1,0,0,0);
-      _pi_chart_drwa_datapoint_label($graph, $data_set, $serie_names);
-      break;
+  if (count($serie_names) > 0) {
+    switch ($graph_type) {
+      case 'bar_graph' : $graph->drawBarGraph($data_set->GetData(), $data_set->GetDataDescription(), TRUE);
+        //_pi_chart_drwa_datapoint_label($graph, $serie_names);
+        break;
+      case 'line_graph' : $graph->drawPlotGraph($data_set->GetData(), $data_set->GetDataDescription(), 3, 1, 0, 0, 0);
+        _pi_chart_drwa_datapoint_label($graph, $data_set, $serie_names);
+        break;
+      default: $graph->drawPlotGraph($data_set->GetData(), $data_set->GetDataDescription(), 3, 1, 0, 0, 0);
+        _pi_chart_drwa_datapoint_label($graph, $data_set, $serie_names);
+        break;
     }
   }
 
   // Finish the graph
-  $graph->setFontProperties(dirname( __FILE__) . '/lib/Fonts/tahoma.ttf',10);
+  $graph->setFontProperties(dirname(__FILE__) . '/lib/Fonts/tahoma.ttf', 10);
 
-  if(is_array($serie_names))
-  {
-    foreach($serie_names as $serie => $label_info)
-    {
+  if (is_array($serie_names)) {
+    foreach ($serie_names as $serie => $label_info) {
       if ($label_info['hide_legend']) {
         $data_set->removeSerieName($serie);
       }
     }
   }
-  $graph->drawLegend(590,20,$data_set->GetDataDescription(),255,255,255);
-  $graph->setFontProperties(dirname( __FILE__) . '/lib/Fonts/tahoma.ttf',10);
-  $graph->drawTitle(50,22,$chart['title'],50,50,50,585);
+  $graph->drawLegend(590, 20, $data_set->GetDataDescription(), 255, 255, 255);
+  $graph->setFontProperties(dirname(__FILE__) . '/lib/Fonts/tahoma.ttf', 10);
+  $graph->drawTitle(50, 22, $chart['title'], 50, 50, 50, 585);
 
   return $graph;
 }
 
-function _pi_chart_drwa_datapoint_label($graph, $data_set, $serie_names)
-{
-  $graph->setFontProperties(dirname( __FILE__) . '/lib/Fonts/tahoma.ttf',10);
+function _pi_chart_drwa_datapoint_label($graph, $data_set, $serie_names) {
+  $graph->setFontProperties(dirname(__FILE__) . '/lib/Fonts/tahoma.ttf', 10);
   $counter = 0;
-  foreach($serie_names as $serie => $label_info)
-  {
-    $graph->setColorPalette($counter,$label_info['color']['red'], $label_info['color']['green'], $label_info['color']['blue']);
-    $graph->writeValues($data_set->GetData(),$data_set->GetDataDescription(), $serie);
+  foreach ($serie_names as $serie => $label_info) {
+    $graph->setColorPalette($counter, $label_info['color']['red'], $label_info['color']['green'], $label_info['color']['blue']);
+    $graph->writeValues($data_set->GetData(), $data_set->GetDataDescription(), $serie);
     $counter++;
   }
 }

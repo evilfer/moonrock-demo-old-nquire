@@ -6,7 +6,7 @@ $(function() {
     border : '1px solid #333333',
     buttonClass : 'button',
     colors: colorPickerColors,
-    defaultColor: colorPickerDefaultValue ? '#' + colorPickerDefaultValue : null
+    defaultColor: colorPickerDefaultValue != null ? '#' + colorPickerDefaultValue : null
   });
 	
   var listener = {

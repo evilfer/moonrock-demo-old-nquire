@@ -211,9 +211,7 @@ function theme_moonrock_color_options_form($form) {
   $output .= "var colorPickerColors = [{$javascript_color_array}];\n";
   $output .= "var colorPickerFormId = '$color_input_id';\n";
   $output .= "var colorPickerColorKeys = {{$javascript_color_keys}};\n";
-  if ($default_color) {
-    $output .= "var colorPickerDefaultValue = '{$default_color}';";
-  }
+  $output .= "var colorPickerDefaultValue = '{$default_color}';";
   $output .= "</script>\n";
 
 
@@ -229,10 +227,18 @@ function theme_moonrock_color_options_form($form) {
   return $output;
 }
 
-function moonrock_color_nquire_display_as_measure($node, $teaser) {
+function moonrock_color_nquire_display_as_link($node) {
+  return moonrock_color_nquire_display_as_key_measure($node, true);
+}
+
+function moonrock_color_nquire_display_as_measure($node, $teaser = true) {
   return theme_moonrock_color($node, $teaser);
 }
 
-function moonrock_color_nquire_display_as_key_measure($node, $teaser) {
-  return t($node->title);
+function moonrock_color_nquire_display_as_key_measure($node, $teaser = true) {
+  return check_plain($node->title);
+}
+
+function moonrock_color_nquire_measure_choose_explanation() {
+  return t("Choose from the list one relevant color identified in a sample");
 }

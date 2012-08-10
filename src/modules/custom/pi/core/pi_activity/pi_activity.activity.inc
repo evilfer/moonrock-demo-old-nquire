@@ -94,7 +94,9 @@ function pi_activity_view($activity, $arg_node_function) {
 			$output .= node_page_edit($loaded_node);
 			break;
 	}
-	drupal_set_title(check_plain($activity->name));
+  
+  module_load_include('inc', 'pi_data', 'pi_data.content_options');
+	drupal_set_title(pi_data_content_options_as_link_title($activity->name));
 	return $output;
 }
 

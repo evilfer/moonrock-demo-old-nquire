@@ -762,9 +762,14 @@ function theme_pi_available_measures_teaser($node, $measures_parameters) {
 					$output .= $title . ":&nbsp;" . check_plain($value);
 				}
 				elseif($measures_parameters['content_options']['value']) {
-					$value = implode(', ', get_node_titles_by_type($measures_parameters['content_options']['value']));
-					
-					$output .= $title . ":&nbsp;" . check_plain($value);
+          $function_name = "{$measures_parameters['content_options']['value']}_nquire_measure_choose_explanation";
+          if (function_exists($function_name)) {
+            $output .= $function_name();
+          }
+          else {
+  					$value = implode(', ', get_node_titles_by_type($measures_parameters['content_options']['value']));					
+    				$output .= $title . ":&nbsp;" . check_plain($value);
+          }
 				}
 				unset($measures_parameters['data_type']);
 				unset($measures_parameters['list_options']);
