@@ -1,25 +1,47 @@
 
 div.moonrocksampleiframecontainer img {
-	width: 300px;
+  width: 300px;
 }
 
+div.moonrocksampleresultiframecontainer img {
+  width: 150px;
+}
 
 .moonrocksample {
-	padding: 7px;
-	border: 2px solid transparent;
-	background-color: white;
+  padding: 7px;
+  border: 2px solid transparent;
+  background-color: white;
+  width: 300px;
 }
 
+.moonrocksampleresult {
+  padding: 7px;
+  border: 2px solid transparent;
+  background-color: white;
+  width: 150px;
+  display: inline-block;
+}
+
+.moonrocksampleresultheader {
+  height: 17px;
+  background: url(clip_a.png) bottom right no-repeat;
+}
+
+.moonrocksampleresultheaderfav {
+  background: url(clip_b.png) bottom right no-repeat;
+}
+
+
 .moonrocksampleselected {
-	border: 2px solid #6f964c;
-	background-color: #d2f4b3;
+  border: 2px solid #6f964c;
+  background-color: #d2f4b3;
 }
 
 .moonrocksampleiframecontainer {
-	background-color: white;
+  background-color: white;
 }
 
 iframe {
-	width: 100%;
-	height: 100%;
+  width: 100%;
+  height: 100%;
 }

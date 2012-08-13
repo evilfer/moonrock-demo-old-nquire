@@ -213,55 +213,19 @@ function theme_moonrock_sample_options_form($form) {
   $sample_view_nid = find_unique_node_type_for_uid_and_inquiry('moonrock_seesamples', $user->uid, $node_details->inquiry_id);
   if ($sample_view_nid) {
     module_load_include('inc', 'moonrock_seesamples', 'moonrock_seesamples.table');
-    $samples = moonrock_seesamples_retrieve_samples(node_load($sample_view_nid));
-  } else {
-    
-  }
+    $sample_view = node_load($sample_view_nid);
+    $samples = moonrock_seesamples_retrieve_samples($sample_view);
 
-  $output .= moonrock_sample_display_table($samples, "moonrock_sample_selection");
-  $output .= "</div>";
-
-  drupal_add_js(drupal_get_path('module', 'moonrock_sample') . '/js/moonrockSampleSelect.js');
-  return $output;
-
-  return drupal_render($form);
-
-  $color_nids = array_keys($form['#options']);
-  $javascript_color_array = '';
-  $javascript_color_keys = '';
-  $default_color = NULL;
-
-  foreach ($color_nids as $i => $option_id) {
-    $color_node = node_load(substr($option_id, 5));
-    $color = $color_node->color;
-    if (strcasecmp($option_id, $form['#default_value']) == 0) {
-      $default_color = substr($color_node->color, 1);
+    if (is_numeric($node_details->activity_id)) {
+      $current_activity = load_activity($node_details->activity_id);
+      $search = strpos($current_activity->parameters, "moonrock_sample_search") >= 0;
     }
-
-    $trimmed_color = str_replace("#", "", $color);
-    $javascript_color_array .= "'$trimmed_color', ";
-    $javascript_color_keys .= "c$trimmed_color: {nid: '$option_id', name: '{$color_node->title}'}, ";
+  } else {
+    $samples = array();
+    $search = TRUE;
   }
-  $color_input_id = "{$form['#id']}";
 
-  $output .= "<script type='text/javascript'>\n";
-  $output .= "var colorPickerColors = [{$javascript_color_array}];\n";
-  $output .= "var colorPickerFormId = '$color_input_id';\n";
-  $output .= "var colorPickerColorKeys = {{$javascript_color_keys}};\n";
-  if ($default_color) {
-    $output .= "var colorPickerDefaultValue = '{$default_color}';";
-  }
-  $output .= "</script>\n";
-
-
-
-  $output .= "<input id='{$color_input_id}-hidden' name='ignore' activename='{$form['#name']}' type='hidden'></input>";
-  $output .= "<div id='{$color_input_id}-textvalue'></div>";
-  $output .= "<input id='moonrockColorPicker'/>";
-
-  drupal_add_js(drupal_get_path('module', 'moonrock_sample') . '/js/moonrockSampleSelect.js');
-
-
+  $output .= moonrock_sample_display_table_and_search($samples, $search, "moonrock_sample_selection");
   $output .= "</div>";
   return $output;
 }

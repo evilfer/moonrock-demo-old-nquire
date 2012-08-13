@@ -7,6 +7,12 @@ Moonrock demonstators.
 Changes:
 
 -----------------
+11-08-2012
+
+- Added support for Moonrock sample searches.
+- Integration between search and selection of samples in add data activities.
+
+-----------------
 10-08-2012
 
 - Removed moonrock_data_input module, not needed anymore.

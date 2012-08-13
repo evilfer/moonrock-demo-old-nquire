@@ -194,7 +194,10 @@ function pi_inquiry_nodeapi(&$node, $op, $teaser, $page) {
 	switch ($op) {
 		case 'delete revision':
 			// Notice that we're matching a single revision based on the node's vid.
-			db_query('DELETE FROM {pi_inqury} WHERE vid = %d', $node->vid);
+      /*
+       * FIXED
+       */
+			db_query('DELETE FROM {pi_inquiry} WHERE vid = %d', $node->vid);
 			break;
 	}
 }

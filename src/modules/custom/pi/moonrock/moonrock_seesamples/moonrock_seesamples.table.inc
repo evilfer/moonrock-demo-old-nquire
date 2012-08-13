@@ -1,8 +1,8 @@
 <?php
 
-function moonrock_seesamples_create_sample_table($node) {
+function moonrock_seesamples_create_sample_table($node, $search = FALSE) {
   $samples = moonrock_seesamples_retrieve_samples($node);
-  return moonrock_sample_display_table($samples);
+  return moonrock_sample_display_table_and_search($samples, $search);
 }
 
 function moonrock_seesamples_retrieve_samples($node) {

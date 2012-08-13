@@ -1,6 +1,89 @@
 <?php
 
-function moonrock_sample_display_table($samples, $selection_name = NULL, $selected_item = NULL) {
+function moonrock_sample_display_menu() {
+  $items = array();
+  $items['moonrock_sample_display/search'] = array(
+      'page callback' => 'moonrock_sample_display_search',
+      'access callback' => 'moonrock_sample_display_search_access',
+      'type' => MENU_CALLBACK,
+  );
+  return $items;
+}
+
+function moonrock_sample_display_search_access() {
+  return true;
+}
+
+function moonrock_sample_display_search() {
+
+  $location = $_REQUEST['location'];
+  $nid = $_REQUEST['nid'];
+
+  $query = "SELECT {node}.title, {node}.nid, "
+          . "{moonrock_sample}.vm, {moonrock_sample}.snapshot, {moonrock_sample}.location "
+          . "FROM {node} "
+          . "LEFT JOIN {moonrock_sample} ON moonrock_sample.nid = node.nid "
+          . "WHERE node.type = 'moonrock_sample' ";
+
+  $parameters = array();
+  if ($location && strlen($location) > 0) {
+    $query .= "AND {moonrock_sample}.location LIKE '%%%s%%' ";
+    $parameters[] = $location;
+  }
+
+  if ($nid && strlen($nid) > 0) {
+    $query .= "AND {node}.nid = %d ";
+    $parameters[] = $nid;
+  }
+
+  $result = db_query($query, $parameters);
+  $samples = array();
+  while ($object = db_fetch_object($result)) {
+    $samples[] = array(
+        "id" => check_plain("node_{$object->nid}"),
+        "title" => check_plain($object->title),
+        "vm" => check_url($object->vm),
+        "snapshot" => check_url($object->snapshot),
+        "location" => check_plain($object->location),
+    );
+  }
+
+  drupal_json(array(
+      'status' => true,
+      'data' => $samples,
+  ));
+}
+
+function moonrock_sample_display_table_and_search($samples, $search = FALSE, $selection_name = NULL) {
+  if ($selection_name) {
+    drupal_add_js(drupal_get_path('module', 'moonrock_sample_display') . '/js/moonrockSampleSelect.js');
+  }
+  if ($search) {
+    drupal_add_js(drupal_get_path('module', 'moonrock_sample_display') . '/js/moonrockSampleSearch.js');
+  }
+  drupal_add_js(drupal_get_path('module', 'moonrock_sample_display') . '/js/init.js');
+
+  $output = moonrock_sample_display_table($samples, $selection_name);
+  if ($search) {
+    $output .= moonrock_sample_display_create_search($samples, $selection_name);
+  }
+  return $output;
+}
+
+function moonrock_sample_display_create_search($samples, $selection_name = NULL) {
+  $output = '<table>';
+  $output .= '<tr><th>Location</th></tr>';
+  $output .= '<tr>';
+  $output .= '<td><input name="location" id="moonrock_sample_search_location" type="text"></input></td>';
+  $output .= '</tr>';
+  $output .= '</table>';
+  $output .= '<div id="moonrock_sample_search_throbber"></div>';
+  $output .= '<div id="moonrock_sample_search_results"></div>';
+
+  return $output;
+}
+
+function moonrock_sample_display_table($samples, $selection_name = NULL) {
   drupal_add_css(drupal_get_path('module', 'moonrock_sample_display') . '/css/moonrock_table.css');
   drupal_add_css(drupal_get_path('module', 'moonrock_sample_display') . '/css/moonrock_sample.css');
 
@@ -16,13 +99,13 @@ function moonrock_sample_display_table($samples, $selection_name = NULL, $select
   return $output;
 }
 
-function moonrock_sample_display_sample($sample, $selection_name = NULL, $selector_checked = FALSE) {
+function moonrock_sample_display_sample($sample, $selection_name = NULL) {
   drupal_add_css(drupal_get_path('module', 'moonrock_sample_display') . '/css/moonrock_sample.css');
   $option_id = "node_{$sample->nid}";
   $name_attr = $selection_name ? "name='$selection_name'" : "";
-  
+
   $output = '';
-  $output .= "<div class='moonrocksample'>";
+  $output .= "<div class='moonrocksample' sample='{$option_id}'>";
   $output .= "<div class='moonrocksampleiframecontainer'><a class='colorbox-load sample-link' id='node_{$sample->nid} ' href='{$sample->vm}?width=100%&height=100%&iframe=true'>";
   $output .= "<img src='{$sample->snapshot}' sample='$option_id' $name_attr></img>";
   $output .= "</a></div>";
