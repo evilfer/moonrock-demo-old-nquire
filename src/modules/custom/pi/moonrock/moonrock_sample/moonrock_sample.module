@@ -216,9 +216,10 @@ function theme_moonrock_sample_options_form($form) {
     $sample_view = node_load($sample_view_nid);
     $samples = moonrock_seesamples_retrieve_samples($sample_view);
 
-    if (is_numeric($node_details->activity_id)) {
-      $current_activity = load_activity($node_details->activity_id);
-      $search = strpos($current_activity->parameters, "moonrock_sample_search") >= 0;
+    $sample_view_activity_id = get_activity_id_for_nid($sample_view_nid);
+    $sample_view_activity = pi_activity_load($sample_view_activity_id);
+    if ($sample_view_activity) {
+      $search = strpos($sample_view_activity->parameters, "moonrock_sample_search") !== FALSE;
     }
   } else {
     $samples = array();
@@ -229,6 +230,8 @@ function theme_moonrock_sample_options_form($form) {
   $output .= "</div>";
   return $output;
 }
+
+
 
 function moonrock_sample_nquire_display_as_link($node) {
   return moonrock_sample_nquire_display_as_measure($node, false);

@@ -55,14 +55,24 @@ function moonrock_sample_display_search() {
 }
 
 function moonrock_sample_display_table_and_search($samples, $search = FALSE, $selection_name = NULL) {
-  if ($selection_name) {
+  if ($selection_name)
     drupal_add_js(drupal_get_path('module', 'moonrock_sample_display') . '/js/moonrockSampleSelect.js');
-  }
-  if ($search) {
+
+  if ($search)
     drupal_add_js(drupal_get_path('module', 'moonrock_sample_display') . '/js/moonrockSampleSearch.js');
-  }
+
+  drupal_add_js(drupal_get_path('module', 'moonrock_sample_display') . '/js/moonrockSampleDialog.js');
   drupal_add_js(drupal_get_path('module', 'moonrock_sample_display') . '/js/init.js');
 
+  drupal_add_css(drupal_get_path('module', 'moonrock_sample_display') . '/css/moonrock_sample.css');
+
+  jquery_ui_add("ui.dialog");
+  jquery_ui_add("ui.resizable");
+  jquery_ui_add("ui.draggable");
+  drupal_add_css(drupal_get_path('module', 'jquery_ui') . '/jquery.ui/themes/base/jquery-ui.css');
+  drupal_add_css(drupal_get_path('module', 'jquery_ui') . '/jquery.ui/themes/base/ui.dialog.css');
+  drupal_add_js(drupal_get_path('module', 'moonrock_sample_display') . '/js/extend-dialog/jquery.dialogextend.js');
+  
   $output = moonrock_sample_display_table($samples, $selection_name);
   if ($search) {
     $output .= moonrock_sample_display_create_search($samples, $selection_name);
@@ -71,54 +81,68 @@ function moonrock_sample_display_table_and_search($samples, $search = FALSE, $se
 }
 
 function moonrock_sample_display_create_search($samples, $selection_name = NULL) {
-  $output = '<table>';
-  $output .= '<tr><th>Location</th></tr>';
+  drupal_add_css(drupal_get_path('module', 'moonrock_sample_display') . '/collapsible/diQuery-collapsiblePanel.css');
+  drupal_add_js(drupal_get_path('module', 'moonrock_sample_display') . '/collapsible/diQuery-collapsiblePanel.js');
+
+  $output = '<div class="collapsibleContainer" title="' . t("Search") . '">';
+  $output .= '<table class="moonrockSampleSearchFormTable">';
+  $output .= '<tr><th width="200px;">Location</th><th></th></tr>';
   $output .= '<tr>';
   $output .= '<td><input name="location" id="moonrock_sample_search_location" type="text"></input></td>';
+  $output .= '<td id="moonrock_sample_search_throbber"><div class="ahah-progress ahah-progress-throbber"><div>&nbsp;</div></div></td>';
   $output .= '</tr>';
   $output .= '</table>';
-  $output .= '<div id="moonrock_sample_search_throbber"></div>';
   $output .= '<div id="moonrock_sample_search_results"></div>';
+  $output .= '</div>';
 
   return $output;
 }
 
 function moonrock_sample_display_table($samples, $selection_name = NULL) {
-  drupal_add_css(drupal_get_path('module', 'moonrock_sample_display') . '/css/moonrock_table.css');
   drupal_add_css(drupal_get_path('module', 'moonrock_sample_display') . '/css/moonrock_sample.css');
+  drupal_add_css(drupal_get_path('module', 'moonrock_sample_display') . '/css/moonrock_dialog.css');
 
-  $output = '<table><tr>';
-
+  $output = '';
   foreach ($samples as $sample) {
-    $output .= "<td class='moonrocksamplecell'>";
     $output .= moonrock_sample_display_sample($sample, $selection_name);
-    $output .= "</td>";
   }
 
-  $output .= '</tr></table>';
   return $output;
 }
 
 function moonrock_sample_display_sample($sample, $selection_name = NULL) {
-  drupal_add_css(drupal_get_path('module', 'moonrock_sample_display') . '/css/moonrock_sample.css');
   $option_id = "node_{$sample->nid}";
   $name_attr = $selection_name ? "name='$selection_name'" : "";
 
   $output = '';
   $output .= "<div class='moonrocksample' sample='{$option_id}'>";
-  $output .= "<div class='moonrocksampleiframecontainer'><a class='colorbox-load sample-link' id='node_{$sample->nid} ' href='{$sample->vm}?width=100%&height=100%&iframe=true'>";
-  $output .= "<img src='{$sample->snapshot}' sample='$option_id' $name_attr></img>";
-  $output .= "</a></div>";
+  $output .= "  <div class='moonrocksampleimagecontainer'>";
+  $output .= "    <img class='moonrocksampleimage' src='{$sample->snapshot}' sample='$option_id' $name_attr></img>";
+  $output .= "  </div>";
 
-  $output .= '<div><center>';
+  $output .= "  <div>";
+  $output .= "    <center>";
   if ($selection_name) {
     $id = "{$selection_name}-node_{$sample->nid}";
-    $output .= "<input $name_attr id='$id' type='radio' value='$option_id'/>";
-    $output .= "<label class='option' for='$id'><b>{$sample->title}</b></label>";
+    $output .= "      <input $name_attr id='$id' type='radio' value='$option_id'/>";
+    $output .= "      <label class='option' for='$id'><b>{$sample->title}</b></label>";
   } else {
-    $output .= "<b>{$sample->title}</b>";
+    $output .= "      <b>{$sample->title}</b>";
   }
 
-  $output .= "</center></div></div>";
+  $output .= "    </center>";
+  $output .= "  </div>";
+  $output .= "</div>";
+
+
+  $output .= "<div class='moonrocksampledialog' sample='$option_id'>";
+  $output .= "<div class='moonrocksampleiframetopcontainer'>";
+  $output .= "<div class='moonrocksampleiframecontainer'>";
+  $output .= "<iframe class='moonrocksampleiframe' src='{$sample->vm}'></iframe>";
+  $output .= "</div>";
+  $output .= "</div>";
+  $output .= "</div>";
+
+
   return $output;
 }

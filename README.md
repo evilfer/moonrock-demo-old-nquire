@@ -7,7 +7,13 @@ Moonrock demonstators.
 Changes:
 
 -----------------
-11-08-2012
+14-08-2012
+
+- Added collapsible search box to Rock samples.
+- Fixed bug: Javascript error if either sample search or selection not active.
+
+-----------------
+13-08-2012
 
 - Added support for Moonrock sample searches.
 - Integration between search and selection of samples in add data activities.

@@ -1,0 +1,147 @@
+<?php
+
+function moonrock_sample_ajax_menu() {
+  $items = array();
+  $items['moonrock_sample_ajax/search'] = array(
+      'page callback' => 'moonrock_sample_ajax_search',
+      'access callback' => 'moonrock_sample_ajax_access',
+      'type' => MENU_CALLBACK,
+  );
+  $items['moonrock_sample_ajax/newsnapshot/submit'] = array(
+      'page callback' => 'moonrock_sample_ajax_newsnapshot_submit',
+      'access callback' => 'moonrock_sample_ajax_access',
+      'type' => MENU_CALLBACK,
+  );
+  return $items;
+}
+
+function moonrock_sample_ajax_access() {
+  return TRUE;
+}
+
+function moonrock_sample_ajax_search() {
+
+  $sample_ids = $_REQUEST['samples'];
+  $location = $_REQUEST['location'];
+  $nid = $_REQUEST['nid'];
+
+  $query = "SELECT {node}.title, {node}.nid, "
+          . "{moonrock_sample}.vm, {moonrock_sample}.snapshot, {moonrock_sample}.location "
+          . "FROM {node} "
+          . "LEFT JOIN {moonrock_sample} ON moonrock_sample.nid = node.nid "
+          . "WHERE node.type = 'moonrock_sample' ";
+
+  $parameters = array();
+  if ($location && strlen($location) > 0) {
+    $query .= "AND {moonrock_sample}.location LIKE '%%%s%%' ";
+    $parameters[] = $location;
+  }
+
+  if ($sample_ids && strlen($sample_ids) > 0) {
+    $sample_id_array = explode(" ", $sample_ids);
+    if (count($sample_id_array) == 1) {
+      $query .= "AND {node}.nid=%d ";
+      $parameters += $sample_id_array;
+    } else if (count($sample_id_array) > 1) {
+      $query .= "AND {node}.nid IN (" . db_placeholders($sample_id_array, "int") . ") ";
+      $parameters += $sample_id_array;
+    }
+  }
+
+  if ($nid && strlen($nid) > 0) {
+    $query .= "AND {node}.nid = %d ";
+    $parameters[] = $nid;
+  }
+
+  $result = db_query($query, $parameters);
+  $samples = array();
+  $matching_sample_nids = array();
+  while ($object = db_fetch_object($result)) {
+    $matching_sample_nids[] = $object->nid;
+    $sample = new stdClass();
+    $sample->nid = $object->nid;
+    $sample->title = check_plain($object->title);
+    $sample->vm = check_url($object->vm);
+    $sample->snapshot = check_url($object->snapshot);
+    $sample->location = check_plain($object->location);
+    $sample->snapshots = array();
+
+    $samples[$object->nid] = $sample;
+  }
+
+  $query2 = "SELECT {node}.nid, {node}.title, "
+          . "moonrock_snapshot.notes, moonrock_snapshot.sample_ref, moonrock_snapshot.vm_parameters, "
+          . "users.uid, users.name "
+          . "FROM {moonrock_snapshot} "
+          . "LEFT JOIN {node} ON node.nid = moonrock_snapshot.nid "
+          . "LEFT JOIN {users} ON users.uid = node.uid "
+          . "LEFT JOIN {node} AS sample_node ON sample_node.nid = moonrock_snapshot.sample_ref ";
+
+  $query2 .= "WHERE {sample_node}.nid IN (" . db_placeholders($matching_sample_nids, "int") . ") ";
+  $parameters2 = $matching_sample_nids;
+
+  $result2 = db_query($query2, $parameters2);
+  while ($object2 = db_fetch_object($result2)) {
+    $snapshot = new stdClass();
+    $snapshot->nid = check_plain($object2->nid);
+    $snapshot->title = check_plain($object2->title);
+    $snapshot->notes = check_plain($object2->notes);
+    $snapshot->vm_parameters = check_url($object2->vm_parameters);
+    $snapshot->uid = check_plain($object2->uid);
+    $snapshot->username = check_plain($object2->name);
+
+    $samples[$object2->sample_ref]->snapshots[] = $snapshot;
+  }
+
+  $html_elements = moonrock_sample_utils_search_results_elements($samples, TRUE, 'none');
+
+  drupal_json(array(
+      'status' => true,
+      'data' => array(
+          "samples" => $samples,
+          "elements" => $html_elements,
+      ),
+  ));
+}
+
+function moonrock_sample_ajax_newsnapshot_submit() {
+
+  module_load_include('inc', 'node', 'node.pages');
+  // load form
+  $form_state = array('storage' => NULL, 'submitted' => FALSE);
+  $form_build_id = $_POST['form_build_id'];
+  $form = form_get_cache($form_build_id, $form_state);
+  $args = $form['#parameters'];
+  $form_id = array_shift($args);
+  $form_state['post'] = $form['#post'] = $_POST;
+  $form['#programmed'] = $form['#redirect'] = FALSE;
+  // Process the form with drupal_process_form(), which calls the submit handlers that put whatever was worthy of keeping in the $form_state
+  drupal_process_form($form_id, $form, $form_state);
+  $errors = form_get_errors();
+  if ($errors) {
+    $output = '<div class="messages error"><ul>';
+    foreach ($errors as $i => $message) {
+      $output .= "<li>$message</li>";
+    }
+    $output .= '</ul></div>';
+    $result = array("status" => FALSE, "data" => $output);
+  } else {
+    $form = drupal_rebuild_form($form_id, $form_state, $args, $form_build_id);
+    global $user;
+
+    $node = new stdClass();
+    $node->uid = $user->uid;
+    $node->type = 'moonrock_snapshot';
+    $node->title = $form_state['post']['title'];
+    $node->notes = $form_state['post']['notes'];
+    $node->sample_ref = $form_state['post']['sample_ref'];
+    $node->vm_parameters = $form_state['post']['vm_parameters'];
+
+    node_save($node);
+
+    $result = array("status" => TRUE);
+  }
+  unset($_SESSION['messages']); // same as above
+  drupal_json($result);
+}
+

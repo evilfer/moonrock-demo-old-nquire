@@ -1,0 +1,90 @@
+<?php
+
+// $Id: moonrock_snapshot.install,v 1.2 2009/06/11 09:55:10 ou_mbg Exp $
+
+/**
+ * @file
+ * Install....
+ */
+
+/**
+ * Implementation of moonrock_snapshot_install().
+ *
+ * @return unknown_type
+ */
+function moonrock_snapshot_install() {
+  // Create tables.
+  drupal_install_schema('moonrock_snapshot');
+
+  variable_set("node_options_moonrock_snapshot", array('status', 'revision'));
+  variable_set("comment_moonrock_snapshot", COMMENT_NODE_DISABLED);
+  variable_set("upload_moonrock_snapshot", 0);
+}
+
+/**
+ * Implementation of moonrock_snapshot_uninstall().
+ */
+function moonrock_snapshot_uninstall() {
+  // Remove tables.
+  drupal_uninstall_schema('moonrock_snapshot');
+  variable_del('moonrock_snapshot');
+
+  variable_del("node_options_moonrock_snapshot");
+  variable_del("comment_moonrock_snapshot");
+  variable_del("upload_moonrock_snapshot");
+}
+
+/**
+ * Implementation of moonrock_snapshot_schema().
+ */
+function moonrock_snapshot_schema() {
+
+  $schema['moonrock_snapshot'] = array(
+      'description' => t('Moonrock snapshot'),
+      'fields' => array(
+          'nid' => array(
+              'description' => t('node id'),
+              'type' => 'int',
+              'unsigned' => TRUE,
+              'not null' => TRUE,
+              'size' => 'small',
+              'default' => 0,
+          ),
+          'vid' => array(
+              'description' => t('The current vid version identifier'),
+              'type' => 'int',
+              'unsigned' => TRUE,
+              'not null' => TRUE,
+              'size' => 'small',
+              'default' => 0,
+          ),
+          'notes' => array(
+              'description' => t('Notes'),
+              'type' => 'text',
+              'size' => 'normal',
+              'not null' => TRUE,
+          ),
+          'sample_ref' => array(
+              'description' => t('ref to a sample'),
+              'type' => 'int',
+              'unsigned' => TRUE,
+              'not null' => TRUE,
+              'size' => 'small',
+              'default' => 0,
+          ),
+          'vm_parameters' => array(
+              'decription' => t('parameters to load the VM'),
+              'type' => 'text',
+              'size' => 'small',
+              'not null' => TRUE,
+              'default' => ''
+          ),
+      ),
+      'primary key' => array('vid'),
+      'indexes' => array(
+          'nid' => array('nid'),
+      ),
+  );
+
+  return $schema;
+}

@@ -1,0 +1,233 @@
+<?php
+
+// $Id: moonrock_snapshot.module,v 1.2 2009/06/11 09:55:10 ou_mbg Exp $
+
+/**
+ * @file
+ * Module for creating "moonrock_snapshot" node type
+ */
+
+/**
+ * Implementation of hook_node_info().
+ */
+function moonrock_snapshot_node_info() {
+
+  return array(
+      'moonrock_snapshot' => array(
+          'name' => t('Moonrock snapshot'), // Required.
+          'module' => 'moonrock_snapshot', // Required.
+          'description' => t('Moonrock snapshot'), // Required.
+          'has_title' => TRUE,
+          'title_label' => t('Moonrock snapshot name'),
+          'has_body' => FALSE,
+          'body_label' => t('Moonrock snapshot body'),
+          'locked' => TRUE)
+  );
+}
+
+/**
+ * Implementation of hook_perm().
+ */
+function moonrock_snapshot_perm() {
+  return array('access moonrock_snapshot node', 'create moonrock_snapshot node', 'edit own moonrock_snapshot node');
+}
+
+/**
+ * Implementation of hook_access().
+ */
+function moonrock_snapshot_access($op, $node, $account) {
+  switch ($op) {
+    case 'create':
+      return user_access('create moonrock_snapshot node', $account);
+    case 'update':
+    case 'delete':
+      return user_access('edit own moonrock_snapshot node', $account) && ($account->uid == $node->uid);
+    case 'view':
+      return user_access('access moonrock_snapshot node', $account);
+    default:
+      return FALSE;
+  }
+}
+
+/**
+ * Implementation of hook_form().
+ */
+function moonrock_snapshot_form(&$node) {
+  $form['title'] = array(
+      '#type' => 'textfield',
+      '#title' => t("Snapshot title"),
+      '#required' => TRUE,
+      '#default_value' => $node->title,
+      '#weight' => 1
+  );
+
+  $form['sample_ref'] = array(
+      '#type' => 'hidden',
+      '#title' => t('Sample'),
+      '#required' => TRUE,
+      '#default_value' => $node->samples_ref,
+      //'#options' => moonrock_sample_utils_get_sample_nids(),
+      '#description' => t('Select a sample'),
+      '#weight' => 2
+  );
+
+  $form['notes'] = array(
+      '#type' => 'textarea',
+      '#title' => t("Notes"),
+      '#default_value' => $node->notes,
+      '#weight' => 3
+  );
+
+
+  $form['vm_parameters'] = array(
+      '#type' => 'hidden',
+      '#title' => t('VM parameters'),
+      '#required' => TRUE,
+      '#default_value' => $node->vm_parameters,
+      '#description' => t('Parameters to load the snapshot in the VM'),
+      '#weight' => 4
+  );
+
+  $form['submit'] = array(
+      '#type' => 'submit',
+      '#value' => t('Save'),
+      '#weight' => 5,
+     // '#attributes' => array('onClick' => 'MoonrockSampleDialog.submitNewSnapshot();return false;'),
+      '#ahah' => array(
+          'path' => 'moonrock_sample_ajax/newsnapshot/submit',
+          'wrapper' => 'moonrocknewsnapshotmessages',
+          'method' => 'replace',
+          'event' => 'click',
+      ),
+  );
+  $form['cancel'] = array(
+      '#type' => 'button',
+      '#value' => t('Cancel'),
+      '#weight' => 6,
+      '#attributes' => array('onClick' => 'MoonrockSampleDialog.cancelNewSnapshot();return false;'),
+  );
+
+  return $form;
+}
+
+function moonrock_snapshot_form_moonrock_snapshot_form_alter(&$form, &$form_state) {
+  if (isset($form['#parameters'][2])) {
+    $sample_ref = $form['#parameters'][2]['sample_ref'];
+    $vm_parameters = $form['#parameters'][2]['vm_parameters'];
+
+    $sample = node_load($sample_ref);
+    if ($sample) {
+      $form['#prefix'] = "<p>Snapshot for: <b>{$sample->title}</b></p>";
+      $form["sample_ref"]['#value'] = $sample_ref;
+    } else {
+      $form['#prefix'] = "<p>No sample!</p>";
+    }
+
+    $form["vm_parameters"]['#value'] = $vm_parameters;
+  }
+
+  return;
+}
+
+/**
+ * Implementation of hook_insert().
+ */
+function moonrock_snapshot_insert($node) {
+  db_query("INSERT INTO {moonrock_snapshot} (nid, vid, notes, sample_ref, vm_parameters) VALUES ('%d', '%d', '%s', '%d', '%s')", $node->nid, $node->vid, $node->note, $node->sample_ref, $node->vm_parameters);
+}
+
+/**
+ * Implementation of hook_update().
+ */
+function moonrock_snapshot_update($node) {
+  if ($node->revision) {
+    moonrock_snapshot_insert($node);
+  } else {
+    db_query("UPDATE {moonrock_snapshot} SET notes='%s', sample_ref='%d', vm_parameters='%s' WHERE vid = %d", $node->notes, $node->sample_ref, $node->vm_parameteres, $node->vid);
+  }
+}
+
+/**
+ * Implementation of hook_delete().
+ */
+function moonrock_snapshot_delete(&$node) {
+  // Delete the related information we were saving for this node.
+  db_query('DELETE FROM {moonrock_snapshot} WHERE nid = %d', $node->nid);
+}
+
+/**
+ * Implementation of hook_load().
+ */
+function moonrock_snapshot_load($node) {
+  return db_fetch_object(db_query('SELECT * FROM {moonrock_snapshot} WHERE vid = %d', $node->vid));
+}
+
+function moonrock_snapshot_link_alter(&$links, $node) {
+  // remove attachment links from upload.module
+  unset($links['upload_attachments']);
+}
+
+/**
+ * Implementation of hook_view().
+ */
+function moonrock_snapshot_view($node, $teaser = FALSE, $page = FALSE) {
+  // Use Drupal's default node view.
+  $node = node_prepare($node, $teaser);
+
+  $node->content['moonrock_snapshot'] = array(
+      '#value' => theme('moonrock_snapshot', $node, $teaser),
+      '#weight' => 2
+  );
+
+  return $node;
+}
+
+/**
+ * MISSING
+ *
+ * @return multitype:multitype:multitype:string
+ */
+function moonrock_snapshot_theme() {
+  return array(
+      'moonrock_snapshot' => array(
+          'arguments' => array('node', 'teaser'),
+      ),
+      'moonrock_snapshot_form' => array(
+          'arguments' => array('form'),
+      ),
+  );
+}
+
+/**
+ * MISSING
+ *
+ * @param unknown_type $node
+ * @return string
+ */
+function theme_moonrock_snapshot($node, $teaser) {
+  $sample = node_load($node->sample_ref);
+  $output = "<p>{$node->title}</p><p>{$node->notes}</p><p>{$sample->title}</p>";
+  return $output;
+}
+
+function theme_moonrock_snapshot_form($form) {
+  $output = '<div id="moonrocknewsnapshotmessages"></div>';
+  $output .= '<div id="moonrocknewsnapshotform">' . drupal_render($form) . '</div>';
+  return $output;
+}
+
+function moonrock_snapshot_nquire_display_as_link($node) {
+  return moonrock_snapshot_nquire_display_as_key_measure($node, true);
+}
+
+function moonrock_snapshot_nquire_display_as_measure($node, $teaser = true) {
+  return check_plain($node->title);
+}
+
+function moonrock_snapshot_nquire_display_as_key_measure($node, $teaser = true) {
+  return moonrock_snapshot_nquire_display_as_measure($node, $teaser);
+}
+
+function moonrock_snapshot_nquire_measure_choose_explanation() {
+  return t("Choose one snapshot of a rock sample");
+}

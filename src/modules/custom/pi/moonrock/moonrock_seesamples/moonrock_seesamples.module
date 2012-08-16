@@ -171,21 +171,11 @@ function moonrock_seesamples_theme() {
  * @return string
  */
 function theme_moonrock_seesamples($node, $teaser) {
-  $node_details = get_inquiry_details_from_current_path();
-  if (is_numeric($node_details->activity_id)) {
-    $current_activity = load_activity($node_details->activity_id);
-  }
-
-  if ($current_activity->name) {
-    drupal_set_title(t($current_activity->name));
-    $search = strpos($current_activity->parameters, "moonrock_sample_search") >= 0;
-  }
-
   if ($teaser) {
     $output = "Here you can examine three different samples of rocks collected from the Moon under the microscope.";
   } else {
     module_load_include('inc', 'moonrock_seesamples', 'moonrock_seesamples.table');
-    $output = moonrock_seesamples_create_sample_table($node, $search);
+    $output = moonrock_seesamples_create_sample_table($node);
   }
   return $output;
 }

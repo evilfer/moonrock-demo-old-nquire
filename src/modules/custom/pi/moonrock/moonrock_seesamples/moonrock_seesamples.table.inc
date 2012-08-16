@@ -1,11 +1,12 @@
 <?php
 
-function moonrock_seesamples_create_sample_table($node, $search = FALSE) {
-  $samples = moonrock_seesamples_retrieve_samples($node);
-  return moonrock_sample_display_table_and_search($samples, $search);
+function moonrock_seesamples_create_sample_table($node) {
+  $main_samples = moonrock_seesamples_get_main_samples($node);
+  $search = moonrock_seesamples_search_enabled($search);
+  return moonrock_sample_utils_create_sample_table($main_samples, TRUE, $search, TRUE, 'none');
 }
 
-function moonrock_seesamples_retrieve_samples($node) {
+function moonrock_seesamples_get_main_samples($node) {
   $result = array();
   $sample_list = explode("\n", $node->samples);
   $query = "SELECT {node}.nid, {moonrock_sample}.vm, {moonrock_sample}.snapshot, {moonrock_sample}.location "
@@ -26,6 +27,13 @@ function moonrock_seesamples_retrieve_samples($node) {
   }
 
   return $result;
+}
+
+function moonrock_seesamples_search_enabled($node) {
+  $sample_view_activity_id = get_activity_id_for_nid($node->nid);
+  $sample_view_activity = pi_activity_load($sample_view_activity_id);
+
+  return $sample_view_activity && strpos($sample_view_activity->parameters, "moonrock_sample_search") !== FALSE;
 }
 
 function moonrock_seesamples_specific_sample_title($node, $sample_node) {

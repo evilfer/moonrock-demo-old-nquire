@@ -1,22 +1,12 @@
 
-.moonrocksamplecell {
-	width: 300px;
-	height: 200px;
-	padding: 5px;
-}
 
 div.moonrocksampleimagecontainer {
-  width: 300px;
+  width: 100%;
   background-color: white;
 }
 
 div.moonrocksampleimagecontainer img {
-  width: 300px;
-}
-
-div.moonrocksampleresultimagecontainer img {
-  background-color: white;
-  width: 150px;
+  width: 100%;
 }
 
 .moonrocksample {
@@ -27,12 +17,20 @@ div.moonrocksampleresultimagecontainer img {
   display: inline-block;
 }
 
-.moonrocksampleimage {
-  cursor: pointer;
-}
-
 .moonrocksampleresult {
   width: 150px;
+}
+
+.moonrocksamplesnapshot {
+  width: 100px;
+}
+
+.moonrocksampleresultrow {
+  
+}
+
+.moonrocksampleimage {
+  cursor: pointer;
 }
 
 .moonrocksampleresultheader {

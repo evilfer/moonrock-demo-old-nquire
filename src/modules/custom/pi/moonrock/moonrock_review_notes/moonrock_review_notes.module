@@ -146,15 +146,6 @@ function moonrock_review_notes_view($node, $teaser = FALSE, $page = FALSE) {
 }
 
 function moonrock_review_notes_search_form() {
-  $ahax = array(
-      'path' => 'moonrock_review_notes/search',
-      'wrapper' => 'moonrock_review_notes_results',
-      'method' => 'replace',
-      'keypress' => TRUE,
-      'progress' => array(
-          'type' => 'throbber',
-      ),
-  );
 
   $form['#attributes'] = array('class' => 'search-form');
 
@@ -164,7 +155,6 @@ function moonrock_review_notes_search_form() {
       '#size' => 60,
       '#maxlength' => 64,
       '#weight' => 1,
-          //    '#ahah' => $ahax,
   );
 
   $users = array(0 => "Any") + _moonrock_review_notes_get_possible_users();
@@ -176,7 +166,6 @@ function moonrock_review_notes_search_form() {
       '#multiple' => false,
       '#attributes' => array('size' => min(4, count($users))),
       '#weight' => 2,
-          //    '#ahah' => $ahax,
   );
 
   $form['submit'] = array(
@@ -244,6 +233,8 @@ function theme_moonrock_review_notes($node, $teaser) {
     $output .= '</br>';
     $output .= drupal_get_form("moonrock_review_notes_search_form");
     $output .= "<div id='moonrock_review_notes_results'></div>";
+
+    $output .= "<div id='moonrocknewsnapshotdialog'>" . drupal_get_form('moonrock_snapshot_form') . "</div>";
   }
   return $output;
 }
