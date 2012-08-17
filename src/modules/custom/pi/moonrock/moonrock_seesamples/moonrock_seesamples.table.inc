@@ -2,7 +2,7 @@
 
 function moonrock_seesamples_create_sample_table($node) {
   $main_samples = moonrock_seesamples_get_main_samples($node);
-  $search = moonrock_seesamples_search_enabled($search);
+  $search = moonrock_seesamples_search_enabled($node);
   return moonrock_sample_utils_create_sample_table($main_samples, TRUE, $search, TRUE, 'none');
 }
 

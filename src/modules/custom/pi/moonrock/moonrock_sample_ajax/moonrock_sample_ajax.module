@@ -19,81 +19,106 @@ function moonrock_sample_ajax_access() {
   return TRUE;
 }
 
-function moonrock_sample_ajax_search() {
-
-  $sample_ids = $_REQUEST['samples'];
-  $location = $_REQUEST['location'];
-  $nid = $_REQUEST['nid'];
-
-  $query = "SELECT {node}.title, {node}.nid, "
-          . "{moonrock_sample}.vm, {moonrock_sample}.snapshot, {moonrock_sample}.location "
-          . "FROM {node} "
-          . "LEFT JOIN {moonrock_sample} ON moonrock_sample.nid = node.nid "
-          . "WHERE node.type = 'moonrock_sample' ";
-
-  $parameters = array();
-  if ($location && strlen($location) > 0) {
-    $query .= "AND {moonrock_sample}.location LIKE '%%%s%%' ";
-    $parameters[] = $location;
+function _moonrock_sample_ajax_search_getparam($name) {
+  if (!isset($_REQUEST[$name])) {
+    return FALSE;
+  } else {
+    $value = $_REQUEST[$name];
+    if (is_array($value)) {
+      return count($value) > 0 ? $value : FALSE;
+    } else {
+      return strlen($value) > 0 ? $value : FALSE;
+    }
   }
+}
 
-  if ($sample_ids && strlen($sample_ids) > 0) {
-    $sample_id_array = explode(" ", $sample_ids);
-    if (count($sample_id_array) == 1) {
-      $query .= "AND {node}.nid=%d ";
-      $parameters += $sample_id_array;
-    } else if (count($sample_id_array) > 1) {
-      $query .= "AND {node}.nid IN (" . db_placeholders($sample_id_array, "int") . ") ";
-      $parameters += $sample_id_array;
+function moonrock_sample_ajax_search() {
+  $nid = _moonrock_sample_ajax_search_getparam('nid');
+  
+  if (!$nid) {
+    $samples_any = _moonrock_sample_ajax_search_getparam('samples_any');
+    $main_samples = $samples_any ? FALSE : _moonrock_sample_ajax_search_getparam('main_samples');
+    $location = _moonrock_sample_ajax_search_getparam('location');
+    $username = _moonrock_sample_ajax_search_getparam('username');
+    $keyword = _moonrock_sample_ajax_search_getparam('keyword');
+  }
+  
+  $select_mode = _moonrock_sample_ajax_search_getparam('select_mode');
+
+  $samples = array();
+  if ($nid || $samples_any || $main_samples) {
+    $query = "SELECT {node}.title, {node}.nid, "
+            . "{moonrock_sample}.vm, {moonrock_sample}.snapshot, {moonrock_sample}.location "
+            . "FROM {moonrock_sample} "
+            . "LEFT JOIN {node} ON moonrock_sample.nid = node.nid ";
+    $condition = "WHERE {node}.type = 'moonrock_sample' ";
+
+    $parameters = array();
+
+    if ($nid) {
+      $query .= "LEFT JOIN {moonrock_snapshot} ON ({moonrock_snapshot}.sample_ref={moonrock_sample}.nid AND {moonrock_snapshot}.nid=%d) ";
+      $condition .= "AND ({node}.nid=%d OR {moonrock_snapshot}.nid=%d) ";
+      $parameters += array($nid, $nid, $nid);
+    } else {
+      if ($location) {
+        $condition .= "AND {moonrock_sample}.location LIKE '%%%s%%' ";
+        $parameters[] = $location;
+      }
+
+      if ($main_samples) {
+        $condition .= "AND {node}.nid IN (" . db_placeholders($main_samples, "int") . ") ";
+        $parameters += $main_samples;
+      }
+    }
+
+    $result = db_query($query . $condition, $parameters);
+
+    $matching_sample_nids = array();
+    while ($object = db_fetch_object($result)) {
+      $matching_sample_nids[] = $object->nid;
+      $sample = new stdClass();
+      $sample->nid = $object->nid;
+      $sample->title = check_plain($object->title);
+      $sample->vm = check_url($object->vm);
+      $sample->snapshot = check_url($object->snapshot);
+      $sample->location = check_plain($object->location);
+      $sample->snapshots = array();
+
+      $samples[$object->nid] = $sample;
+    }
+
+    $query2 = "SELECT {node}.nid, {node}.title, "
+            . "moonrock_snapshot.notes, moonrock_snapshot.sample_ref, moonrock_snapshot.vm_parameters, "
+            . "users.uid, users.name "
+            . "FROM {moonrock_snapshot} "
+            . "LEFT JOIN {node} ON node.nid = moonrock_snapshot.nid "
+            . "LEFT JOIN {users} ON users.uid = node.uid "
+            . "LEFT JOIN {node} AS sample_node ON sample_node.nid = moonrock_snapshot.sample_ref ";
+
+    $query2 .= "WHERE {sample_node}.nid IN (" . db_placeholders($matching_sample_nids, "int") . ") ";
+    $parameters2 = $matching_sample_nids;
+
+    if ($nid) {
+      $query2 .= "AND {moonrock_snapshot}.nid=%d ";
+      $parameters2[] = $nid;
+    }
+
+
+    $result2 = db_query($query2, $parameters2);
+    while ($object2 = db_fetch_object($result2)) {
+      $snapshot = new stdClass();
+      $snapshot->nid = check_plain($object2->nid);
+      $snapshot->title = check_plain($object2->title);
+      $snapshot->notes = check_plain($object2->notes);
+      $snapshot->vm_parameters = check_url($object2->vm_parameters);
+      $snapshot->uid = check_plain($object2->uid);
+      $snapshot->username = check_plain($object2->name);
+
+      $samples[$object2->sample_ref]->snapshots[] = $snapshot;
     }
   }
 
-  if ($nid && strlen($nid) > 0) {
-    $query .= "AND {node}.nid = %d ";
-    $parameters[] = $nid;
-  }
-
-  $result = db_query($query, $parameters);
-  $samples = array();
-  $matching_sample_nids = array();
-  while ($object = db_fetch_object($result)) {
-    $matching_sample_nids[] = $object->nid;
-    $sample = new stdClass();
-    $sample->nid = $object->nid;
-    $sample->title = check_plain($object->title);
-    $sample->vm = check_url($object->vm);
-    $sample->snapshot = check_url($object->snapshot);
-    $sample->location = check_plain($object->location);
-    $sample->snapshots = array();
-
-    $samples[$object->nid] = $sample;
-  }
-
-  $query2 = "SELECT {node}.nid, {node}.title, "
-          . "moonrock_snapshot.notes, moonrock_snapshot.sample_ref, moonrock_snapshot.vm_parameters, "
-          . "users.uid, users.name "
-          . "FROM {moonrock_snapshot} "
-          . "LEFT JOIN {node} ON node.nid = moonrock_snapshot.nid "
-          . "LEFT JOIN {users} ON users.uid = node.uid "
-          . "LEFT JOIN {node} AS sample_node ON sample_node.nid = moonrock_snapshot.sample_ref ";
-
-  $query2 .= "WHERE {sample_node}.nid IN (" . db_placeholders($matching_sample_nids, "int") . ") ";
-  $parameters2 = $matching_sample_nids;
-
-  $result2 = db_query($query2, $parameters2);
-  while ($object2 = db_fetch_object($result2)) {
-    $snapshot = new stdClass();
-    $snapshot->nid = check_plain($object2->nid);
-    $snapshot->title = check_plain($object2->title);
-    $snapshot->notes = check_plain($object2->notes);
-    $snapshot->vm_parameters = check_url($object2->vm_parameters);
-    $snapshot->uid = check_plain($object2->uid);
-    $snapshot->username = check_plain($object2->name);
-
-    $samples[$object2->sample_ref]->snapshots[] = $snapshot;
-  }
-
-  $html_elements = moonrock_sample_utils_search_results_elements($samples, TRUE, 'none');
+  $html_elements = moonrock_sample_utils_search_results_elements($samples, TRUE, $select_mode);
 
   drupal_json(array(
       'status' => true,

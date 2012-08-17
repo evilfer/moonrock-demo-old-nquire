@@ -181,9 +181,6 @@ function moonrock_sample_theme() {
       'moonrock_sample' => array(
           'arguments' => array('node', 'teaser'),
       ),
-      'moonrock_sample_options_form' => array(
-          'arguments' => array('form'),
-      ),
   );
 }
 
@@ -203,32 +200,13 @@ function theme_moonrock_sample($node, $teaser) {
   return $output;
 }
 
-function theme_moonrock_sample_options_form($form) {
-
-  $output = "<div class='form-item'>";
-  $output .= "<input id='moonrock_sample_input' type='hidden' name='{$form['#name']}' value='{$form['#default_value']}' />";
-
-  global $user;
-  $node_details = get_inquiry_details_from_current_path();
-  $sample_view_nid = find_unique_node_type_for_uid_and_inquiry('moonrock_seesamples', $user->uid, $node_details->inquiry_id);
-  if ($sample_view_nid) {
-    module_load_include('inc', 'moonrock_seesamples', 'moonrock_seesamples.table');
-    $sample_view = node_load($sample_view_nid);
-    $samples = moonrock_seesamples_retrieve_samples($sample_view);
-
-    $sample_view_activity_id = get_activity_id_for_nid($sample_view_nid);
-    $sample_view_activity = pi_activity_load($sample_view_activity_id);
-    if ($sample_view_activity) {
-      $search = strpos($sample_view_activity->parameters, "moonrock_sample_search") !== FALSE;
-    }
-  } else {
-    $samples = array();
-    $search = TRUE;
+function moonrock_sample_nquire_data_form_prefix($delegators) {
+  $select_mode = MOONROCK_SEARCH_SAMPLE;
+  if (in_array("moonrock_snapshot", $delegators)) {
+    $select_mode |= MOONROCK_SEARCH_SNAPSHOT;
   }
-
-  $output .= moonrock_sample_display_table_and_search($samples, $search, "moonrock_sample_selection");
-  $output .= "</div>";
-  return $output;
+  
+  return moonrock_sample_utils_create_table_for_current_inquiry(FALSE, $select_mode);
 }
 
 

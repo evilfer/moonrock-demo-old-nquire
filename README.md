@@ -7,6 +7,16 @@ Moonrock demonstators.
 Changes:
 
 -----------------
+17-08-2012
+
+- Snapshots can be created and searched for.
+- Snapshot selection works on add data activities.
+
+Bugs:
+- Data is not saved correctly.
+- Sample and Snapshots measures are not validated when creating data.
+
+-----------------
 14-08-2012
 
 - Added collapsible search box to Rock samples.

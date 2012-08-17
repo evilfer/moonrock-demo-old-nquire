@@ -1,0 +1,18 @@
+
+
+.moonrockSampleSearchFormTable tbody {
+  border: none;
+}
+
+.moonrockSampleSearchFormTable th {
+  border: none;
+}
+
+.moonrockSampleSearchFormTable td {
+  border: none;
+}
+
+#moonrock_sample_search_throbber {
+  height: 10px;
+  display: block;
+}

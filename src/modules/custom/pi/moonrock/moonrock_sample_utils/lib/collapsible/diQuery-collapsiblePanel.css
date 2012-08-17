@@ -1,5 +1,6 @@
 .collapsibleContainer {
-  border: solid 1px #6c7580;
+  border-top: solid 1px gray;
+  border-bottom: solid 1px gray;
   width: 70%;  
 }
 
@@ -12,7 +13,6 @@
   padding-top:2px;
   padding-left:20px;
   font-weight: bold;
-  background-color: #cedef4;
   background-repeat: no-repeat;
   background-image: url(up.png);
 }
@@ -22,5 +22,5 @@
 }
 
 .collapsibleContainerContent {
-  padding: 10px;
+  padding-left: 10px;
 }

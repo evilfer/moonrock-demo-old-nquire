@@ -1,6 +1,7 @@
 
 var SampleSelectionHelper = {
-  selection: null,
+  selectedSample: '',
+  selectedSnapshot: '',
   autoselect : true,
   isSelecting: false,
   
@@ -10,7 +11,7 @@ var SampleSelectionHelper = {
     
     var defaultValue = $('input#moonrock_sample_input').attr('value');
     if (defaultValue) {
-      if ($('input[name="moonrock_sample_selection"][value="' + defaultValue + '"]').length == 0) {
+      if ($('input[name="moonrock_select_sample"][value="' + defaultValue + '"]').length == 0) {
         if (typeof(MoonrockSampleSearch) != "undefined") {
           MoonrockSampleSearch.retrieveDefaultValue(defaultValue);
         }
@@ -21,54 +22,98 @@ var SampleSelectionHelper = {
   },
   
   findSamples: function() {
-    $('input[name="moonrock_sample_selection"]').change(function() {
-      SampleSelectionHelper.selectSample(this.value);
+    $('input[name^="moonrock_select_"]').unbind("change");
+    $('input[name^="moonrock_select_"]').change(function() {
+      SampleSelectionHelper.autoselect = false;
+      SampleSelectionHelper.select(this.value);
     });
     
-    $('img[name="moonrock_sample_selection"]').click(function() {
-      var value = $(this).attr('sample');
-      SampleSelectionHelper.clickSample(value);
-    });
+    /*$('img.moonrocksampleimage').unbind("click");
+    $('img.moonrocksampleimage').click(function() {
+      var value = $(this).parents(".moonrocksample").attr("sample");
+      if (SampleSelectionHelper.autoselect) {
+        SampleSelectionHelper.select(value);
+      }
+    });*/
+    
+    this._notifySelection(this.selectedSample);
+    this._notifySelection(this.selectedSnapshot);
+    this._updateGui();
   },
   
-  updateClasses: function() {
-    $(".moonrocksample").removeClass("moonrocksampleselected");
-    $(".moonrocksample[sample='" + this.selection + "']").addClass("moonrocksampleselected");
-  },
-  
-  clickSample : function(value) {
-    if (this.autoselect) {
-      this.setSelection(value);
-      $('input[name="moonrock_sample_selection"][value="' + value + '"]').each(function() {
-        this.checked = true;
-      });
-    }
-  },
-  selectSample : function(value) {
-    this.autoselect = false;
-    this.setSelection(value);
-  },
-  setSelection : function(value) {
-    this.selection = value;
-    this.updateClasses();
-    $('input#moonrock_sample_input').attr('value', value);
-    if (typeof(MoonrockSampleSearch) != "undefined") {
+  _notifySelection : function(value) {
+    if (typeof(MoonrockSampleSearch) != 'undefined' && value.length > 0) {
       MoonrockSampleSearch.sampleSelected(value);
     }
   },
-  setDefaultValue : function(value) {
-    this.clickSample(value);
-    this.autoselect = false;
-  },
-  clearSelection: function() {
-    this.setSelection("");
-    $('input[name="moonrock_sample_selection"]').each(function() {
-      this.checked = false;
+  
+  _updateGui : function() {
+    $(".moonrocksample").removeClass("moonrocksampleselected");
+    $(".moonrocksample[sample='" + 
+      this.selectedSample + "'], .moonrocksample[sample='" + 
+      this.selectedSnapshot + "']").addClass("moonrocksampleselected");
+
+    $('input[name^="moonrock_select_sample"]').each(function() {
+      this.checked = this.value == SampleSelectionHelper.selectedSample;
+    });
+    $('input[name="moonrock_select_snapshot"]').each(function() {
+      this.checked = this.value == SampleSelectionHelper.selectedSnapshot;
     });
   },
+  
+  _selectSample: function(value) {
+    this.selectedSample = value;
+    $('input#moonrock_select_sample').attr('value', value);
+    this._updateGui();
+    this._notifySelection(value);
+    
+    if (this.selectedSnapshot.length > 0) {
+      var snapshotSample = this._sampleForSnapshot(this.selectedSnapshot);
+      if (snapshotSample != this.selectedSample) {
+        this._selectSnapshot('');
+      }
+    }
+  },
+  
+  _selectSnapshot: function(value) {
+    this.selectedSnapshot = value;
+    $('input#moonrock_select_snapshot').attr('value', value);
+    this._updateGui();
+    this._notifySelection(value);
+    
+    if (this.selectedSnapshot.length > 0) {
+      var snapshotSample = this._sampleForSnapshot(this.selectedSnapshot);
+      if (snapshotSample != this.selectedSample) {
+        this._selectSample(snapshotSample);
+      }
+    }
+  },
+  select: function(value) {
+    if ($('input[name^="moonrock_select_sample"][value="' + value + '"]').length > 0) {
+      this._selectSample(value);
+    } else if ($('input[name="moonrock_select_snapshot"][value="' + value + '"]').length > 0) {
+      this._selectSnapshot(value);
+    }
+  },
+  _sampleForSnapshot:function(value) {
+    return $('.moonrocksamplesnapshot[sample="' + value + '"]')
+    .parent()
+    .find('.moonrocksampleresult')
+    .attr('sample');
+  },
+
+  setDefaultValue : function(value) {
+    this.select(value);
+  },
+  clearSelection: function() {
+    this._selectSample('');
+    this._selectSnapshot('');
+  },
   unselectIfSelected: function(value) {
-    if (this.selection == value) {
-      this.clearSelection();
+    if (value == this.selectedSample) {
+      this._selectSample('');
+    } else if (value == this.selectedSnapshot) {
+      this._selectSnapshot('');
     }
   }
 };

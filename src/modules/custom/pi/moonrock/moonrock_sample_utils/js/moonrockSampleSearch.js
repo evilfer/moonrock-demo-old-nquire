@@ -1,20 +1,24 @@
 
 
 var MoonrockSampleSearch = {
-  mainSamples : [],
   favSamples : [],
   searchSamples: [],
   
   init : function() {
-    $("a.sample-link img[sample]").each(function() {
-      MoonrockSampleSearch.mainSamples.push($(this).attr("sample"));
+    $("#moonrock_sample_search_sample_any").change(function() {
+      $("input[type='checkbox'][name='main_samples[]']").attr('disabled', $(this).attr("checked"));
+      $("input[type='checkbox'][name='main_samples[]']").each(function() {
+        var color = $(this).attr("disabled") ? "gray" : "black";
+        var id = $(this).attr("id");
+        $("label[for='" + id + "']").css("color", color);
+      })
     });
-    
-    $("#moonrock_sample_search_sample").change(function() {
+
+    $("form#moonrock_sample_search").find("input[type='checkbox']").change(function() {
       MoonrockSampleSearch.search();
     });
     
-    $("#moonrock_sample_search_location").keypress(function(event) {
+    $("form#moonrock_sample_search").find("input[type='text']").keypress(function(event) {
       if (event.keyCode == 13) {
         MoonrockSampleSearch.search();
         event.stopPropagation();
@@ -31,11 +35,11 @@ var MoonrockSampleSearch = {
     }
   },
   addFav: function(sampleid) {
-    if ($.inArray(sampleid, this.favSamples)) {
-      var selector = ".moonrocksampleresultheader[sample='" + sampleid + "']";
+    if ($.inArray(sampleid, this.favSamples) < 0) {
       this.favSamples.push(sampleid);
-      $(selector).addClass("moonrocksampleresultheaderfav");
     }    
+    var selector = ".moonrocksampleresultheader[sample='" + sampleid + "']";
+    $(selector).addClass("moonrocksampleresultheaderfav");
   },
   _removeSampleIfNecessary:function(sampleid) {
     if ($.inArray(sampleid, this.searchSamples) < 0 && $.inArray(sampleid, this.favSamples) < 0) {
@@ -55,11 +59,11 @@ var MoonrockSampleSearch = {
     var pos = $.inArray(sampleid, this.favSamples);
     if (pos >= 0) {
       this.favSamples.splice(pos, 1);
-      $(".moonrocksample[sample='" + sampleid + "']").find(".moonrocksampleresultheader").removeClass("moonrocksampleresultheaderfav");
-      this._removeSampleIfNecessary(sampleid);
-      if (typeof(SampleSelectionHelper) != 'undefined') {
-        SampleSelectionHelper.unselectIfSelected(sampleid);
-      }
+    }
+    $(".moonrocksample[sample='" + sampleid + "']").find(".moonrocksampleresultheader").removeClass("moonrocksampleresultheaderfav");
+    this._removeSampleIfNecessary(sampleid);
+    if (typeof(SampleSelectionHelper) != 'undefined') {
+      SampleSelectionHelper.unselectIfSelected(sampleid);
     }
   },  
   cleanResults : function() {
@@ -118,13 +122,8 @@ var MoonrockSampleSearch = {
   },
   
   search : function() {
-    var samples = $("#moonrock_sample_search_sample").val().join(" ");    
+    var data = $("#moonrock_sample_search").serialize();
    
-    var data = {
-      //  location: $("#moonrock_sample_search_location").val(),
-      samples: samples
-    };
-
     MoonrockSampleSearch.displayThrobber(true);
 
     $.ajax({
@@ -156,7 +155,7 @@ var MoonrockSampleSearch = {
       MoonrockSampleSearch.displayThrobber(true);
       
       $.ajax({
-        url: '?q=moonrock_sample_display/search',
+        url: '?q=moonrock_sample_ajax/search',
         dataType: 'json',
         data: data,
         success: function(data) {
