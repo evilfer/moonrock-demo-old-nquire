@@ -46,10 +46,19 @@
   background-color: #f0f0f0;
 }
 
+.moonrocksampledialogmenuname {
+  display: inline-block;
+}
+
 
 .moonrocksampledialogmenuitem {
   font-size: 12px;
   font-weight: bold;
+  color: gray;
+  display: inline-block;
+}
+
+.moonrocksampledialogmenuitem.enabled {
   cursor: pointer;
   color: darkorange;
 }

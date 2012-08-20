@@ -6,11 +6,27 @@ function moonrock_seesamples_create_sample_table($node) {
   return moonrock_sample_utils_create_sample_table($main_samples, TRUE, $search, TRUE, 'none');
 }
 
+function moonrock_seesamples_get_alternative_sample_title($node, $title) {
+  $sample_list = explode("\n", $node->samples);
+
+  foreach ($sample_list as $sample) {
+    $parts = explode("|", trim($sample), 2);
+    if (count($parts) == 2) {
+      if (!strcmp($parts[0], $title)) {
+        return $parts[1];
+      }
+    }
+  }
+  
+  return $title;
+}
+
 function moonrock_seesamples_get_main_samples($node) {
   $result = array();
   $sample_list = explode("\n", $node->samples);
-  $query = "SELECT {node}.nid, {moonrock_sample}.vm, {moonrock_sample}.snapshot, {moonrock_sample}.location "
-          . "FROM {node} "
+
+
+  $query = "SELECT {node}.nid FROM {node} "
           . "LEFT JOIN {moonrock_sample} on {node}.nid={moonrock_sample}.nid "
           . "WHERE {node}.type='moonrock_sample' "
           . "AND {node}.title LIKE '%s' LIMIT 1";
@@ -20,8 +36,7 @@ function moonrock_seesamples_get_main_samples($node) {
     if (count($parts) == 2) {
       $object = db_fetch_object(db_query($query, $parts[0]));
       if ($object) {
-        $object->title = $parts[1];
-        $result[] = $object;
+        $result[] = node_load($object->nid);
       }
     }
   }

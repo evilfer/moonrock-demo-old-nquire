@@ -151,7 +151,9 @@
       .find(".ui-dialog-content");
       //modify dialog with new config
       $(self)
+      .dialog("option", "destroyOnClose", false)
       .dialog("close")
+      .dialog("option", "destroyOnClose", true)
       .dialog("option", {
         "resizable" : false,
         "draggable" : false,
@@ -208,7 +210,9 @@
       .appendTo(container)
       .find(".ui-dialog-content")
       //modify dialog with new config
+      .dialog("option", "destroyOnClose", false)
       .dialog("close")
+      .dialog("option", "destroyOnClose", true)
       .dialog("option", {
         "resizable" : false,
         "draggable" : false,
@@ -486,7 +490,9 @@
       .find(".ui-dialog-titlebar").css("white-space", original.titlebar.wrap).end()
       .find(".ui-dialog-content")
       //restore config & size & position
+      .dialog("option", "destroyOnClose", false)
       .dialog("close")
+      .dialog("option", "destroyOnClose", true)
       .dialog("option", {
         "resizable" : original.config.resizable,
         "draggable" : original.config.draggable,

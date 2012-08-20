@@ -66,7 +66,6 @@ function moonrock_snapshot_form(&$node) {
       '#title' => t('Sample'),
       '#required' => TRUE,
       '#default_value' => $node->samples_ref,
-      //'#options' => moonrock_sample_utils_get_sample_nids(),
       '#description' => t('Select a sample'),
       '#weight' => 2
   );
@@ -92,13 +91,7 @@ function moonrock_snapshot_form(&$node) {
       '#type' => 'submit',
       '#value' => t('Save'),
       '#weight' => 5,
-      // '#attributes' => array('onClick' => 'MoonrockSampleDialog.submitNewSnapshot();return false;'),
-      '#ahah' => array(
-          'path' => 'moonrock_sample_ajax/newsnapshot/submit',
-          'wrapper' => 'moonrocknewsnapshotmessages',
-          'method' => 'replace',
-          'event' => 'click',
-      ),
+      '#attributes' => array('onClick' => 'MoonrockSampleDialog.submitNewSnapshot();return false;'),
   );
   $form['cancel'] = array(
       '#type' => 'button',
@@ -237,5 +230,19 @@ function moonrock_snapshot_nquire_delegate_data_form() {
 }
 
 function moonrock_snapshot_nquire_data_form_prefix() {
-  return moonrock_sample_utils_create_table_for_current_inquiry(FALSE, MOONROCK_SEARCH_SNAPSHOT);
+  return moonrock_sample_utils_create_table_for_current_inquiry(TRUE, MOONROCK_SEARCH_SNAPSHOT);
+}
+
+function moonrock_snapshot_nquire_data_form_after_build($form_element, &$form_state) {
+  moonrock_sample_utils_load_resources(TRUE, TRUE, TRUE, TRUE);
+  return $form_element;
+}
+
+function moonrock_snapshot_nquire_data_get_text_value($nid) {
+  $node = node_load($nid);
+  if ($node && $node->type == 'moonrock_snapshot') {
+    return check_plain($node->title);
+  }
+
+  return $nid;
 }

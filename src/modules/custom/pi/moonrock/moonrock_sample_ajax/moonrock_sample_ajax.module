@@ -7,6 +7,24 @@ function moonrock_sample_ajax_menu() {
       'access callback' => 'moonrock_sample_ajax_access',
       'type' => MENU_CALLBACK,
   );
+  $items['activity/%/sample_search'] = array(
+      'page callback' => 'moonrock_sample_ajax_search',
+      'access callback' => 'moonrock_sample_ajax_access',
+      'type' => MENU_CALLBACK,
+  );
+
+
+  $items['moonrock_sample_ajax/sample_dialog'] = array(
+      'page callback' => 'moonrock_sample_ajax_sample_dialog',
+      'access callback' => 'moonrock_sample_ajax_access',
+      'type' => MENU_CALLBACK,
+  );
+  $items['activity/%/sample_dialog'] = array(
+      'page callback' => 'moonrock_sample_ajax_sample_dialog',
+      'access callback' => 'moonrock_sample_ajax_access',
+      'type' => MENU_CALLBACK,
+  );
+
   $items['moonrock_sample_ajax/newsnapshot/submit'] = array(
       'page callback' => 'moonrock_sample_ajax_newsnapshot_submit',
       'access callback' => 'moonrock_sample_ajax_access',
@@ -32,9 +50,14 @@ function _moonrock_sample_ajax_search_getparam($name) {
   }
 }
 
+function moonrock_sample_ajax_sample_dialog() {
+  $nid = isset($_REQUEST['nid']) ? $_REQUEST['nid'] : 0;
+  echo moonrock_sample_utils_create_sample_dialog($nid);
+}
+
 function moonrock_sample_ajax_search() {
   $nid = _moonrock_sample_ajax_search_getparam('nid');
-  
+
   if (!$nid) {
     $samples_any = _moonrock_sample_ajax_search_getparam('samples_any');
     $main_samples = $samples_any ? FALSE : _moonrock_sample_ajax_search_getparam('main_samples');
@@ -42,14 +65,12 @@ function moonrock_sample_ajax_search() {
     $username = _moonrock_sample_ajax_search_getparam('username');
     $keyword = _moonrock_sample_ajax_search_getparam('keyword');
   }
-  
+
   $select_mode = _moonrock_sample_ajax_search_getparam('select_mode');
 
   $samples = array();
   if ($nid || $samples_any || $main_samples) {
-    $query = "SELECT {node}.title, {node}.nid, "
-            . "{moonrock_sample}.vm, {moonrock_sample}.snapshot, {moonrock_sample}.location "
-            . "FROM {moonrock_sample} "
+    $query = "SELECT {node}.nid FROM {moonrock_sample} "
             . "LEFT JOIN {node} ON moonrock_sample.nid = node.nid ";
     $condition = "WHERE {node}.type = 'moonrock_sample' ";
 
@@ -76,45 +97,36 @@ function moonrock_sample_ajax_search() {
     $matching_sample_nids = array();
     while ($object = db_fetch_object($result)) {
       $matching_sample_nids[] = $object->nid;
-      $sample = new stdClass();
-      $sample->nid = $object->nid;
-      $sample->title = check_plain($object->title);
-      $sample->vm = check_url($object->vm);
-      $sample->snapshot = check_url($object->snapshot);
-      $sample->location = check_plain($object->location);
-      $sample->snapshots = array();
-
-      $samples[$object->nid] = $sample;
+      $sample = node_load($object->nid);
+      $samples[$sample->nid] = $sample;
     }
 
-    $query2 = "SELECT {node}.nid, {node}.title, "
-            . "moonrock_snapshot.notes, moonrock_snapshot.sample_ref, moonrock_snapshot.vm_parameters, "
-            . "users.uid, users.name "
-            . "FROM {moonrock_snapshot} "
+    $query2 = "SELECT {node}.nid, {node}.uid = %d as isOwner FROM {moonrock_snapshot} "
             . "LEFT JOIN {node} ON node.nid = moonrock_snapshot.nid "
             . "LEFT JOIN {users} ON users.uid = node.uid "
             . "LEFT JOIN {node} AS sample_node ON sample_node.nid = moonrock_snapshot.sample_ref ";
 
-    $query2 .= "WHERE {sample_node}.nid IN (" . db_placeholders($matching_sample_nids, "int") . ") ";
-    $parameters2 = $matching_sample_nids;
+    global $user;
+    $parameters2 = array();
+    $parameters2[] = $user->uid;
+
 
     if ($nid) {
-      $query2 .= "AND {moonrock_snapshot}.nid=%d ";
+      $query2 .= "WHERE {moonrock_snapshot}.nid=%d ";
       $parameters2[] = $nid;
+    } else {
+      $query2 .= "WHERE {sample_node}.nid IN (" . db_placeholders($matching_sample_nids, "int") . ") ";
+      $parameters2 = array_merge($parameters2, $matching_sample_nids);
     }
+    
+    $query2 .= "ORDER BY (isOwner) DESC ";
 
 
     $result2 = db_query($query2, $parameters2);
     while ($object2 = db_fetch_object($result2)) {
-      $snapshot = new stdClass();
-      $snapshot->nid = check_plain($object2->nid);
-      $snapshot->title = check_plain($object2->title);
-      $snapshot->notes = check_plain($object2->notes);
-      $snapshot->vm_parameters = check_url($object2->vm_parameters);
-      $snapshot->uid = check_plain($object2->uid);
-      $snapshot->username = check_plain($object2->name);
+      $snapshot = node_load($object2->nid);
 
-      $samples[$object2->sample_ref]->snapshots[] = $snapshot;
+      $samples[$snapshot->sample_ref]->snapshots[] = $snapshot;
     }
   }
 
@@ -164,7 +176,13 @@ function moonrock_sample_ajax_newsnapshot_submit() {
 
     node_save($node);
 
-    $result = array("status" => TRUE);
+    $result = array(
+        "status" => TRUE,
+        "snapshot" => array(
+            "nid" => $node->nid,
+            "title" => $node->title,
+        ),
+    );
   }
   unset($_SESSION['messages']); // same as above
   drupal_json($result);

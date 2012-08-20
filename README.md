@@ -7,6 +7,18 @@ Moonrock demonstators.
 Changes:
 
 -----------------
+20-08-2012
+
+- Only own snapshots can be selected.
+- Sample dialogs show title of sample and dialog.
+- Fixed creation and validation of new snapshots.
+- Updated pChart library to 2.1.3
+- Fixed color selection (updated to new nquire hooks).
+- nQuire measures can define color values, which are used to create the graph (see doc/nquire-hooks.txt).
+- Graph includes color.
+
+
+-----------------
 17-08-2012
 
 - Snapshots can be created and searched for.

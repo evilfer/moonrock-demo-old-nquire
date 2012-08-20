@@ -1,29 +1,37 @@
 
 $(function() {
+  var colors = [];
+  for(var color in MoonrockColorKeys) {
+    colors.push(color.substr(1));
+  }
+  var defaultcolor = $('[measure_content_type="moonrock_color"]').attr('value');
+  if (defaultcolor.length == 0) {
+    defaultcolor = null;
+  }
+  
   $('#moonrockColorPicker').simpleColor({
     cellWidth : 15,
     cellHeight : 15,
     border : '1px solid #333333',
     buttonClass : 'button',
-    colors: colorPickerColors,
-    defaultColor: colorPickerDefaultValue != null ? '#' + colorPickerDefaultValue : null
+    colors: colors,
+    defaultColor: defaultcolor ? MoonrockColorColors[defaultcolor].color : null
   });
 	
   var listener = {
     setValue: function(value) {
-      var color = colorPickerColorKeys["c" + value];
-      $("#" + colorPickerFormId + "-textvalue").html(color.name);
-      $("#" + colorPickerFormId + "-hidden").attr("name", $("#" + colorPickerFormId + "-hidden").attr("activename"));
-      $("#" + colorPickerFormId + "-hidden").attr("value", color.nid);
+      var nid = MoonrockColorKeys["#" + value];
+      $("#moonrockColorPickerName").html(MoonrockColorColors[nid].title);
+      $('[measure_content_type="moonrock_color"]').attr('value', nid);
     },
     resetValue: function() {
-      $("#" + colorPickerFormId + "-textvalue").html("");
-      $("#" + colorPickerFormId + "-hidden").attr("name", "ignore");
+      $("#moonrockColorPickerName").html(" ");
+      $('[measure_content_type="moonrock_color"]').attr("name", "");
     }
   };
   
-  if (colorPickerDefaultValue) {
-    listener.setValue(colorPickerDefaultValue);
+  if (defaultcolor) {
+    $("#moonrockColorPickerName").html(MoonrockColorColors[defaultcolor].title);
   }
 
   ColorPickerSelection.setListener(listener);

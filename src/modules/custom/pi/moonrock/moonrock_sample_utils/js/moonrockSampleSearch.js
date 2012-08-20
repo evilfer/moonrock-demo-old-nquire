@@ -3,6 +3,7 @@
 var MoonrockSampleSearch = {
   favSamples : [],
   searchSamples: [],
+  _searchData : null,
   
   init : function() {
     $("#moonrock_sample_search_sample_any").change(function() {
@@ -119,17 +120,36 @@ var MoonrockSampleSearch = {
     if (typeof(SampleSelectionHelper) != "undefined") {
       SampleSelectionHelper.findSamples();
     }
+    
+    if (typeof(MoonrockSampleDialog) != "undefined") {
+      MoonrockSampleDialog.sampleListUpdated();
+    }
+  },
+  _getSearchUrl: function() {
+    var currentpath = window.location.search;
+    var pos = currentpath.indexOf("activity/");
+    var pos2 = currentpath.indexOf("/", pos + "activity/".length);
+    if (pos >= 0 && pos2 >= 0) {
+      return currentpath.substr(0, pos2) + "/sample_search"
+    } else {
+      return "?q=moonrock_sample_ajax/search";
+    }
   },
   
   search : function() {
-    var data = $("#moonrock_sample_search").serialize();
-   
+    this._searchData = $("#moonrock_sample_search").serialize();
+    this._search();
+  },
+  repeatSearch : function() {
+    this._search();
+  },
+  _search : function() {   
     MoonrockSampleSearch.displayThrobber(true);
-
     $.ajax({
-      url: '?q=moonrock_sample_ajax/search',
+      //      url: '?q=moonrock_sample_ajax/search',
+      url: this._getSearchUrl(),
       dataType: 'json',
-      data: data,
+      data: this._searchData,
       success: function(data) {
         MoonrockSampleSearch.displayThrobber(false);
         if (data.status) {
@@ -141,6 +161,7 @@ var MoonrockSampleSearch = {
       }
     });
   },
+  
   
   sampleSelected: function(sampleid) {
     this.addFav(sampleid);
@@ -155,7 +176,7 @@ var MoonrockSampleSearch = {
       MoonrockSampleSearch.displayThrobber(true);
       
       $.ajax({
-        url: '?q=moonrock_sample_ajax/search',
+        url: this._getSearchUrl(),
         dataType: 'json',
         data: data,
         success: function(data) {

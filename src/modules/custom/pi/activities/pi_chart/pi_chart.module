@@ -1,8 +1,8 @@
 <?php
 
 require_once( 'lib/pChart/pData.class.php');
-require_once( 'lib/pChart/pChart.class.php');
-require_once( 'lib/pChart/pCache.class.php');
+require_once( 'lib/pChart/pDraw.class.php');
+require_once( 'lib/pChart/pImage.class.php');
 
 /*
   require_once( 'lib/pChart/pData.class.1.26.php');
@@ -18,142 +18,6 @@ function pi_chart_menu() {
   );
 
   return $items;
-}
-
-function _pi_chart_format_one_variable_table($data_rows, $headings) {
-  $data = _pi_chart_get_data($data_rows);
-
-  $output = '<table class="pi_chart_table">';
-  $output .= '<tr>';
-  $output .= "<td class='pi_chart_table_type'>{$headings[0]}</td>";
-  for ($i = 0; $i < count($data); $i++) {
-    $value = _pi_chart_format_table_value($data[$i]['key']);
-    $output .= "<td class='pi_chart_table_key'>{$value}</td>";
-  }
-  $output .= '</tr>';
-
-  for ($v = 1;; $v++) {
-    $row = '';
-    for ($i = 0; $i < count($data); $i++) {
-      if (isset($data[$i]['variables'][$v])) {
-        $row .= '<td>';
-        for ($j = 0; $j < count($data[$i]['variables'][$v]); $j++) {
-          $value = _pi_chart_format_table_value($data[$i]['variables'][$v][$j]);
-
-
-          $row .= "$value<br />";
-        }
-      }
-    }
-
-    if (strlen($row) > 0) {
-      $output .= "<tr><td class='pi_chart_table_type' scope='row'>{$headings[$v]}</td>$row</tr>";
-    } else {
-      break;
-    }
-  }
-
-  $output .= '</table>';
-  return $output;
-}
-
-function _pi_chart_get_grouped_data($rows) {
-  $keydata = array();
-  foreach ($rows as $row) {
-    $key = array_shift($row);
-    if (strlen($key) > 0) {
-      if (!isset($keydata[$key])) {
-        $keydata[$key] = array();
-      }
-      $validdata = false;
-      foreach ($row as $value) {
-        if (strlen($value) > 0) {
-          $validdata = true;
-        }
-      }
-      if ($validdata) {
-        $keydata[$key][] = $row;
-      }
-    }
-  }
-
-  ksort($keydata);
-
-  return $keydata;
-}
-
-function _pi_chart_format_table_value($value, $is_chart_key = FALSE) {
-  module_load_include('inc', 'pi_data', 'pi_data.content_options');
-  return $is_chart_key ?
-          pi_data_content_options_as_key_measure($value) :
-          pi_data_content_options_as_measure($value);
-}
-
-function _pi_chart_format_several_variables_table($data_rows, $variable_count, $headings) {
-  $data = _pi_chart_get_grouped_data($data_rows);
-
-  $column_count = $variable_count * count($data);
-
-  $output = '<table class="pi_chart_table">';
-
-  $output .= "<tr><td class='pi_chart_table_type' colspan='$column_count'>{$headings[0]}</td></tr>";
-
-  $output .= "<tr>";
-  foreach ($data as $key => $value_table) {
-    $value = _pi_chart_format_table_value($key);
-    $output .= "<td class='pi_chart_table_key pi_chart_table_newkey' colspan='$variable_count'>$value</td>";
-  }
-  $output .= '</tr>';
-
-  $output .= "<tr>";
-  for ($i = 0; $i < $column_count; $i++) {
-    $heading = $headings[1 + ($i % $variable_count)];
-    $output .= "<td class='pi_chart_table_type'>{$heading}</td>";
-  }
-  $output .= '</tr>';
-
-  $row_count = 0;
-  foreach ($data as $values) {
-    if (count($values) > $row_count) {
-      $row_count = count($values);
-    }
-  }
-
-  for ($i = 0; $i < $row_count; $i++) {
-    $output .= '<tr>';
-    foreach ($data as $value_table) {
-      $values = $value_table[$i];
-      if ($values) {
-        foreach ($values as $value) {
-          $output .= strlen($value) > 0 ? ('<td>' . _pi_chart_format_table_value($value) . '</td>') : "<td  class='pi_chart_table_empty' />";
-        }
-      } else {
-        $output .= str_repeat("<td  class='pi_chart_table_empty' />", $variable_count);
-      }
-    }
-    $output .= '</tr>';
-  }
-
-  $output .= '</table>';
-  return $output;
-}
-
-function pi_chart_create_data_table($data_rows, $headings) {
-
-  drupal_add_css(drupal_get_path('module', 'pi_chart') . '/css/pi_chart_table.css');
-  $variable_count = count($headings) - 1;
-  $output = $variable_count == 1 ? _pi_chart_format_one_variable_table($data_rows, $headings) : _pi_chart_format_several_variables_table($data_rows, $variable_count, $headings);
-
-  return $output;
-}
-
-function _pi_chart_decide_graph_type($series_for_variable) {
-  foreach ($series_for_variable as $serie) {
-    if (count($serie) > 1) {
-      return "line_graph";
-    }
-  }
-  return "bar_graph";
 }
 
 function pi_chart_show_chart_as_png($activity_id, $arg_node_function) {
@@ -180,240 +44,312 @@ function pi_chart_show_chart_as_png($activity_id, $arg_node_function) {
     };
   }
 
-  $header = get_selected_measures_headings_for_inquiry_and_user($details->inquiry_id, $selected_measures, $user->uid);
+  $headers = get_selected_measures_headings_for_inquiry_and_user($details->inquiry_id, $selected_measures, $user->uid);
   $rows = get_selected_measures_data_for_inquiry_and_user($details->inquiry_id, $selected_measures, $user->uid);
+  $types = get_selected_measures_types_for_inquiry_and_user($details->inquiry_id, $selected_measures, $user->uid);
 
-  $data = _pi_chart_get_data($rows);
-  $series_for_variable = _pi_chart_get_series($data);
-  $graph_type = _pi_chart_decide_graph_type($series_for_variable);
-  $x_axis_labels = _pi_chart_get_x_labels($data);
+  /*
+   * Group by key measure
+   */
 
-  $chart['height'] = 230;
-  $chart['width'] = 700;
-  $chart['title'] = t($node->title);
+  $key_numeric = $types[0]->data_type == 'numeric';
 
+  $numeric_fields = array();
+  $color_field = FALSE;
 
-  $data_set = new pData;
-
-  foreach ($series_for_variable as $variable => $series) {
-    $dontshow = false;
-    foreach ($series as $i => $data_row) {
-      $serie_name = "Serie_{$variable}_{$i}";
-      $data_set->AddPoint($data_row, $serie_name);
-      $serie_names[$serie_name] = array(
-          'label' => $header[$variable], //$header[$counter],
-          'color' => get_color($variable),
-          'hide_legend' => $dontshow,
-      );
-      $dontshow = true;
+  for ($i = 1; $i < count($types); $i++) {
+    if ($types[$i]->data_type == 'numeric') {
+      $numeric_fields[] = $i;
+    } else if ($types[$i]->content_options) {
+      if (function_exists("{$types[$i]->content_options}_nquire_data_get_numeric_value")) {
+        $numeric_fields[] = $i;
+      } else if (function_exists("{$types[$i]->content_options}_nquire_data_get_color_value")) {
+        $color_field = $i;
+      }
     }
   }
 
-  $graph = pi_chart_generate($graph_type, $chart, $data_set, $serie_names, $x_axis_labels);
-  $graph->Stroke();
-
-  exit;
-}
-
-function _pi_chart_get_x_labels($data) {
-  $x_axis_labels = array();
-  for ($i = 0; $i < count($data); $i++) {
-    $x_axis_labels[$i] = _pi_chart_format_table_value($data[$i]['key'], TRUE);
-  }
-  return $x_axis_labels;
-}
-
-function _pi_chart_get_data($rows) {
-  $spin_rows = spin_array($rows);
-
-
-  $keydata = array();
+  $grouped_rows = array();
   foreach ($rows as $row) {
-    $key = $row[0];
-    if (strlen($key) > 0) {
-      if (!isset($keydata[$key])) {
-        $keydata[$key] = array();
+    $row_has_data = FALSE;
+    foreach ($numeric_fields as $field) {
+      if (strlen($row[$field]) > 0) {
+        $row_has_data = TRUE;
+        break;
       }
-      for ($i = 1; $i < count($row); $i++) {
-        if (!isset($keydata[$key][$i])) {
-          $keydata[$key][$i] = array();
-        }
-
-        if (strlen($row[$i]) > 0) {
-          $keydata[$key][$i][] = $row[$i];
-        }
-      }
+    }
+    if ($row_has_data) {
+      $grouped_rows[$row[0]][] = $row;
     }
   }
 
-  $key_i = 0;
-  $data = array();
-  foreach ($keydata as $key => $variables) {
-    $data[$key_i] = array(
-        'key' => $key,
-        'variables' => $variables,
-    );
-    $key_i++;
-  }
-  return $data;
-}
-
-function _pi_chart_get_series($data) {
-  $series_for_variable = array();
-  for ($key_i = 0; $key_i < count($data); $key_i++) {
-    $variables = $data[$key_i]['variables'];
-    foreach ($variables as $variable => $values) {
-      $is_numeric = true;
-      foreach ($values as $i => $value) {
-        if (!is_numeric($value)) {
-          $is_numeric = false;
-        }
-      }
-
-      if ($is_numeric) {
-        if (!isset($series_for_variable[$variable])) {
-          $series_for_variable[$variable] = array();
-        }
-
-        for ($i = 0; $i < count($values); $i++) {
-          if (!isset($series_for_variable[$variable][$i])) {
-            $series_for_variable[$variable][$i] = array_pad(array(), count($data), "");
-          }
-          $series_for_variable[$variable][$i][$key_i] = $values[$i];
-        }
+  /*
+   * determine chart type
+   */
+  if ($key_numeric) {
+    $type = 'scatter';
+  } else {
+    $max_data_count_per_key_field = 0;
+    foreach ($grouped_rows as $row_group) {
+      if (count($row_group) > $max_data_count_per_key_field) {
+        $max_data_count_per_key_field = count($row_group);
       }
     }
-  }
-  return $series_for_variable;
-}
 
-function shorten_lables($labels, $length) {
-  if (is_array($labels)) {
-    $array_length = count($labels) - 1;
-    for ($i = $array_length; $i >= 0; $i--) {
-      if (strlen($labels[$i]) > $length) {
-        $labels[$i] = substr($labels[$i], 0, $length) . ".";
-      }
+    if ($max_data_count_per_key_field > 1) {
+      $type = 'plot';
+    } else {
+      $type = 'bar';
     }
   }
 
-  return $labels;
-}
-
-function check_labels($labels) {
-  $renamed_labels = array();
-
-  if (is_array($labels)) {
-    $array_length = count($labels) - 1;
-    for ($i = $array_length; $i >= 0; $i--) {
-      $keys = array_keys($labels, $labels[$i]);
-      if (count($keys) > 1) {
-        $renamed_labels[] = $labels[$i];
-        $labels[$i] = $labels[$i] . " (" . (count($keys) ) . ")";
-      }
-    }
-  }
-
-  foreach ($renamed_labels as $renamed_label) {
-    $key = array_search($renamed_label, $labels);
-
-    if ($key !== FALSE && $key !== NULL) {
-      $labels[$key] = $labels[$key] . " (1)";
-    }
-  }
-
-
-  return $labels;
-}
-
-function get_color($counter) {
-  switch ($counter) {
-    case 0: $color = array('red' => 200, 'green' => 0, 'blue' => 0);
+  switch ($type) {
+    case 'bar':
+      _pi_chart_draw_bar_chart($node->title, $headers, $grouped_rows, $types, $numeric_fields, $color_field);
       break;
-    case 1: $color = array('red' => 100, 'green' => 200, 'blue' => 50);
+    case 'plot':
+      _pi_chart_draw_plot_chart($node->title, $headers, $grouped_rows, $types, $numeric_fields, $color_field);
       break;
-    case 2: $color = array('red' => 200, 'green' => 255, 'blue' => 100);
+    default:
       break;
   }
 
-  return $color;
+  return;
 }
 
-function pi_chart_generate($graph_type, $chart, $data_set, $serie_names, $x_axis_label) {
-
-  // Initialise the graph
-  $graph = new pChart($chart['width'], $chart['height']);
-  $graph->setFontProperties(dirname(__FILE__) . '/lib/Fonts/tahoma.ttf', 8);
-  $graph->setGraphArea(50, 30, 600, 200);
-  $graph->drawFilledRoundedRectangle(7, 7, 693, 223, 5, 240, 240, 240);
-  $graph->drawRoundedRectangle(5, 5, 695, 225, 5, 230, 230, 230);
-  $graph->drawGraphArea(255, 255, 255, TRUE);
-
-
-  $counter = 0;
-
-  if (is_array($serie_names)) {
-    foreach ($serie_names as $serie => $label_info) {
-      $data_set->AddSerie($serie);
-      $data_set->SetSerieName($label_info['label'], $serie);
-
-      $graph->setColorPalette($counter, $label_info['color']['red'], $label_info['color']['green'], $label_info['color']['blue']);
-      $counter++;
-    }
+function _pi_chart_get_numeric_value($value, $type) {
+  if ($type->content_options) {
+    $function_name = "{$type->content_options}_nquire_data_get_numeric_value";
+    return $function_name($value);
+  } else {
+    return strlen($value) > 0 ? floatval($value) : VOID;
   }
+}
 
-  //$data_set->AddAllSeries();
-  $data_set->SetAbsciseLabelSerie('x_label');
-  $data_set->AddPoint($x_axis_label, 'x_label');
-
-
-  $graph->drawScale($data_set->GetData(), $data_set->GetDataDescription(), SCALE_START0, 0, 0, 0, TRUE, 0, 0, TRUE);
-  $graph->drawGrid(4, TRUE, 230, 230, 230, 50);
-
-  // Draw the 0 line
-  $graph->setFontProperties(dirname(__FILE__) . '/lib/Fonts/tahoma.ttf', 6);
-  $graph->drawTreshold(0, 143, 55, 72, TRUE, TRUE);
-
-  // Draw the bar graph
-  if (count($serie_names) > 0) {
-    switch ($graph_type) {
-      case 'bar_graph' : $graph->drawBarGraph($data_set->GetData(), $data_set->GetDataDescription(), TRUE);
-        //_pi_chart_drwa_datapoint_label($graph, $serie_names);
-        break;
-      case 'line_graph' : $graph->drawPlotGraph($data_set->GetData(), $data_set->GetDataDescription(), 3, 1, 0, 0, 0);
-        _pi_chart_drwa_datapoint_label($graph, $data_set, $serie_names);
-        break;
-      default: $graph->drawPlotGraph($data_set->GetData(), $data_set->GetDataDescription(), 3, 1, 0, 0, 0);
-        _pi_chart_drwa_datapoint_label($graph, $data_set, $serie_names);
-        break;
-    }
+function _pi_chart_get_color_value($value, $type) {
+  if ($type->content_options) {
+    $function_name = "{$type->content_options}_nquire_data_get_color_value";
+    return $function_name($value);
+  } else {
+    return array("R" => 255, "G" => 255, "B" => 255, "Alpha" => 127);
   }
+}
 
-  // Finish the graph
-  $graph->setFontProperties(dirname(__FILE__) . '/lib/Fonts/tahoma.ttf', 10);
+function _pi_chart_get_text_value($value, $type) {
+  if ($type->content_options) {
+    $function_name = "{$type->content_options}_nquire_data_get_text_value";
+    return $function_name($value);
+  } else {
+    return check_simple($value);
+  }
+}
 
-  if (is_array($serie_names)) {
-    foreach ($serie_names as $serie => $label_info) {
-      if ($label_info['hide_legend']) {
-        $data_set->removeSerieName($serie);
+function _pi_chart_draw_bar_chart($title, $headers, $grouped_rows, $types, $numeric_fields, $color_field) {
+  /* Create and populate the pData object */
+  $MyData = new pData();
+
+  /* Add series. There must be only one row group for each key, so we use only $row_group[0]. */
+  foreach ($numeric_fields as $field) {
+    $series = array();
+    foreach ($grouped_rows as $row_group) {
+      if (count($row_group) > 0) {
+        $value = $row_group[0][$field];
+        $series[] = _pi_chart_get_numeric_value($value, $types[$field]);
       }
     }
+    $MyData->addPoints($series, $headers[$field]);
+    $MyData->setAxisName(0, $headers[$field]);
   }
-  $graph->drawLegend(590, 20, $data_set->GetDataDescription(), 255, 255, 255);
-  $graph->setFontProperties(dirname(__FILE__) . '/lib/Fonts/tahoma.ttf', 10);
-  $graph->drawTitle(50, 22, $chart['title'], 50, 50, 50, 585);
 
-  return $graph;
+  $abscissa_series = array();
+  foreach ($grouped_rows as $key => $row_group) {
+    if (count($row_group) > 0) {
+      $abscissa_series[] = _pi_chart_get_text_value($key, $types[0]);
+    }
+  }
+
+  $MyData->addPoints($abscissa_series, $headers[0]);
+  $MyData->setSerieDescription($headers[0], $headers[0]);
+  $MyData->setAbscissa($headers[0]);
+  $MyData->setAbscissaName($headers[0]);
+
+
+
+  if ($color_field) {
+    $palette = array();
+
+    foreach ($grouped_rows as $row_group) {
+      $value = $row_group[0][$color_field];
+      $palette[] = _pi_chart_get_color_value($value, $types[$color_field]);
+    }
+  } else {
+    $palette = NULL;
+  }
+
+
+
+  $myPicture = new pImage(700, 250, $MyData);
+
+
+  /* Add a border to the picture */
+  $myPicture->drawRectangle(0, 0, 699, 249, array("R" => 0, "G" => 0, "B" => 0));
+
+  /* Set the default font */
+  $myPicture->setFontProperties(array("FontName" => dirname(__FILE__) . '/lib/Fonts/tahoma.ttf', "FontSize" => 10));
+
+  /* Define the chart area */
+  $myPicture->setGraphArea(60, 40, 650, 210);
+
+  /* Draw the scale */
+  $scaleSettings = array(
+      "GridR" => 200,
+      "GridG" => 200,
+      "GridB" => 200,
+      "DrawSubTicks" => TRUE,
+      "CycleBackground" => TRUE,
+      "Mode" => SCALE_MODE_START0,
+  );
+  $myPicture->drawScale($scaleSettings);
+  $myPicture->drawText(350, 5, $title, array("FontSize" => 12, "Align" => TEXT_ALIGN_TOPMIDDLE));
+
+  /* Write the chart legend */
+  //$myPicture->drawLegend(580, 12, array("Style" => LEGEND_NOBORDER, "Mode" => LEGEND_HORIZONTAL));
+
+  /* Turn on shadow computing */
+  $myPicture->setShadow(TRUE, array("X" => 1, "Y" => 1, "R" => 0, "G" => 0, "B" => 0, "Alpha" => 10));
+
+  /* Draw the chart */
+  $myPicture->setShadow(TRUE, array("X" => 1, "Y" => 1, "R" => 0, "G" => 0, "B" => 0, "Alpha" => 10));
+
+  $settings = array(
+      "DisplayPos" => LABEL_POS_TOP,
+      "DisplayValues" => TRUE,
+      "DisplayR" => 15,
+      "DisplayG" => 15,
+      "DisplayB" => 15,
+      "DisplayShadow" => TRUE,
+      //"Rounded" => TRUE,
+      "BorderR" => 35,
+      "BorderG" => 35,
+      "BorderB" => 35,
+      "InnerBorderR" => 215,
+      "InnerBorderG" => 215,
+      "InnerBorderB" => 215,
+          //"InnerSurrounding" => 100,
+  );
+
+  if ($color_field) {
+    $settings["OverrideColors"] = $palette;
+  } else {
+    $settings["Gradient"] = TRUE;
+    $settings["GradientMode"] = GRADIENT_SIMPLE;
+  }
+  $myPicture->drawBarChart($settings);
+  /* Render the picture (choose the best way) */
+  $myPicture->Stroke();
 }
 
-function _pi_chart_drwa_datapoint_label($graph, $data_set, $serie_names) {
-  $graph->setFontProperties(dirname(__FILE__) . '/lib/Fonts/tahoma.ttf', 10);
-  $counter = 0;
-  foreach ($serie_names as $serie => $label_info) {
-    $graph->setColorPalette($counter, $label_info['color']['red'], $label_info['color']['green'], $label_info['color']['blue']);
-    $graph->writeValues($data_set->GetData(), $data_set->GetDataDescription(), $serie);
-    $counter++;
+function _pi_chart_draw_plot_chart($title, $headers, $grouped_rows, $types, $numeric_fields, $color_field) {
+  /* Create and populate the pData object */
+  $MyData = new pData();
+
+  /**
+   * simple processing: one serie per value.
+   */
+  $series_counter = 1;
+  $keys = array_keys($grouped_rows);
+
+  foreach ($numeric_fields as $field) {
+    for ($key_index = 0; $key_index < count($keys); $key_index++) {
+      $row_group = $grouped_rows[$keys[$key_index]];
+      usort($row_group, function($a, $b) {
+                if ($a[$field] < $b[$field]) {
+                  return 1;
+                } else if ($a[field] > $b[field]) {
+                  return -1;
+                } else {
+                  return 0;
+                }
+              });
+
+      foreach ($row_group as $row) {
+        $value = $row[$field];
+        $series = $key_index > 0 ? array_fill(0, $key_index, VOID) : array();
+        $series[] = _pi_chart_get_numeric_value($value, $types[$field]);
+        if ($key_index < count($keys) - 1) {
+          $series = array_merge($series, array_fill(0, count($keys) - 1 - $key_index, VOID));
+        }
+        $MyData->addPoints($series, $series_counter);
+        if ($color_field) {
+          $MyData->setPalette($series_counter, _pi_chart_get_color_value($row[$color_field], $types[$color_field]));
+        }
+
+        $series_counter++;
+      }
+    }
+    $MyData->setAxisName(0, $headers[$field]);
   }
+
+  $abscissa_series = array();
+  for ($key_index = 0; $key_index < count($keys); $key_index++) {
+    $abscissa_series[] = _pi_chart_get_text_value($keys[$key_index], $types[0]);
+  }
+  $MyData->addPoints($abscissa_series, $headers[0]);
+  $MyData->setSerieDescription($headers[0], $headers[0]);
+  $MyData->setAbscissa($headers[0]);
+  $MyData->setAbscissaName($headers[0]);
+
+
+  $myPicture = new pImage(700, 250, $MyData);
+
+  /* Add a border to the picture */
+  $myPicture->drawRectangle(0, 0, 699, 249, array("R" => 0, "G" => 0, "B" => 0));
+
+  /* Set the default font */
+  $myPicture->setFontProperties(array("FontName" => dirname(__FILE__) . '/lib/Fonts/tahoma.ttf', "FontSize" => 10));
+
+  /* Define the chart area */
+  $myPicture->setGraphArea(60, 40, 650, 210);
+
+  /* Draw the scale */
+  $scaleSettings = array(
+      "GridR" => 200,
+      "GridG" => 200,
+      "GridB" => 200,
+      "DrawSubTicks" => TRUE,
+      "CycleBackground" => TRUE,
+      "Mode" => SCALE_MODE_START0,
+  );
+  $myPicture->drawScale($scaleSettings);
+  $myPicture->drawText(350, 5, $title, array("FontSize" => 12, "Align" => TEXT_ALIGN_TOPMIDDLE));
+  /* Write the chart legend */
+  //$myPicture->drawLegend(580, 12, array("Style" => LEGEND_NOBORDER, "Mode" => LEGEND_HORIZONTAL));
+
+  /* Turn on shadow computing */
+  $myPicture->setShadow(TRUE, array("X" => 1, "Y" => 1, "R" => 0, "G" => 0, "B" => 0, "Alpha" => 10));
+
+  $settings = array(
+      "DisplayPos" => LABEL_POS_TOP,
+      "DisplayValues" => TRUE,
+      "DisplayR" => 15,
+      "DisplayG" => 15,
+      "DisplayB" => 15,
+      "DisplayShadow" => TRUE,
+      //"Rounded" => TRUE,
+      "BorderR" => 35,
+      "BorderG" => 35,
+      "BorderB" => 35,
+      "InnerBorderR" => 215,
+      "InnerBorderG" => 215,
+      "InnerBorderB" => 215,
+      "BorderSize" => 2,
+      "PlotSize" => 7,
+      "PlotBorder" => TRUE,
+  );
+
+  $myPicture->drawPlotChart($settings);
+  /* Render the picture (choose the best way) */
+  $myPicture->Stroke();
 }
 
 ?>

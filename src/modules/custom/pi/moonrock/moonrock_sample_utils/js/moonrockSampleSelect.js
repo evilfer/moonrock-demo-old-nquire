@@ -63,7 +63,7 @@ var SampleSelectionHelper = {
   
   _selectSample: function(value) {
     this.selectedSample = value;
-    $('input#moonrock_select_sample').attr('value', value);
+    $('[measure_content_type="moonrock_sample"]').attr('value', value);
     this._updateGui();
     this._notifySelection(value);
     
@@ -77,7 +77,7 @@ var SampleSelectionHelper = {
   
   _selectSnapshot: function(value) {
     this.selectedSnapshot = value;
-    $('input#moonrock_select_snapshot').attr('value', value);
+    $('[measure_content_type="moonrock_snapshot"]').attr('value', value);
     this._updateGui();
     this._notifySelection(value);
     

@@ -416,7 +416,7 @@ function theme_pi_result_presentations($node, $teaser) {
   }
 
   // if ($there_is_nonnumeric_data) {
-  $output .= pi_chart_create_data_table($rows, $header);
+  //$output .= pi_chart_create_data_table($rows, $header);
   // }
 
   if (!$teaser) {
