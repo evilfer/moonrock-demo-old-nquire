@@ -1,10 +1,3 @@
-/* 
-    Document   : moonrock_dialog
-    Created on : Aug 15, 2012, 9:10:19 AM
-    Author     : edvf2
-    Description:
-        Purpose of the stylesheet follows.
-*/
 
 
 .ui-dialog-title {
@@ -23,42 +16,42 @@
 
 
 
-.moonrocksampleiframetopcontainer {
+.moonrock-sample-iframe-top-container {
     padding: 0px;  
 }
 
-.moonrocksampleiframecontainer {
+.moonrock-sample-iframe-container {
   width: 1000px;
   height: 680px;
   padding: 0px;  
   overflow: hidden;
 }
 
-.moonrocksampleiframe {
+.moonrock-sample-iframe {
   width: 1000px;
   height: 1000px;
   border: 0px;
 }
 
 
-.moonrocksampledialogmenu {
+.moonrock-sample-dlg-menu {
   height: 16px;
   background-color: #f0f0f0;
 }
 
-.moonrocksampledialogmenuname {
+.moonrock-sample-dlg-menu-name {
   display: inline-block;
 }
 
 
-.moonrocksampledialogmenuitem {
+.moonrock-sample-dlg-menu-item {
   font-size: 12px;
   font-weight: bold;
   color: gray;
   display: inline-block;
 }
 
-.moonrocksampledialogmenuitem.enabled {
+.moonrock-sample-dlgmenu-item.enabled {
   cursor: pointer;
   color: darkorange;
 }

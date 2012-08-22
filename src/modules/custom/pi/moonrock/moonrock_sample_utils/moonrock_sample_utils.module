@@ -5,35 +5,6 @@ define("MOONROCK_SEARCH_SAMPLE", 0x01);
 define("MOONROCK_SEARCH_SNAPSHOT", 0x02);
 define("MOONROCK_SEARCH_BOTH", 0x03);
 
-function _moonrock_sample_utils_create_view($node, $link_vm, $select_type, $classname = '', $clip = FALSE) {
-  $output = '';
-  $output .= "<div class='moonrocksample {$classname}' sample='{$node->nid}'>";
-  $output .= "  <div class='moonrocksampleimagecontainer'>";
-  if ($clip) {
-    $output .= "  <div class='moonrocksampleresultheader' sample='{$node->nid}'></div>";
-  }
-  $output .= "    <img class='moonrocksampleimage' src='{$node->snapshot}' sample='{$node->nid}'></img>";
-  $output .= "  </div>";
-
-  $output .= "  <div>";
-  $output .= "    <center>";
-  if ($select_type) {
-    $name = $select_type & MOONROCK_SEARCH_SAMPLE ?
-            ($classname == '' ? "moonrock_select_sample" : "moonrock_select_sample_result") : "moonrock_select_snapshot";
-    $id = "{$name}-{$node->nid}";
-    $output .= "      <input name='$name' id='$id' type='radio' value='{$node->nid}'/>";
-    $output .= "      <label class='option' for='$id'><b>{$node->title}</b></label>";
-  } else {
-    $output .= "      <b>{$node->title}</b>";
-  }
-
-  $output .= "    </center>";
-  $output .= "  </div>";
-  $output .= "</div>";
-
-  return $output;
-}
-
 function moonrock_sample_utils_create_sample_dialog($nid) {
   $node = node_load($nid);
 
@@ -51,64 +22,30 @@ function moonrock_sample_utils_create_sample_dialog($nid) {
   if ($sample) {
     global $user;
 
-    $output .= "<div class='moonrocksampledialog' sample='{$sample->nid}' sample_name='" . check_plain($sample->title) . "'";
+    $output .= "<div class='moonrock-sample-dlg' sample='{$sample->nid}' sample_name='" . check_plain($sample->title) . "'";
     if ($snapshot) {
       $output .= " snapshot='{$snapshot->nid}' snapshot_name='" . check_plain($snapshot->title) . "'";
     }
     $output .= ">";
 
-    $output .= "  <div class='moonrocksampleiframetopcontainer'>";
-    $output .= "    <div class='moonrocksampledialogmenu'>";
-    $output .= "      <div class='moonrocksampledialogmenuname'></div>";
-    $output .= "      <div class='moonrocksampledialogmenuitem moonrocksampledialogmenureload'>[reload]</div>";
+    $output .= "  <div class='moonrock-sample-iframe-top-container'>";
+    $output .= "    <div class='moonrock-sample-dlg-menu'>";
+    $output .= "      <div class='moonrock-sample-dlg-menu-name'></div>";
+    $output .= "      <div class='moonrock-sample-dlg-menu-item moonrock-sample-dlg-menu-reload'>[reload]</div>";
 //    $output .= "      <div class='moonrocksampledialogmenuitem moonrocksampledialogmenuchoose'>[choose]</div>";
     if ($user->uid > 1) {
-      $output .= "      <div class='moonrocksampledialogmenuitem moonrocksampledialogmenusave'>[save]</div>";
+      $output .= "      <div class='moonrock-sample-dlg-menu-item moonrock-sample-dlg-menu-save'>[save]</div>";
     }
     $output .= "    </div>";
 
-    $output .= "    <div class='moonrocksampleiframecontainer'>";
-    $output .= "      <iframe class='moonrocksampleiframe' src='{$sample->vm}'></iframe>";
+    $output .= "    <div class='moonrock-sample-iframe-container'>";
+    $output .= "      <iframe class='moonrock-sample-iframe' src='{$sample->vm}'></iframe>";
     $output .= "    </div>";
     $output .= "  </div>";
     $output .= "</div>";
   }
 
   return $output;
-}
-
-/**
- * Displays a sample.
- * 
- * @param type $node
- * @param type $link_vm
- * @param type $enable_snapshot_search
- * @param type $select_mode
- */
-function moonrock_sample_utils_create_main_view($node, $link_vm, $select_mode) {
-  return _moonrock_sample_utils_create_view($node, $link_vm, $select_mode & MOONROCK_SEARCH_SAMPLE);
-}
-
-function moonrock_sample_utils_search_results_elements($samples, $link_vm, $select_mode) {
-  global $user;
-  
-  $result = array();
-  $select_sample = $select_mode & MOONROCK_SEARCH_SAMPLE;
-  $select_snapshot = $select_mode & MOONROCK_SEARCH_SNAPSHOT;
-  
-  foreach ($samples as $sample) {
-    $result[$sample->nid] = _moonrock_sample_utils_create_view($sample, $link_vm, $select_sample, "moonrocksampleresult", TRUE);
-    if ($sample->snapshots) {
-      foreach ($sample->snapshots as $snapshot) {
-        $snapshot->snapshot = $sample->snapshot;
-        $snapshot->vm = $sample->vm;
-        $select_this_snapshot = $user->uid == $snapshot->uid ? $select_snapshot : MOONROCK_SEARCH_NONE;
-        $result[$snapshot->nid] = _moonrock_sample_utils_create_view($snapshot, $link_vm, $select_this_snapshot, "moonrocksamplesnapshot", TRUE);
-      }
-    }
-  }
-
-  return $result;
 }
 
 function moonrock_sample_utils_find_unique_seesamples_activity() {
@@ -145,8 +82,116 @@ function moonrock_sample_utils_create_sample_table($main_samples, $link_vm, $sam
   moonrock_sample_utils_load_resources($link_vm, $sample_search, $snapshot_search, $select_mode);
 
   $output = '';
-  
-  switch($select_mode) {
+
+  if ($select_mode & MOONROCK_SEARCH_SAMPLE) {
+    $output .= "<div><b>" . t("Select a sample:") . "</b></div>";
+  }
+
+  if ($main_samples != NULL) {
+    $select = $select_mode & MOONROCK_SEARCH_SAMPLE ? 'true' : 'false';
+    $output .= "<div id='moonrock-sample-main-list' select='{$select}'>";
+    foreach ($main_samples as $sample) {
+      $output .= "<div item-id='{$sample->nid}' title='{$sample->title}' img='{$sample->snapshot}'></div>";
+    }
+    $output .= '</div>';
+  }
+
+
+  if ($sample_search) {
+    $search = t('Sample search') . '<div id="moonrock-sample-search-samples-throbber"></div>';
+
+    $search .= '|';
+
+    $search .= '<form id="moonrock-sample-search-samples-form">';
+    $search .= '<label for="moonrock-sample-search-samples-location">' . t("Location: ") . '</label>';
+    $search .= '<input type="text" id="moonrock-sample-search-samples-location" name="location" />';
+    $search .= '</form>';
+    $search .= '<div style="text-align: center;">';
+    $search .= '<button id="moonrock-sample-search-samples-search">' . t('Search') . '</button>';
+    $search .= '<button id="moonrock-sample-search-samples-cancel">' . t('Close') . '</button>';
+    $search .= '</div>';
+
+    $output .= "<div class='search-tooltip-line'>";
+    $output .= "<div class='search-tooltip-element'>" . t("Sample search") . "</div>";
+    $output .= "<div id='moonrock-sample-search-samples' class='search-tooltip-element search-tooltip-link search-tooltip-link-search search-tooltip-link-active' tooltip-content='$search'></div>";
+    $output .= "<div id='moonrock-sample-search-samples-clear' class='search-tooltip-element search-tooltip-link search-tooltip-link-clear'></div>";
+
+    $select = $select_mode & MOONROCK_SEARCH_SAMPLE ? 'true' : 'false';
+    $output .= "<div id='moonrock-sample-search-samples-results' select='{$select}'></div>";
+    $output .= '</div>';
+  }
+
+  if ($select_mode & MOONROCK_SEARCH_SNAPSHOT) {
+    $output .= "<div><b>" . t("Select a snapshot:") . "</b></div>";
+  }
+
+  if ($snapshot_search) {
+    $search = t('Snapshot search') . '<div id="moonrock-sample-search-snapshots-throbber"></div>';
+
+    $search .= '|';
+
+    $search .= '<form class="moonrock-sample-search-form" id="moonrock-sample-search-snapshots-form">';
+    $search .= '<table class="moonrock-sample-search-table">';
+
+    if ($sample_search) {
+      $search .= '<tr>';
+      $search .= '<td>';
+      $search .= '<label for="moonrock-sample-search-snapshots-usesamplerefs">' . t('Snapshots of samples: ') . '</label>';
+      $search .= '</td><td>';
+      $search .= '<select id="moonrock-sample-search-snapshots-usesamplerefs" name="usesamplerefs">';
+      $search .= '<option value="1">' . t('Shown samples') . '</option>';
+      $search .= '<option value="0">' . t('Any sample') . '</option>';
+      $search .= '</select>';
+      $search .= '</td>';
+      $search .= '</tr>';
+    } else {
+      $search .= '<input id="moonrock-sample-search-snapshots-usesamplerefs" type="hidden" name="usesamplerefs" value="1" />';
+    }
+    $search .= '<input type="hidden" id="moonrock-sample-search-snapshots-samplerefs" name="samplerefs" />';
+
+    $search .= '<tr>';
+    $search .= '<td>';
+    $search .= '<label for="moonrock-sample-search-snapshots-author">' . t('Snapshots created by: ') . '</label>';
+    $search .= '</td><td>';
+    $search .= '<select id="moonrock-sample-search-snapshots-author" name="author">';
+    $search .= '<option value="me">' . t('Me') . '</option>';
+    $search .= '<option value="any">' . t('Anyone') . '</option>';
+    $search .= '</select>';
+    $search .= '</td>';
+    $search .= '</tr>';
+
+    $search .= '<tr>';
+    $search .= '<td>';
+    $search .= '<label for="moonrock-sample-search-snapshots-keyword">' . t('Keyword') . '</label>';
+    $search .= '</td><td>';
+    $search .= '<input type="text" id="moonrock-sample-search-snapshots-keyword" name="keyword" />';
+    $search .= '</td>';
+    $search .= '</tr>';
+    $search .= '</table>';
+    $search .= '</form>';
+    $search .= '<div style="text-align: center;">';
+    $search .= '<button id="moonrock-sample-search-snapshots-search">' . t('Search') . '</button>';
+    $search .= '<button id="moonrock-sample-search-snapshots-cancel">' . t('Close') . '</button>';
+    $search .= '</div>';
+
+
+    $output .= "<div class='search-tooltip-line'>";
+    $output .= "<div class='search-tooltip-element'>" . t("Snapshot search") . "</div>";
+    $output .= "<div id='moonrock-sample-search-snapshots' class='search-tooltip-element search-tooltip-link search-tooltip-link-search search-tooltip-link-active' tooltip-content='$search'></div>";
+    $output .= "<div id='moonrock-sample-search-snapshots-clear' class='search-tooltip-element search-tooltip-link search-tooltip-link-clear'></div>";
+
+    $select = $select_mode & MOONROCK_SEARCH_SNAPSHOT ? 'true' : 'false';
+    $output .= "<div id='moonrock-sample-search-snapshots-results' select='{$select}'></div>";
+    $output .= '</div>';
+  }
+
+  if ($link_vm) {
+    $output .= "<div id='moonrock-sample-newsnapshot-dlg'>" . drupal_get_form('moonrock_snapshot_form') . "</div>";
+  }
+
+  return $output;
+
+  switch ($select_mode) {
     case MOONROCK_SEARCH_SAMPLE:
       $output .= "<p><b>" . t("Select one sample:") . "</b></p>";
       break;
@@ -159,14 +204,9 @@ function moonrock_sample_utils_create_sample_table($main_samples, $link_vm, $sam
     default:
       break;
   }
-  
-  if ($main_samples != NULL) {
-    $output .= _moonrock_sample_utils_display_main_samples($main_samples, $link_vm, $select_mode);
-  }
 
-  if ($link_vm) {
-    $output .= "<div id='moonrocknewsnapshotdialog'>" . drupal_get_form('moonrock_snapshot_form') . "</div>";
-  }
+
+
 
   if ($sample_search || $snapshot_search) {
     $output .= _moonrock_sample_utils_display_sample_search($main_samples, $sample_search, $snapshot_search, $link_vm, $select_mode);
@@ -183,6 +223,30 @@ function moonrock_sample_utils_create_sample_table($main_samples, $link_vm, $sam
  * @param type $select_mode
  */
 function moonrock_sample_utils_load_resources($link_vm, $sample_search, $snapshot_search, $select_mode) {
+  drupal_add_js(drupal_get_path('module', 'moonrock_sample_utils') . '/js/itemBrowser.js');
+  drupal_add_js(drupal_get_path('module', 'moonrock_sample_utils') . '/js/MoonrockSampleView.js');
+  drupal_add_js(drupal_get_path('module', 'moonrock_sample_utils') . '/js/MoonrockSampleDialog.js');
+  drupal_add_js(drupal_get_path('module', 'moonrock_sample_utils') . '/js/MoonrockSampleSearch.js');
+
+  drupal_add_js(drupal_get_path('module', 'moonrock_sample_utils') . '/js/init.js');
+  drupal_add_css(drupal_get_path('module', 'moonrock_sample_utils') . '/css/moonrock_sample_view.css');
+  drupal_add_css(drupal_get_path('module', 'moonrock_sample_utils') . '/css/moonrock_sample_dialog.css');
+
+  drupal_add_js(drupal_get_path('module', 'moonrock_sample_utils') . '/lib/cluetip/jquery.cluetip.all.js');
+  drupal_add_css(drupal_get_path('module', 'moonrock_sample_utils') . '/lib/cluetip/jquery.cluetip.css');
+
+  drupal_add_js(drupal_get_path('module', 'moonrock_sample_utils') . '/lib/deserialize/jquery.deserialize.js');
+
+  jquery_ui_add("ui.dialog");
+  jquery_ui_add("ui.resizable");
+  jquery_ui_add("ui.draggable");
+  drupal_add_css(drupal_get_path('module', 'jquery_ui') . '/jquery.ui/themes/base/jquery-ui.css');
+  drupal_add_css(drupal_get_path('module', 'jquery_ui') . '/jquery.ui/themes/base/ui.dialog.css');
+  drupal_add_js(drupal_get_path('module', 'moonrock_sample_utils') . '/lib/extend-dialog/jquery.dialogextend.js');
+
+  return;
+
+
   if ($select_mode != MOONROCK_SEARCH_NONE) {
     drupal_add_js(drupal_get_path('module', 'moonrock_sample_utils') . '/js/moonrockSampleSelect.js');
   }
@@ -196,102 +260,8 @@ function moonrock_sample_utils_load_resources($link_vm, $sample_search, $snapsho
   if ($link_vm) {
     drupal_add_js(drupal_get_path('module', 'moonrock_sample_utils') . '/js/moonrockSampleDialog.js');
     drupal_add_css(drupal_get_path('module', 'moonrock_sample_utils') . '/css/moonrock_dialog.css');
-    jquery_ui_add("ui.dialog");
-    jquery_ui_add("ui.resizable");
-    jquery_ui_add("ui.draggable");
-    drupal_add_css(drupal_get_path('module', 'jquery_ui') . '/jquery.ui/themes/base/jquery-ui.css');
-    drupal_add_css(drupal_get_path('module', 'jquery_ui') . '/jquery.ui/themes/base/ui.dialog.css');
-    drupal_add_js(drupal_get_path('module', 'moonrock_sample_utils') . '/lib/extend-dialog/jquery.dialogextend.js');
   }
 
   drupal_add_js(drupal_get_path('module', 'moonrock_sample_utils') . '/js/init.js');
   drupal_add_css(drupal_get_path('module', 'moonrock_sample_utils') . '/css/moonrock_sample.css');
 }
-
-function _moonrock_sample_utils_display_main_samples($main_samples, $link_vm, $select_mode) {
-  $output = '';
-  foreach ($main_samples as $sample) {
-    $output .= moonrock_sample_utils_create_main_view($sample, $link_vm, $select_mode);
-  }
-
-  return $output;
-}
-
-function _moonrock_sample_utils_display_sample_search($main_samples, $sample_search, $snapshot_search, $link_vm, $select_mode) {
-  $headers = array();
-  $cells = array();
-
-  if ($main_samples) {
-    $headers[] = t("Sample");
-    $cell = '';
-    if ($sample_search) {
-      $cell .= "<input id='moonrock_sample_search_sample_any' type='checkbox' name='samples_any'/>";
-      $cell .= "<label for='moonrock_sample_search_sample_any'>" . t("Any") . "</label>";
-    }
-
-    foreach ($main_samples as $sample) {
-      if (strlen($cell) > 0) {
-        $cell .= "<br />";
-      }
-
-      $cell .= "<input id='moonrock_sample_search_sample_{$sample->nid}' type='checkbox' name='main_samples[]' value='{$sample->nid}'/>";
-      $cell .= "<label for='moonrock_sample_search_sample_{$sample->nid}'>" . check_plain($sample->title) . "</label>";
-    }
-    $cells[] = $cell;
-  }
-
-  if ($snapshot_search) {
-    $headers[] = t("Snapshot");
-    $cell = '';
-    $cell .= "<label for='moonrock_sample_search_user'>" . t("Snapshots created by ") . "</label>";
-    $cell .= "<select id='moonrock_sample_search_user' name='username'>";
-    $cell .= "<option value='me'>" . t(" me") . "</option>";
-    $cell .= "<option value='any'>" . t(" anyone") . "</option>";
-    $cell .= "</select>";
-
-    $cell .= "<label for='moonrock_sample_search_keyword'>" . t("Keyword") . "</label>";
-    $cell .= "<input type='text' id='moonrock_sample_search_keyword' name='keyword' />";
-
-    $cells[] = $cell;
-  }
-
-  if ($sample_search && $snapshot_search) {
-    $title = t("Search for samples and snapshots");
-  } else if ($sample_search) {
-    $title = t("Search for samples");
-  } else {
-    $title = t("Search for snapshots");
-  }
-
-
-
-  $output = "<div class='collapsibleContainer' title='$title'>";
-  $output .= "<form id='moonrock_sample_search'>";
-  $output .= "<input id='moonrock_sample_search_link_vm' type='hidden' name='link_vm' value='$link_vm'></input>";
-  $output .= "<input id='moonrock_sample_search_select_mode' type='hidden' name='select_mode' value='$select_mode'></input>";
-  $output .= "<input id='moonrock_sample_search_sample_search' type='hidden' name='sample_search' value='$sample_search'></input>";
-  $output .= "<input id='moonrock_sample_search_snapshot_search' type='hidden' name='snapshot_search' value='$snapshot_search'></input>";
-  $output .= "<input id='moonrock_sample_search_nid' type='hidden' name='nid' value=''></input>";
-
-
-  $output .= '<table class="moonrockSampleSearchFormTable">';
-  $output .= '<tr>';
-  foreach ($headers as $header) {
-    $output .= "<th width='200px'>{$header}</th>";
-  }
-  $output .= '<th></th></tr>';
-  $output .= '<tr>';
-  foreach ($cells as $cell) {
-    $output .= "<td>{$cell}</td>";
-  }
-  $output .= '<td id="moonrock_sample_search_throbber"><div class="ahah-progress ahah-progress-throbber"><div>&nbsp;</div></div></td>';
-  $output .= '</tr>';
-  $output .= '</table>';
-  $output .= '</form>';
-  $output .= '</div>';
-  $output .= '<div id="moonrock_sample_search_results"></div>';
-
-
-  return $output;
-}
-

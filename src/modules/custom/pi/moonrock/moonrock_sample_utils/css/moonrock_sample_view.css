@@ -1,0 +1,108 @@
+
+.search-tooltip-line {
+  padding-left: 15px;
+}
+
+.search-tooltip-element {
+  display: inline-block;
+  font-weight: bold;
+  font-size: 14px;
+  color: grey;
+}
+.search-tooltip-link {
+  width: 16px;
+  height: 16px;
+  margin-left: 5px;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.search-tooltip-link-active {
+  cursor: pointer;
+}
+
+
+.search-tooltip-link-clear.search-tooltip-link-active {
+  background: url(folder_delete.png);
+}
+
+.search-tooltip-link-search.search-tooltip-link-active {
+  background: url(search.png);
+}
+
+
+
+
+.item-browser-container {
+  padding-left: 30px;
+  padding-bottom: 20px;
+}
+
+.item-browser-item {
+  width: 200px;
+  display: inline-block;
+  padding-right: 10px;
+}
+
+.item-browser-item-img {
+  width: 100%;
+}
+
+.item-browser-item-title {
+  text-align: center;
+  font-weight: bold;
+}
+
+.item-browser-item-header {
+  height: 17px;
+  background: url(clip_a.png) bottom right no-repeat;
+}
+
+.item-browser-item-header.item-browser-item-header-clip {
+  background: url(clip_b.png) bottom right no-repeat;
+}
+
+.item-browser-throbber {
+  display: inline-block;
+  height: 10px;
+  width: 40px;  
+}
+
+.item-browser-throbber.active {
+  background: url("../lib/cluetip/images/wait.gif");
+  background-repeat: no-repeat;
+  background-position: right;
+  background-size: 21.5px 5.5px;
+}
+
+
+.moonrock-sample-search-table tbody {
+  border : none;
+}
+
+.moonrock-sample-dlg {
+
+}
+
+.moonrock-sample-dlg-menu {
+  height: 16px;
+  background-color: #f0f0f0;
+}
+
+.moonrock-sample-dlg-menu-name {
+  display: inline-block;
+}
+
+
+.moonrock-sample-dlg-menu-item {
+  font-size: 12px;
+  font-weight: bold;
+  color: gray;
+  display: inline-block;
+}
+
+.moonrock-sample-dlg-menu-item.enabled {
+  cursor: pointer;
+  color: darkorange;
+}
+

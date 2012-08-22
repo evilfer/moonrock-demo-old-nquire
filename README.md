@@ -1,10 +1,24 @@
 moonrock-demo-old-nquire
 ========================
 
+
 Modules of previous nQuire version, with changes and new modules to support the 
 Moonrock demonstators.
 
 Changes:
+
+
+-----------------
+22-08-1012
+
+- Separated snapshot and sample search.
+- Better integration in data forms.
+- Fixed snapshot validation and creation.
+
+Bug:
+- Select samples/snapshots not working.
+
+
 
 -----------------
 20-08-2012
