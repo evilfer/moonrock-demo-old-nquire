@@ -81,11 +81,9 @@ function moonrock_sample_ajax_samplesearch() {
     $location = _moonrock_sample_ajax_search_getparam('location');
   }
 
-//  $select_mode = _moonrock_sample_ajax_search_getparam('select_mode');
-
-  $samples = array();
+  $nids = array();
   if ($nid) {
-    $samples[] = node_load($nid);
+    $nids[] = $nid;
   } else {
     $query = "SELECT {node}.nid FROM {moonrock_sample} "
             . "LEFT JOIN {node} ON moonrock_sample.nid = node.nid ";
@@ -101,17 +99,15 @@ function moonrock_sample_ajax_samplesearch() {
     $result = db_query($query . $condition, $parameters);
 
     while ($object = db_fetch_object($result)) {
-      $sample = node_load($object->nid);
-      $samples[] = array(
-          "id" => $sample->nid,
-          "img" => $sample->snapshot,
-          "title" => $sample->title,
-          "params" => array(
-              "sample" => $sample->nid,
-          ),
-      );
+      $nids[] = $object->nid;
     }
   }
+
+  $samples = array();
+  foreach ($nids as $nid) {
+    $samples[] = moonrock_sample_utils_prepare_sample_object($nid);
+  }
+
   $result = array(
       "status" => TRUE,
       "items" => $samples,
@@ -131,9 +127,9 @@ function moonrock_sample_ajax_snapshotsearch() {
     $keyword = _moonrock_sample_ajax_search_getparam('keyword');
   }
 
-  $snapshots = array();
+  $nids = array();
   if ($nid) {
-    $snapshots[] = node_load($nid);
+    $nids[] = $nid;
   } else {
     $query = "SELECT {node}.nid FROM {moonrock_snapshot} "
             . "LEFT JOIN {node} ON {moonrock_snapshot}.nid = {node}.nid ";
@@ -160,19 +156,14 @@ function moonrock_sample_ajax_snapshotsearch() {
     $result = db_query($query . $condition, $parameters);
 
     while ($object = db_fetch_object($result)) {
-      $snapshot = node_load($object->nid);
-      $sample = node_load($snapshot->sample_ref);
-      $snapshots[] = array(
-          "id" => $snapshot->nid,
-          "img" => $sample->snapshot,
-          "title" => $snapshot->title,
-          "params" => array(
-              "snapshot" => $snapshot->nid,
-              "sample-ref" => $snapshot->sample_ref,
-          ),
-      );
+      $nids[] = $object->nid;
     }
   }
+
+  foreach ($nids as $nid) {
+    $snapshots[] = moonrock_sample_utils_prepare_snapshot_object($nid);
+  }
+
   $result = array(
       "status" => TRUE,
       "items" => $snapshots,

@@ -9,14 +9,16 @@
       var settings = $.extend({
         clip: false,
         select: false,
-        callback: null
+        eventCallback: null,
+        metadataCallback: null
       }, options, {
         id: this.attr('id')
       });
 
       this.html("")
               .addClass("item-browser-container")
-              .data('settings', settings);
+              .data('settings', settings)
+              .data('selected', null);
       return this;
     },
     clear : function() {
@@ -58,6 +60,20 @@
       var itemElement = $("<div />").itemBrowserItem(item, this.data('settings'));
       this.append(itemElement);
       return this;
+    },
+    _event: function(type, item) {
+      if (type === 'itemselected') {
+        this.data('selected', item);
+        this.find('.item-browser-item[item-id!="' + item.id + '"]').itemBrowserItem('_unselect');
+      }
+      var settings = this.data('settings');
+      if (settings.eventCallback) {
+        settings.eventCallback(type, item, settings.id);
+      }
+    },
+    _getMetadata: function(item) {
+      var metadata = this.data('settings').metadataCallback(item, this.data('settings').id);
+      return metadata;
     }
   };
 
@@ -81,7 +97,13 @@
 (function($) {
   var methods = {
     init : function(item, options) {
+      var self = this;
+
+      this.data('item', item);
+      var id = options.id + '-' + item.id;
+
       this.addClass("item-browser-item")
+              .attr('id', id)
               .attr("item-id", item.id);
       for (var attr in item.attrs) {
         this.attr(attr, item.attrs[attr]);
@@ -96,37 +118,113 @@
         });
       }
 
-      var img = $("<img/>")
-              .attr("src", item.img)
-              .addClass("item-browser-item-img");
-/*      var title = $("<div/>");
+      this.append($("<img/>").attr("src", item.img).addClass("item-browser-item-img"));
+
+      var title = $("<div/>").addClass("item-browser-item-title");
       if (options.select) {
-        var id = options.id + '-' + item.id;
-        $(title).append($('<label/>').html(item.title).attr('for', id));
-        $(title).append($(''))
-      }*/
-        
-      var title = $("<div/>")
-              .addClass("item-browser-item-title")
-              .html(item.title);
-              
-      this.append(img).append(title);
-      
+        var selectId = id + '-select';
+        $(title).append($('<input id="' + selectId + '" type="radio" name="' + options.id + '" value="' + item.id + '" />'));
+        $(title).append($('<label/>').html(item.title).attr('for', selectId));
+      } else {
+        $(title).html(item.title);
+      }
+      if (options.metadataCallback) {
+        var contentId = id + '-metadata-content';
+        var content = $('<div style="display: none" id="' + contentId + '"/>');
+        var cluetip = $('<div/>').addClass('item-browser-item-title-cluetip').attr('rel', '#' + contentId);
+        $(title).append(content);
+        $(title).append(cluetip);
+        $(cluetip).qtip({
+          content: {
+            title: '',
+            text: ''
+          },
+          position: {
+            corner: {
+              target: 'topRight',
+              tooltip: 'bottomLeft'
+            },
+            adjust : {
+              resize: true
+            }
+          },
+          show: {
+            delay: 0
+          },
+          hide: {
+            fixed: true,
+            delay: 200
+          },
+          api: {
+            onRender: function() {
+              this.updateContent("");
+            },
+            beforeShow: function() {
+              var metadata = self.parent().itemBrowser('_getMetadata', self.data('item'));
+              this.updateTitle(metadata.title);
+              this.updateContent(" ");
+              this.updateContent(metadata.content);
+            }
+          }
+        });
+
+        /*  content: {
+            text: 'text',
+            title: {
+              text: 'title',
+              button: true
+            }
+          },
+          position: {
+            my: 'left bottom', // Use the corner...
+            at: 'right bottom' // ...and opposite corner
+          },
+          /* show: {
+            event: false, // Don't specify a show event...
+            ready: true // ... but show the tooltip when ready
+          },
+          hide: false, // Don't specify a hide event either!
+          
+
+          style: {
+            classes: 'ui-tooltip-shadow ui-tooltip-bootstrap'
+          } 
+        }*/
+
+
+        /*          onActivate: function() {
+            $('#' + contentId).html(self.parent().itemBrowser('_getMetadata', self.data('item')));
+            return true;
+          },
+          mouseOutClose: false,
+          local: true,
+          showTitle: false
+        });*/
+      }
+      this.append(title);
 
       this.itemBrowserItem('stay').fadeIn('fast');
-      this.data('settings', options);
-      
+
       this.find('img').click(function() {
         $(this).parent().itemBrowserItem('_event', 'imgclick');
       });
-      
+      this.find('#' + id + '-select').change(function() {
+        $(this).parents('.item-browser-item[item-id="' + $(this).attr('value') + '"]').itemBrowserItem('_select');
+      });
+
+      return this;
+    },
+    _unselect: function() {
+      this.removeClass("item-browser-item-selected");
+      return this;
+    },
+    _select: function() {
+      this.addClass("item-browser-item-selected").itemBrowserItem('_event', 'itemselected');
       return this;
     },
     _event : function(type) {
-      var callback = this.data('settings').callback;
-      if (callback) {
-        callback(type, this.attr('item-id'));
-      }
+      this.parent().itemBrowser('_event', type, this.data('item'));
+      return this;
     },
     _toogleClip: function() {
       if (this.find('.item-browser-item-header').hasClass('item-browser-item-header-clip')) {

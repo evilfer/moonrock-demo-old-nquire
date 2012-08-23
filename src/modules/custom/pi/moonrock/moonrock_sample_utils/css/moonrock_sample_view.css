@@ -34,14 +34,20 @@
 
 
 .item-browser-container {
-  padding-left: 30px;
+  padding-left: 25px;
   padding-bottom: 20px;
 }
 
 .item-browser-item {
   width: 200px;
   display: inline-block;
-  padding-right: 10px;
+  padding: 5px;
+  border: 1px solid transparent;
+}
+
+.item-browser-item-selected {
+  border: 1px solid black;
+  background: lightgreen;
 }
 
 .item-browser-item-img {
@@ -51,6 +57,15 @@
 .item-browser-item-title {
   text-align: center;
   font-weight: bold;
+}
+
+.item-browser-item-title-cluetip {
+  font-weight: bold;
+  color: orange;
+  display: inline-block;
+  height: 12px;
+  width: 18px;
+  background: url(info.png) no-repeat right;
 }
 
 .item-browser-item-header {
@@ -64,15 +79,14 @@
 
 .item-browser-throbber {
   display: inline-block;
-  height: 10px;
-  width: 40px;  
+  height: 16px;
+  width: 26px;  
 }
 
 .item-browser-throbber.active {
-  background: url("../lib/cluetip/images/wait.gif");
+  background: url("throbber.gif");
   background-repeat: no-repeat;
   background-position: right;
-  background-size: 21.5px 5.5px;
 }
 
 
@@ -80,29 +94,9 @@
   border : none;
 }
 
-.moonrock-sample-dlg {
-
-}
-
-.moonrock-sample-dlg-menu {
-  height: 16px;
-  background-color: #f0f0f0;
-}
-
-.moonrock-sample-dlg-menu-name {
-  display: inline-block;
-}
-
-
-.moonrock-sample-dlg-menu-item {
+.moonrock-sample-search-dlg {
   font-size: 12px;
-  font-weight: bold;
-  color: gray;
-  display: inline-block;
+
 }
 
-.moonrock-sample-dlg-menu-item.enabled {
-  cursor: pointer;
-  color: darkorange;
-}
 

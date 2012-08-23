@@ -91,34 +91,45 @@ function moonrock_sample_utils_create_sample_table($main_samples, $link_vm, $sam
     $select = $select_mode & MOONROCK_SEARCH_SAMPLE ? 'true' : 'false';
     $output .= "<div id='moonrock-sample-main-list' select='{$select}'>";
     foreach ($main_samples as $sample) {
-      $output .= "<div item-id='{$sample->nid}' title='{$sample->title}' img='{$sample->snapshot}'></div>";
+      $output .= "<div item-def='" . drupal_to_js(moonrock_sample_utils_prepare_sample_object($sample->nid)) . "' item-id='{$sample->nid}' title='{$sample->title}' img='{$sample->snapshot}'></div>";
     }
     $output .= '</div>';
   }
 
 
   if ($sample_search) {
-    $search = t('Sample search') . '<div id="moonrock-sample-search-samples-throbber"></div>';
-
-    $search .= '|';
+    $search = '<div class="moonrock-sample-search-dlg" id="moonrock-sample-search-samples-dlg" title="' . t('Sample search') . '">';
 
     $search .= '<form id="moonrock-sample-search-samples-form">';
+    $search .= '<table class="moonrock-sample-search-table">';
+
+
+    $search .= '<tr>';
+    $search .= '<td>';
     $search .= '<label for="moonrock-sample-search-samples-location">' . t("Location: ") . '</label>';
+    $search .= '</td><td>';
     $search .= '<input type="text" id="moonrock-sample-search-samples-location" name="location" />';
+    $search .= '</td>';
+    $search .= '</tr>';
+
+    $search .= '</table>';
     $search .= '</form>';
+
     $search .= '<div style="text-align: center;">';
     $search .= '<button id="moonrock-sample-search-samples-search">' . t('Search') . '</button>';
     $search .= '<button id="moonrock-sample-search-samples-cancel">' . t('Close') . '</button>';
     $search .= '</div>';
+    $search .= '</div>';
 
     $output .= "<div class='search-tooltip-line'>";
     $output .= "<div class='search-tooltip-element'>" . t("Sample search") . "</div>";
-    $output .= "<div id='moonrock-sample-search-samples' class='search-tooltip-element search-tooltip-link search-tooltip-link-search search-tooltip-link-active' tooltip-content='$search'></div>";
+    $output .= "<div id='moonrock-sample-search-samples' class='search-tooltip-element search-tooltip-link search-tooltip-link-search search-tooltip-link-active'>$search</div>";
     $output .= "<div id='moonrock-sample-search-samples-clear' class='search-tooltip-element search-tooltip-link search-tooltip-link-clear'></div>";
+    $output .= '<div id="moonrock-sample-search-samples-throbber" class="search-tooltip-element"></div>';
+    $output .= '</div>';
 
     $select = $select_mode & MOONROCK_SEARCH_SAMPLE ? 'true' : 'false';
     $output .= "<div id='moonrock-sample-search-samples-results' select='{$select}'></div>";
-    $output .= '</div>';
   }
 
   if ($select_mode & MOONROCK_SEARCH_SNAPSHOT) {
@@ -126,9 +137,7 @@ function moonrock_sample_utils_create_sample_table($main_samples, $link_vm, $sam
   }
 
   if ($snapshot_search) {
-    $search = t('Snapshot search') . '<div id="moonrock-sample-search-snapshots-throbber"></div>';
-
-    $search .= '|';
+    $search = '<div class="moonrock-sample-search-dlg" id="moonrock-sample-search-snapshots-dlg" title="' . t('Snapshot search') . '">';
 
     $search .= '<form class="moonrock-sample-search-form" id="moonrock-sample-search-snapshots-form">';
     $search .= '<table class="moonrock-sample-search-table">';
@@ -174,42 +183,23 @@ function moonrock_sample_utils_create_sample_table($main_samples, $link_vm, $sam
     $search .= '<button id="moonrock-sample-search-snapshots-cancel">' . t('Close') . '</button>';
     $search .= '</div>';
 
+    $search .= '</div>';
+
 
     $output .= "<div class='search-tooltip-line'>";
     $output .= "<div class='search-tooltip-element'>" . t("Snapshot search") . "</div>";
-    $output .= "<div id='moonrock-sample-search-snapshots' class='search-tooltip-element search-tooltip-link search-tooltip-link-search search-tooltip-link-active' tooltip-content='$search'></div>";
+//    $output .= "<div id='moonrock-sample-search-snapshots' class='search-tooltip-element search-tooltip-link search-tooltip-link-search search-tooltip-link-active' tooltip-content='$search'></div>";
+    $output .= "<div id='moonrock-sample-search-snapshots' class='search-tooltip-element search-tooltip-link search-tooltip-link-search search-tooltip-link-active'>$search</div>";
     $output .= "<div id='moonrock-sample-search-snapshots-clear' class='search-tooltip-element search-tooltip-link search-tooltip-link-clear'></div>";
+    $output .= '<div id="moonrock-sample-search-snapshots-throbber" class="search-tooltip-element"></div>';
+    $output .= '</div>';
 
     $select = $select_mode & MOONROCK_SEARCH_SNAPSHOT ? 'true' : 'false';
     $output .= "<div id='moonrock-sample-search-snapshots-results' select='{$select}'></div>";
-    $output .= '</div>';
   }
 
   if ($link_vm) {
     $output .= "<div id='moonrock-sample-newsnapshot-dlg'>" . drupal_get_form('moonrock_snapshot_form') . "</div>";
-  }
-
-  return $output;
-
-  switch ($select_mode) {
-    case MOONROCK_SEARCH_SAMPLE:
-      $output .= "<p><b>" . t("Select one sample:") . "</b></p>";
-      break;
-    case MOONROCK_SEARCH_SNAPSHOT:
-      $output .= "<p><b>" . t("Select one snaphsot:") . "</b></p>";
-      break;
-    case MOONROCK_SEARCH_BOTH:
-      $output .= "<p><b>" . t("Select one sample and one snaphsot:") . "</b></p>";
-      break;
-    default:
-      break;
-  }
-
-
-
-
-  if ($sample_search || $snapshot_search) {
-    $output .= _moonrock_sample_utils_display_sample_search($main_samples, $sample_search, $snapshot_search, $link_vm, $select_mode);
   }
 
   return $output;
@@ -232,8 +222,8 @@ function moonrock_sample_utils_load_resources($link_vm, $sample_search, $snapsho
   drupal_add_css(drupal_get_path('module', 'moonrock_sample_utils') . '/css/moonrock_sample_view.css');
   drupal_add_css(drupal_get_path('module', 'moonrock_sample_utils') . '/css/moonrock_sample_dialog.css');
 
-  drupal_add_js(drupal_get_path('module', 'moonrock_sample_utils') . '/lib/cluetip/jquery.cluetip.all.js');
-  drupal_add_css(drupal_get_path('module', 'moonrock_sample_utils') . '/lib/cluetip/jquery.cluetip.css');
+  drupal_add_js(drupal_get_path('module', 'moonrock_sample_utils') . '/lib/qtip/jquery.qtip-1.0.0-rc3.js');
+//  drupal_add_css(drupal_get_path('module', 'moonrock_sample_utils') . '/lib/qtip2/jquery.qtip.css');
 
   drupal_add_js(drupal_get_path('module', 'moonrock_sample_utils') . '/lib/deserialize/jquery.deserialize.js');
 
@@ -245,23 +235,68 @@ function moonrock_sample_utils_load_resources($link_vm, $sample_search, $snapsho
   drupal_add_js(drupal_get_path('module', 'moonrock_sample_utils') . '/lib/extend-dialog/jquery.dialogextend.js');
 
   return;
+}
+
+function moonrock_sample_utils_prepare_sample_object($nid) {
+  $sample = node_load($nid);
+  return array(
+      "id" => $sample->nid,
+      "img" => $sample->snapshot,
+      "title" => $sample->title,
+      "params" => array(
+          "type" => "sample",
+          "sample" => $sample->nid,
+      ),
+      "metadata" => array(
+          "location" => array(
+              "title" => t("Location: "),
+              "value" => $sample->location,
+          ),
+      ),
+  );
+}
+
+function moonrock_sample_utils_prepare_snapshot_object($nid) {
+  global $user;
 
 
-  if ($select_mode != MOONROCK_SEARCH_NONE) {
-    drupal_add_js(drupal_get_path('module', 'moonrock_sample_utils') . '/js/moonrockSampleSelect.js');
+
+  $snapshot = node_load($nid);
+  $sample = node_load($snapshot->sample_ref);
+
+  if ($user->uid == $snapshot->uid) {
+    $author = t("Me");
+  } else {
+    $author_user = user_load($snapshot->uid);
+    $author = check_plain($author_user->name);
   }
 
-  if ($sample_search || $snapshot_search) {
-    drupal_add_js(drupal_get_path('module', 'moonrock_sample_utils') . '/js/moonrockSampleSearch.js');
-    drupal_add_js(drupal_get_path('module', 'moonrock_sample_utils') . '/lib/collapsible/diQuery-collapsiblePanel.js');
-    drupal_add_css(drupal_get_path('module', 'moonrock_sample_utils') . '/lib/collapsible/diQuery-collapsiblePanel.css');
-  }
-
-  if ($link_vm) {
-    drupal_add_js(drupal_get_path('module', 'moonrock_sample_utils') . '/js/moonrockSampleDialog.js');
-    drupal_add_css(drupal_get_path('module', 'moonrock_sample_utils') . '/css/moonrock_dialog.css');
-  }
-
-  drupal_add_js(drupal_get_path('module', 'moonrock_sample_utils') . '/js/init.js');
-  drupal_add_css(drupal_get_path('module', 'moonrock_sample_utils') . '/css/moonrock_sample.css');
+  return array(
+      "id" => $snapshot->nid,
+      "img" => $sample->snapshot,
+      "title" => $snapshot->title,
+      "params" => array(
+          "type" => "snapshot",
+          "snapshot" => $snapshot->nid,
+          "sample-ref" => $snapshot->sample_ref,
+      ),
+      "metadata" => array(
+          "sample_ref" => array(
+              "title" => t("Rock sample: "),
+              "value" => $sample->title,
+          ),
+          "author" => array(
+              "title" => t("Created by: "),
+              "value" => $author,
+          ),
+          "notes" => array(
+              "title" => t("Notes: "),
+              "value" => $snapshot->notes,
+          ),
+          "date" => array(
+              "title" => t("Creation date: "),
+              "value" => format_date($snapshot->created),
+          ),
+      ),
+  );
 }

@@ -3,10 +3,12 @@ var MoonrockSampleSearch = function(settings) {
   this.settings = $.extend({
     id : '',
     searchUrl : '',
-    processForm : null
+    processForm : null,
+    metadataCallback: null
   }, settings);
 
-  this.cluetip = settings.id;
+  this.cluetip = '#' + settings.id;
+  this.dlg = this.cluetip + '-dlg';
   this.form = this.cluetip + '-form';
   this.results = this.cluetip + '-results';
   this.throbber = this.cluetip + '-throbber';
@@ -26,42 +28,44 @@ MoonrockSampleSearch.prototype.init = function() {
   $(self.results).itemBrowser({
     clip: true,
     select: $(self.results).attr('select') === 'true',
-    callback : function(event, itemId) {
-      MoonrockSampleView.itemEvent(event, itemId);
-    }
+    eventCallback : function(event, item, containerId) {
+      MoonrockSampleView.itemEvent(event, item, containerId);
+    },
+    metadataCallback: self.settings.metadataCallback
   });
 
-  $(self.cluetip).cluetip({
-    splitTitle: '|',
-    showTitle: true,
-    activation: 'click',
-    sticky: true,
-    closePosition: 'title',
-    closeText: 'X',
-    titleAttribute: 'tooltip-content',
-    width: 380,
-    onShow: function() {
-      $(self.throbber).itemBrowserThrobber();
+  $(self.dlg).dialog({
+    autoOpen:false,
+    width: 'auto',
+    height: 'auto',
+    minHeight: 100
+  });
 
-      $(self.form).find("input[type='text']").keypress(function(event) {
-        if (event.keyCode === 13) {
-          self.newSearch();
-          event.stopPropagation();
-          event.preventDefault();
-        }
-      });
-      $(self.form).find("select").change(function() {
-        self.newSearch();
-      });
+  $(self.throbber).itemBrowserThrobber();
 
-      $(self.form).deserialize(self.lastQuery);
+  $(self.form).find("input[type='text']").keypress(function(event) {
+    if (event.keyCode === 13) {
+      self.newSearch();
+      event.stopPropagation();
+      event.preventDefault();
+    }
+  });
+  $(self.form).find("select").change(function() {
+    self.newSearch();
+  });
 
-      $(self.search).click(function() {
-        self.newSearch(true);
-      });
-      $(self.cancel).click(function() {
-        $(document).trigger('hideCluetip');
-      });
+  $(self.search).click(function() {
+    self.newSearch(true);
+  });
+  $(self.cancel).click(function() {
+    $(self.dlg).dialog('close');
+  });
+
+  $(self.cluetip).click(function() {
+    if ($(self.dlg).dialog('isOpen')) {
+      $(self.dlg).dialog('moveToTop');
+    } else {
+      $(self.dlg).dialog('open');
     }
   });
 
@@ -77,10 +81,27 @@ MoonrockSampleSearch.prototype.newSearch = function(hideForm) {
   }
 
   self.lastQuery = $(self.form).serialize();
-  self.querySearch(hideForm);
+  self._queryLastSearch(hideForm);
 };
 
-MoonrockSampleSearch.prototype.querySearch = function(hideForm) {
+MoonrockSampleSearch.prototype._queryLastSearch = function(hideForm) {
+  var self = this;
+
+  self._querySearch(self.lastQuery, function(items) {
+    if (items.length > 0) {
+      $(self.clear).addClass('search-tooltip-link-active');
+    } else {
+      $(self.clear).removeClass('search-tooltip-link-active');
+    }
+    $(self.results).itemBrowser("setItems", items);
+
+    if (hideForm) {
+      $(self.dlg).dialog('close');
+    }
+  });
+};
+
+MoonrockSampleSearch.prototype._querySearch = function(query, callback) {
   var self = this;
 
   $(self.throbber).itemBrowserThrobber("on");
@@ -88,32 +109,17 @@ MoonrockSampleSearch.prototype.querySearch = function(hideForm) {
   $.ajax({
     url: self.settings.searchUrl,
     dataType: 'json',
-    data: self.lastQuery,
+    data: query,
     success: function(data) {
       $(self.throbber).itemBrowserThrobber("off");
-
-      if (hideForm) {
-        $(document).trigger('hideCluetip');
-      }
-
       if (data.status) {
-        self.searchResults(data.items);
+        callback(data.items);
       }
     },
     error: function() {
       $(self.throbber).itemBrowserThrobber("off");
     }
   });
-};
-
-MoonrockSampleSearch.prototype.searchResults = function(items) {
-  var self = this;
-  if (items.length > 0) {
-    $(self.clear).addClass('search-tooltip-link-active');
-  } else {
-    $(self.clear).removeClass('search-tooltip-link-active');
-  }
-  $(self.results).itemBrowser("setItems", items);
 };
 
 MoonrockSampleSearch.prototype.clearSearch = function() {
@@ -123,6 +129,24 @@ MoonrockSampleSearch.prototype.clearSearch = function() {
 };
 
 MoonrockSampleSearch.prototype.repeatSearch = function() {
-  this.querySearch();
+  this._queryLastSearch(false);
+};
+
+
+
+MoonrockSampleSearch.prototype.fetch = function(id) {
+  var self = this;
+
+  if ($(self.results).itemBrowser("hasItem", id)) {
+    $(self.results).itemBrowser('clip', id);
+  } else {
+    self._querySearch({nid: id}, function(items) {
+      if (items.length === 1) {
+        $(self.clear).addClass('search-tooltip-link-active');
+        $(self.results).itemBrowser("addItem", items[0]);
+//        $(self.results).itemBrowser('clip', id);
+      }
+    });
+  }
 };
 

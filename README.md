@@ -9,7 +9,16 @@ Changes:
 
 
 -----------------
-22-08-1012
+23-08-2012
+
+- Sample/snapshot selection partially working.
+- Some code rafactoring.
+- Improved search forms (moves to dialogs).
+- Replaced cluetip by jquery.dialog.
+- Added qtip plugin.
+
+-----------------
+22-08-2012
 
 - Separated snapshot and sample search.
 - Better integration in data forms.

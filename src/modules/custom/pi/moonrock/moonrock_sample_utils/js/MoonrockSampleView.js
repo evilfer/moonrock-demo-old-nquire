@@ -6,33 +6,36 @@ var MoonrockSampleView = {
   init : function() {
     var items = [];
     $("#moonrock-sample-main-list").find("div").each(function() {
-      var item = {
-        id: $(this).attr("item-id"),
-        title: $(this).attr("title"),
-        img: $(this).attr("img")
-      };
+      var item = JSON.parse($(this).attr('item-def'));
       items.push(item);
     });
 
+    var metadataCallback = function(item) {
+      return MoonrockSampleView._formatItemMetadata(item);
+    };
+
     $("#moonrock-sample-main-list").html("").itemBrowser({
       select: $("#moonrock-sample-main-list").attr('select') === 'true',
-      callback : function(event, itemId) {
-        MoonrockSampleView.itemEvent(event, itemId);
-      }
+      callback : function(event, item, containerId) {
+        MoonrockSampleView.itemEvent(event, item, containerId);
+      },
+      metadataCallback : metadataCallback
     }).itemBrowser("setItems", items);
 
 
     this.searchManagers = {
       sample: new MoonrockSampleSearch({
-        id:'#moonrock-sample-search-samples',
-        searchUrl : this.getBaseURL() + '/samplesearch'
+        id:'moonrock-sample-search-samples',
+        searchUrl : this.getBaseURL() + '/samplesearch',
+        metadataCallback : metadataCallback
       }),
       snapshot: new MoonrockSampleSearch({
-        id : '#moonrock-sample-search-snapshots',
+        id : 'moonrock-sample-search-snapshots',
         searchUrl : this.getBaseURL() + '/snapshotsearch',
         processForm: function() {
           MoonrockSampleView.processSnapshotForm();
-        }
+        },
+        metadataCallback : metadataCallback
       })
     };
   },
@@ -64,28 +67,50 @@ var MoonrockSampleView = {
    * sample event callbacks
    */
 
-  itemEvent: function(event, itemId) {
+  itemEvent: function(event, item, containerId) {
     switch (event) {
       case "imgclick":
-        this._itemImageClicked(itemId);
+        this._itemImageClicked(item, containerId);
         break;
       case "itemselected":
-        this._itemSelected(itemId);
+        this._itemSelected(item, containerId);
         break;
       case "itemremoved" :
-        this._itemRemoved(itemId);
+        this._itemRemoved(item, containerId);
         break;
       default:
         break;
     }
   },
-  _itemImageClicked: function(itemId) {
-    MoonrockSampleDialog.open(itemId);
+  _itemImageClicked: function(item, containerId) {
+    MoonrockSampleDialog.open(item.id);
   },
-  _itemSelected: function(itemId) {
+  _itemSelected: function(itemId, containerId) {
 
   },
-  _itemRemoved: function(itemId) {
+  _itemRemoved: function(itemId, containerId) {
 
+  },
+
+
+  /*
+   * Metadata callbacks
+   */
+   _formatMetadataTable: function(metadata) {
+     var table = $('<table/>');
+     for (var key in metadata) {
+       var tr = $('<tr/>').appendTo(table);
+       $('<td/>').html(metadata[key].title).appendTo(tr);
+       $('<td/>').html(metadata[key].value).appendTo(tr);
+     }
+     return table;
+   },
+  _formatItemMetadata : function(item) {
+    var metadata = {
+      title: item.title,
+      content: this._formatMetadataTable(item.metadata)
+    };
+
+    return metadata;
   }
 };
