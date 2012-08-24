@@ -9,6 +9,13 @@ Changes:
 
 
 -----------------
+24-08-2012
+
+- Fixed snapshot module bug: didn't store notes in DB.
+- Add data activity working correctly.
+- Newly created snapshots are shown in activity view, if they match user search.
+
+-----------------
 23-08-2012
 
 - Sample/snapshot selection partially working.

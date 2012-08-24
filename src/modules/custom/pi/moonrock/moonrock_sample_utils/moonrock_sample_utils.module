@@ -30,11 +30,10 @@ function moonrock_sample_utils_create_sample_dialog($nid) {
 
     $output .= "  <div class='moonrock-sample-iframe-top-container'>";
     $output .= "    <div class='moonrock-sample-dlg-menu'>";
-    $output .= "      <div class='moonrock-sample-dlg-menu-name'></div>";
-    $output .= "      <div class='moonrock-sample-dlg-menu-item moonrock-sample-dlg-menu-reload'>[reload]</div>";
+   // $output .= "      <div class='moonrock-sample-dlg-menu-item moonrock-sample-dlg-menu-reload'>[reload]</div>";
 //    $output .= "      <div class='moonrocksampledialogmenuitem moonrocksampledialogmenuchoose'>[choose]</div>";
     if ($user->uid > 1) {
-      $output .= "      <div class='moonrock-sample-dlg-menu-item moonrock-sample-dlg-menu-save'>[save]</div>";
+      $output .= "      <div class='moonrock-sample-dlg-menu-item moonrock-sample-dlg-menu-save'><div class='moonrock-sample-dlg-menu-item-buttom'></div><span>" . t("Create new snapshot") . "</span></div>";
     }
     $output .= "    </div>";
 
@@ -217,15 +216,14 @@ function moonrock_sample_utils_load_resources($link_vm, $sample_search, $snapsho
   drupal_add_js(drupal_get_path('module', 'moonrock_sample_utils') . '/js/MoonrockSampleView.js');
   drupal_add_js(drupal_get_path('module', 'moonrock_sample_utils') . '/js/MoonrockSampleDialog.js');
   drupal_add_js(drupal_get_path('module', 'moonrock_sample_utils') . '/js/MoonrockSampleSearch.js');
+  drupal_add_js(drupal_get_path('module', 'moonrock_sample_utils') . '/js/MoonrockSampleSelection.js');
 
   drupal_add_js(drupal_get_path('module', 'moonrock_sample_utils') . '/js/init.js');
   drupal_add_css(drupal_get_path('module', 'moonrock_sample_utils') . '/css/moonrock_sample_view.css');
   drupal_add_css(drupal_get_path('module', 'moonrock_sample_utils') . '/css/moonrock_sample_dialog.css');
+  drupal_add_css(drupal_get_path('module', 'moonrock_sample_utils') . '/css/moonrock_sample_metadata.css');
 
   drupal_add_js(drupal_get_path('module', 'moonrock_sample_utils') . '/lib/qtip/jquery.qtip-1.0.0-rc3.js');
-//  drupal_add_css(drupal_get_path('module', 'moonrock_sample_utils') . '/lib/qtip2/jquery.qtip.css');
-
-  drupal_add_js(drupal_get_path('module', 'moonrock_sample_utils') . '/lib/deserialize/jquery.deserialize.js');
 
   jquery_ui_add("ui.dialog");
   jquery_ui_add("ui.resizable");
@@ -278,10 +276,10 @@ function moonrock_sample_utils_prepare_snapshot_object($nid) {
       "params" => array(
           "type" => "snapshot",
           "snapshot" => $snapshot->nid,
-          "sample-ref" => $snapshot->sample_ref,
+          "sampleref" => $snapshot->sample_ref,
       ),
       "metadata" => array(
-          "sample_ref" => array(
+          "sampleref" => array(
               "title" => t("Rock sample: "),
               "value" => $sample->title,
           ),
@@ -295,7 +293,7 @@ function moonrock_sample_utils_prepare_snapshot_object($nid) {
           ),
           "date" => array(
               "title" => t("Creation date: "),
-              "value" => format_date($snapshot->created),
+              "value" => format_date($snapshot->created, 'small'),
           ),
       ),
   );

@@ -57,23 +57,45 @@
       return ids;
     },
     addItem :  function(item) {
-      var itemElement = $("<div />").itemBrowserItem(item, this.data('settings'));
-      this.append(itemElement);
+      $("<div />").appendTo(this).itemBrowserItem(item, this.data('settings'));
+//      this.append(itemElement);
       return this;
     },
     _event: function(type, item) {
       if (type === 'itemselected') {
         this.data('selected', item);
-        this.find('.item-browser-item[item-id!="' + item.id + '"]').itemBrowserItem('_unselect');
+        this.find('.item-browser-item[item-id!="' + item.id + '"]').itemBrowserItem('unselect');
+      } else if (type === 'itemunselected') {
+        this.data('selected', null);
       }
+
+      console.log(type + " - " + this.data('settings').id + " - " + item.id);
+
       var settings = this.data('settings');
       if (settings.eventCallback) {
         settings.eventCallback(type, item, settings.id);
       }
     },
+    clearSelection: function(itemId) {
+      this.find('.item-browser-item').itemBrowserItem('unselect');
+      this.data('selected', null);
+      return this;
+    },
     _getMetadata: function(item) {
       var metadata = this.data('settings').metadataCallback(item, this.data('settings').id);
       return metadata;
+    },
+    selectedItem: function() {
+      return this.data('selected');
+    },
+    hasItem: function(itemId) {
+      return this.find('.item-browser-item[item-id="' + itemId + '"]').length > 0;
+    },
+    select: function(itemId) {
+      this.find('.item-browser-item[item-id!="' + itemId + '"]').itemBrowserItem('unselect');
+      var selection = this.find('.item-browser-item[item-id="' + itemId + '"]').itemBrowserItem('select').itemBrowserItem('getItem');
+      this.data('selected', typeof(selection) === 'undefined' ? null : selection);
+      return this.itemBrowser('hasItem', itemId);
     }
   };
 
@@ -134,72 +156,37 @@
         var cluetip = $('<div/>').addClass('item-browser-item-title-cluetip').attr('rel', '#' + contentId);
         $(title).append(content);
         $(title).append(cluetip);
+
+        var metadata = self.parent().itemBrowser('_getMetadata', self.data('item'));
+
         $(cluetip).qtip({
           content: {
-            title: '',
-            text: ''
+            title: metadata.title,
+            text: metadata.content
+          },
+          show: {
+            delay: 10
+          },
+          hide: {
+            fixed: true,
+            delay: 200
           },
           position: {
             corner: {
               target: 'topRight',
               tooltip: 'bottomLeft'
             },
-            adjust : {
-              resize: true
+            adjust: {
+              screen: true,
+              scroll: true
             }
           },
-          show: {
-            delay: 0
-          },
-          hide: {
-            fixed: true,
-            delay: 200
-          },
-          api: {
-            onRender: function() {
-              this.updateContent("");
-            },
-            beforeShow: function() {
-              var metadata = self.parent().itemBrowser('_getMetadata', self.data('item'));
-              this.updateTitle(metadata.title);
-              this.updateContent(" ");
-              this.updateContent(metadata.content);
+          style: {
+            classes: {
+              tooltip: 'moonrock-sample-tip'
             }
           }
         });
-
-        /*  content: {
-            text: 'text',
-            title: {
-              text: 'title',
-              button: true
-            }
-          },
-          position: {
-            my: 'left bottom', // Use the corner...
-            at: 'right bottom' // ...and opposite corner
-          },
-          /* show: {
-            event: false, // Don't specify a show event...
-            ready: true // ... but show the tooltip when ready
-          },
-          hide: false, // Don't specify a hide event either!
-          
-
-          style: {
-            classes: 'ui-tooltip-shadow ui-tooltip-bootstrap'
-          } 
-        }*/
-
-
-        /*          onActivate: function() {
-            $('#' + contentId).html(self.parent().itemBrowser('_getMetadata', self.data('item')));
-            return true;
-          },
-          mouseOutClose: false,
-          local: true,
-          showTitle: false
-        });*/
       }
       this.append(title);
 
@@ -212,29 +199,53 @@
         $(this).parents('.item-browser-item[item-id="' + $(this).attr('value') + '"]').itemBrowserItem('_select');
       });
 
+      this.itemBrowserItem('_event', 'itemadded');
+
       return this;
     },
-    _unselect: function() {
+    getItem: function() {
+      return this.data('item');
+    },
+    unselect: function() {
       this.removeClass("item-browser-item-selected");
+      this.find('input').attr('checked', false);
+      return this;
+    },
+    select: function() {
+      this.addClass("item-browser-item-selected");
+      this.find('input').attr('checked', true);
+      this.itemBrowserItem('_clip');
       return this;
     },
     _select: function() {
       this.addClass("item-browser-item-selected").itemBrowserItem('_event', 'itemselected');
+      this.itemBrowserItem('_clip');
       return this;
     },
     _event : function(type) {
       this.parent().itemBrowser('_event', type, this.data('item'));
       return this;
     },
+
+    _clip: function() {
+      this.find('.item-browser-item-header').addClass('item-browser-item-header-clip');
+      return this;
+    },
     _toogleClip: function() {
       if (this.find('.item-browser-item-header').hasClass('item-browser-item-header-clip')) {
         this.find('.item-browser-item-header-clip').removeClass('item-browser-item-header-clip');
         this.itemBrowserItem('_removeIfNeeded');
+
+        if (this.hasClass("item-browser-item-selected")) {
+          this.itemBrowserItem('unselect');
+          this.itemBrowserItem('_event', 'itemunselected');
+        }
       } else {
-        this.find('.item-browser-item-header').addClass('item-browser-item-header-clip');
+        this.itemBrowserItem('_clip');
       }
       return this;
     },
+
     stay: function() {
       this.data('wanted', true);
       return this;
@@ -254,14 +265,14 @@
       }
       return this;
     },
-    _showTitle :function(show) {
+    /*_showTitle :function(show) {
       if (show) {
         this.find(".item-browser-item-title").show();
       } else {
         this.find(".item-browser-item-title").hide();
       }
       return this;
-    }
+    }*/
   };
 
   $.fn.itemBrowserItem = function(method) {

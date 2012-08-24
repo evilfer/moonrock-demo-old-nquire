@@ -45,7 +45,7 @@ var MoonrockSampleDialog = {
       
     this._setDialogTitle(dialogElement);
     this._enableButton(dialogElement, 'save', true);
-    this._enableButton(dialogElement, 'reload', false);
+    //this._enableButton(dialogElement, 'reload', false);
     
         
     $(dialogElement).find(".moonrock-sample-dlg-menu-save").click(function() {
@@ -59,10 +59,10 @@ var MoonrockSampleDialog = {
     var info = this._getDialogInfo(dialogElement);
     var title = info.sampleTitle;
     if (info.snapshotTitle) {
-      title += " | " + info.snapshotTitle;
+      title += " > " + info.snapshotTitle;
     }
     
-    $(info.element).find(".moonrock-sample-dlg-menu-name").html(title);
+    $(info.element).parents('.ui-dialog').find('.ui-dialog-title').html(title);
   },
   
   _getDialogInfo : function(dialogElement) {

@@ -126,7 +126,7 @@ function moonrock_snapshot_form_moonrock_snapshot_form_alter(&$form, &$form_stat
  * Implementation of hook_insert().
  */
 function moonrock_snapshot_insert($node) {
-  db_query("INSERT INTO {moonrock_snapshot} (nid, vid, notes, sample_ref, vm_parameters) VALUES ('%d', '%d', '%s', '%d', '%s')", $node->nid, $node->vid, $node->note, $node->sample_ref, $node->vm_parameters);
+  db_query("INSERT INTO {moonrock_snapshot} (nid, vid, notes, sample_ref, vm_parameters) VALUES ('%d', '%d', '%s', '%d', '%s')", $node->nid, $node->vid, $node->notes, $node->sample_ref, $node->vm_parameters);
 }
 
 /**

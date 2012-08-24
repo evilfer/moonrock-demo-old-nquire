@@ -36,14 +36,8 @@
 
 
 .moonrock-sample-dlg-menu {
-  height: 16px;
-  background-color: #f0f0f0;
+  height: 26px;
 }
-
-.moonrock-sample-dlg-menu-name {
-  display: inline-block;
-}
-
 
 .moonrock-sample-dlg-menu-item {
   font-size: 12px;
@@ -52,7 +46,19 @@
   display: inline-block;
 }
 
-.moonrock-sample-dlgmenu-item.enabled {
+.moonrock-sample-dlg-menu-item.enabled {
   cursor: pointer;
+  color: black;
+}
+
+.moonrock-sample-dlg-menu-item.enabled:hover {
   color: darkorange;
+}
+
+.moonrock-sample-dlg-menu-save .moonrock-sample-dlg-menu-item-buttom {
+  width: 21px;
+  height: 16px;
+  background: url(icons/save.png) no-repeat left;
+  cursor: pointer;
+  display: inline-block;
 }

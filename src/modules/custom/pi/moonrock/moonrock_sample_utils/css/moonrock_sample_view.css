@@ -23,11 +23,11 @@
 
 
 .search-tooltip-link-clear.search-tooltip-link-active {
-  background: url(folder_delete.png);
+  background: url(icons/folder_delete.png);
 }
 
 .search-tooltip-link-search.search-tooltip-link-active {
-  background: url(search.png);
+  background: url(icons/search.png);
 }
 
 
@@ -65,16 +65,16 @@
   display: inline-block;
   height: 12px;
   width: 18px;
-  background: url(info.png) no-repeat right;
+  background: url(icons/info.png) no-repeat right;
 }
 
 .item-browser-item-header {
   height: 17px;
-  background: url(clip_a.png) bottom right no-repeat;
+  background: url(icons/clip_a.png) bottom right no-repeat;
 }
 
 .item-browser-item-header.item-browser-item-header-clip {
-  background: url(clip_b.png) bottom right no-repeat;
+  background: url(icons/clip_b.png) bottom right no-repeat;
 }
 
 .item-browser-throbber {
@@ -84,7 +84,7 @@
 }
 
 .item-browser-throbber.active {
-  background: url("throbber.gif");
+  background: url("icons/throbber.gif");
   background-repeat: no-repeat;
   background-position: right;
 }
