@@ -9,6 +9,13 @@ Changes:
 
 
 -----------------
+25-08-2012
+
+- By default, "moonrock see samples" activity won't show snapshot search.
+- Fixed a bug about creation of measures.
+- Added sample info in new snapshot dialog
+
+-----------------
 24-08-2012
 
 - Fixed snapshot module bug: didn't store notes in DB.

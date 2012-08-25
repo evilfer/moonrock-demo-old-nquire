@@ -53,6 +53,15 @@ function moonrock_snapshot_access($op, $node, $account) {
  * Implementation of hook_form().
  */
 function moonrock_snapshot_form(&$node) {
+
+  $prefix = '<div id="moonrock-snapshot-form-messages"></div>'
+          . '<div><b>' . t('Sample:') . '</b></div>'
+          . '<div id="moonrock-snapshot-form-sample" style="padding-left: 10px"></div>'
+          . '<div><b>' . t('Snapshot:') . '</b></div>'
+          . '<img id="moonrock-snapshot-form-img" style="width:100px;padding-left:10px;"></img>';
+
+  $form['#prefix'] = $prefix;
+
   $form['title'] = array(
       '#type' => 'textfield',
       '#title' => t("Snapshot title"),

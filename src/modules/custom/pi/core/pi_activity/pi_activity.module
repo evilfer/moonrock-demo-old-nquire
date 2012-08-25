@@ -1309,10 +1309,7 @@ function pi_activity_get_link($inquiry_id, $stage_id, $phase_id, $activity_id, $
 
 	$label_icon = "<img width='12' src='" . $image_path . $status_image[$visible_status] . "'/>";
 
-  /* CANDIDATE_FIX
-   * to allow content node specific texts
-   */
-  if (strlen($activity_name_text) > 5)
+
   $url['title'] = $activity_name_text . '&nbsp;' . $label_icon;
 
 	return $url;

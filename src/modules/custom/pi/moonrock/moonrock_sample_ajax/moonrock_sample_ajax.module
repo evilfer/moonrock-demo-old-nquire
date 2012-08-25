@@ -71,7 +71,8 @@ function _moonrock_sample_ajax_search_getparam($name, $type = NULL, $param = NUL
 
 function moonrock_sample_ajax_sample_dialog() {
   $nid = isset($_REQUEST['nid']) ? $_REQUEST['nid'] : 0;
-  echo moonrock_sample_utils_create_sample_dialog($nid);
+  $snapshooting = isset($_REQUEST['snapshooting']) ? $_REQUEST['snapshooting'] === 'true' : FALSE;
+  echo moonrock_sample_utils_create_sample_dialog($nid, $snapshooting);
 }
 
 function moonrock_sample_ajax_samplesearch() {

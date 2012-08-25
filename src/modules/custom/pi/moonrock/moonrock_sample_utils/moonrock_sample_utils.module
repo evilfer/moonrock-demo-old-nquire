@@ -5,7 +5,7 @@ define("MOONROCK_SEARCH_SAMPLE", 0x01);
 define("MOONROCK_SEARCH_SNAPSHOT", 0x02);
 define("MOONROCK_SEARCH_BOTH", 0x03);
 
-function moonrock_sample_utils_create_sample_dialog($nid) {
+function moonrock_sample_utils_create_sample_dialog($nid, $create_snashot_menu) {
   $node = node_load($nid);
 
   if ($node->type == 'moonrock_snapshot') {
@@ -29,13 +29,15 @@ function moonrock_sample_utils_create_sample_dialog($nid) {
     $output .= ">";
 
     $output .= "  <div class='moonrock-sample-iframe-top-container'>";
-    $output .= "    <div class='moonrock-sample-dlg-menu'>";
-   // $output .= "      <div class='moonrock-sample-dlg-menu-item moonrock-sample-dlg-menu-reload'>[reload]</div>";
+    if ($create_snashot_menu) {
+      $output .= "    <div class='moonrock-sample-dlg-menu'>";
+      // $output .= "      <div class='moonrock-sample-dlg-menu-item moonrock-sample-dlg-menu-reload'>[reload]</div>";
 //    $output .= "      <div class='moonrocksampledialogmenuitem moonrocksampledialogmenuchoose'>[choose]</div>";
-    if ($user->uid > 1) {
-      $output .= "      <div class='moonrock-sample-dlg-menu-item moonrock-sample-dlg-menu-save'><div class='moonrock-sample-dlg-menu-item-buttom'></div><span>" . t("Create new snapshot") . "</span></div>";
+      if ($user->uid > 1) {
+        $output .= "      <div class='moonrock-sample-dlg-menu-item moonrock-sample-dlg-menu-save'><div class='moonrock-sample-dlg-menu-item-buttom'></div><span>" . t("Create new snapshot") . "</span></div>";
+      }
+      $output .= "    </div>";
     }
-    $output .= "    </div>";
 
     $output .= "    <div class='moonrock-sample-iframe-container'>";
     $output .= "      <iframe class='moonrock-sample-iframe' src='{$sample->vm}'></iframe>";
