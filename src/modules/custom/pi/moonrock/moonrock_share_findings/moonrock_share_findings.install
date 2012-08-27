@@ -1,0 +1,86 @@
+<?php
+
+// $Id: moonrock_share_findings.install,v 1.2 2009/06/11 09:55:10 ou_mbg Exp $
+
+/**
+ * @file
+ * Install....
+ */
+
+/**
+ * Implementation of moonrock_share_findings_install().
+ *
+ * @return unknown_type
+ */
+function moonrock_share_findings_install() {
+  // Create tables.
+  drupal_install_schema('moonrock_share_findings');
+
+  variable_set("og_content_type_usage_moonrock_share_findings", 'group_post');
+  //Options are status, promote, sticky, revision
+  variable_set("node_options_moonrock_share_findings", array('status', 'revision'));
+  variable_set("comment_moonrock_share_findings", COMMENT_NODE_DISABLED);
+  variable_set("upload_moonrock_share_findings", 0);
+
+  //$activities = variable_get('pi_activities', array() );
+  //$activities['moonrock_share_findings'] = 'Wiki notes';
+  //variable_set('pi_activities', $activities);
+}
+
+/**
+ * Implementation of moonrock_share_findings_uninstall().
+ */
+function moonrock_share_findings_uninstall() {
+  // Remove tables.
+  drupal_uninstall_schema('moonrock_share_findings');
+  variable_del('moonrock_share_findings');
+
+  variable_del("og_content_type_usage_moonrock_share_findings");
+  variable_del("node_options_moonrock_share_findings");
+  variable_del("comment_moonrock_share_findings");
+  variable_del("upload_moonrock_share_findings");
+
+  //$activities = variable_get('pi_activities', array() );
+  //unset( $activities['moonrock_share_findings'] );
+  //variable_set('pi_activities', $activities);
+}
+
+/**
+ * Implementation of moonrock_share_findings_schema().
+ */
+function moonrock_share_findings_schema() {
+
+  $schema['moonrock_share_findings'] = array(
+      'description' => t('Shared findings'),
+      'fields' => array(
+          'nid' => array(
+              'description' => t('node id'),
+              'type' => 'int',
+              'unsigned' => TRUE,
+              'not null' => TRUE,
+              'size' => 'small',
+              'default' => 0,
+          ),
+          'vid' => array(
+              'description' => t('The current vid version identifier'),
+              'type' => 'int',
+              'unsigned' => TRUE,
+              'not null' => TRUE,
+              'size' => 'small',
+              'default' => 0,
+          ),
+          'shareditems' => array(
+              'description' => t('List of shared items'),
+              'type' => 'text',
+              'size' => 'normal',
+              'not null' => TRUE,
+          ),
+      ),
+      'primary key' => array('vid'),
+      'indexes' => array(
+          'nid' => array('nid'),
+      ),
+  );
+
+  return $schema;
+}

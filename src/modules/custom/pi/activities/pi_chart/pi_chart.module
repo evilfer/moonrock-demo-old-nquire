@@ -23,13 +23,11 @@ function pi_chart_menu() {
 function pi_chart_show_chart_as_png($activity_id, $arg_node_function) {
   global $user;
 
-  $uid = $user->uid;
-
   $details = get_inquiry_details_from_current_path();
 
-  $nid = get_nid_for_inquiry_activity_and_user($details->inquiry_id, $activity_id, $uid);
+  $nid = get_nid_for_inquiry_activity_and_any_user($details->inquiry_id, $activity_id);
   $node = node_load($nid);
-
+  
   $selected_measures = "";
   $delim = "";
 
@@ -44,9 +42,9 @@ function pi_chart_show_chart_as_png($activity_id, $arg_node_function) {
     };
   }
 
-  $headers = get_selected_measures_headings_for_inquiry_and_user($details->inquiry_id, $selected_measures, $user->uid);
-  $rows = get_selected_measures_data_for_inquiry_and_user($details->inquiry_id, $selected_measures, $user->uid);
-  $types = get_selected_measures_types_for_inquiry_and_user($details->inquiry_id, $selected_measures, $user->uid);
+  $headers = get_selected_measures_headings_for_inquiry_and_user($details->inquiry_id, $selected_measures, $node->uid);
+  $rows = get_selected_measures_data_for_inquiry_and_user($details->inquiry_id, $selected_measures, $node->uid);
+  $types = get_selected_measures_types_for_inquiry_and_user($details->inquiry_id, $selected_measures, $node->uid);
 
   /*
    * Group by key measure

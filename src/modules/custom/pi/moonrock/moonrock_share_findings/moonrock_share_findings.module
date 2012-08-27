@@ -1,0 +1,417 @@
+<?php
+
+// $Id: moonrock_share_findings.module,v 1.2 2009/06/11 09:55:10 ou_mbg Exp $
+
+/**
+ * @file
+ * Module for creating "moonrock_share_findings" node type
+ */
+
+/**
+ * Implementation of hook_node_info().
+ */
+function moonrock_share_findings_node_info() {
+
+  return array(
+      'moonrock_share_findings' => array(
+          'name' => t('Inquiry shared findings'), // Required.
+          'module' => 'moonrock_share_findings', // Required.
+          'description' => t('Decide which of your findings will be seen by others'), // Required.
+          'has_title' => TRUE,
+          'title_label' => t('Share findings'),
+          'has_body' => TRUE,
+          'body_label' => t('Share findings'),
+          'locked' => TRUE)
+  );
+}
+
+/**
+ * Implementation of hook_perm().
+ */
+function moonrock_share_findings_perm() {
+  
+}
+
+/**
+ * Implementation of hook_access().
+ */
+function moonrock_share_findings_access($op, $node, $account) {
+  global $user;
+  $details = get_inquiry_details_from_current_path();
+  if ($op == 'view') {
+    return true;
+  } else if ($op == 'create') {
+    return check_node_function_of_activity($details->inquiry_id, $details->activity_id, $user->uid, 'add');
+  } else if ($op == 'update' || $op == 'delete') {
+    return check_node_function_of_activity($details->inquiry_id, $details->activity_id, $user->uid, 'edit');
+  }
+}
+
+/**
+ * Implementation of hook_form().
+ */
+function moonrock_share_findings_form(&$node) {
+
+  // Get metadata for this node type
+  // (we use it for labeling title and body fields).
+  // We defined this in moonrock_share_findings_node_info().
+  $type = node_get_types('type', $node);
+  global $user;
+
+  $node_details = get_inquiry_details_from_current_path();
+  if (is_numeric($node_details->activity_id)) {
+    $current_activity = load_activity($node_details->activity_id);
+  }
+
+  if ($current_activity->name) {
+    drupal_set_title(t($current_activity->name));
+  }
+
+  $form['title'] = array(
+      '#type' => 'hidden',
+      '#title' => check_plain($type->title_label),
+      '#required' => FALSE,
+      '#default_value' => $type->title_label,
+      '#weight' => -5
+  );
+
+  $form['body_filter']['shareditems'] = array(
+      '#type' => 'hidden',
+      '#title' => t('Shared items'),
+      '#required' => TRUE,
+      '#default_value' => $node->shareditems,
+      '#description' => t('List of shared items'),
+      '#weight' => -2
+  );
+
+  $prefix = "";
+  if ($current_activity->description) {
+    $prefix .= "<p>" . check_plain($current_activity->description) . "</p>";
+  }
+
+  $form['#prefix'] = $prefix;
+
+  return $form;
+}
+
+/**
+ * Implementation of hook_insert().
+ */
+function moonrock_share_findings_insert($node) {
+  db_query("INSERT INTO {moonrock_share_findings} (nid, vid, shareditems) VALUES ('%d', '%d', '%s')", $node->nid, $node->vid, $node->shareditems);
+}
+
+/**
+ * Implementation of hook_update().
+ */
+function moonrock_share_findings_update($node) {
+  if ($node->revision) {
+    moonrock_share_findings_insert($node);
+  } else {
+    db_query("UPDATE {moonrock_share_findings} SET shareditems = '%s' WHERE vid = %d", $node->shareditems, $node->vid);
+  }
+}
+
+/**
+ * Implementation of hook_delete().
+ */
+function moonrock_share_findings_delete(&$node) {
+  // Delete the related information we were saving for this node.
+  db_query('DELETE FROM {moonrock_share_findings} WHERE nid = %d', $node->nid);
+}
+
+/**
+ * Implementation of hook_load().
+ */
+function moonrock_share_findings_load($node) {
+  return db_fetch_object(db_query('SELECT * FROM {moonrock_share_findings} WHERE vid = %d', $node->vid));
+}
+
+function moonrock_share_findings_link_alter(&$links, $node) {
+  // remove attachment links from upload.module
+  unset($links['upload_attachments']);
+}
+
+/**
+ * Implementation of hook_view().
+ */
+function moonrock_share_findings_view($node, $teaser = FALSE, $page = FALSE) {
+  // Use Drupal's default node view.
+  $node = node_prepare($node, $teaser);
+
+  $node->content['moonrock_share_findings'] = array(
+      '#value' => theme('moonrock_share_findings', $node, $teaser),
+      '#weight' => 2
+  );
+
+  return $node;
+}
+
+/**
+ * MISSING
+ *
+ * @return multitype:multitype:multitype:string
+ */
+function moonrock_share_findings_theme() {
+  return array(
+      'moonrock_share_findings' => array(
+          'arguments' => array('node', 'teaser'),
+      ),
+      'moonrock_share_findings_node_form' => array(
+          'arguments' => array('form'),
+      ),
+  );
+}
+
+function _moonrock_share_findings_get_items($uid) {
+  $items = array();
+
+  $questions = array();
+  $query = "SELECT DISTINCT {node}.nid FROM {pi_key_questions} LEFT JOIN {node} on {node}.nid={pi_key_questions}.nid WHERE {node}.uid=%d";
+  $result = db_query($query, $uid);
+  while ($object = db_fetch_object($result)) {
+    $questions[] = $object->nid;
+  }
+
+  foreach ($questions as $question) {
+    $answers = array();
+    $query2 = "SELECT DISTINCT {node}.nid FROM {pi_key_answers} LEFT JOIN {node} on {node}.nid={pi_key_answers}.nid WHERE {pi_key_answers}.key_question_id=%d";
+    $result2 = db_query($query2, $question);
+    while ($object = db_fetch_object($result2)) {
+      $answers[$object->nid] = $object->nid;
+    }
+
+    $charts = array();
+    $query3 = "SELECT DISTINCT {node}.nid FROM {pi_result_presentations} LEFT JOIN {node} on {node}.nid={pi_result_presentations}.nid WHERE {pi_result_presentations}.key_question_id=%d";
+    $result3 = db_query($query3, $question);
+    while ($object = db_fetch_object($result3)) {
+      $charts[$object->nid] = $object->nid;
+    }
+
+    $items[$question] = array(
+        'answers' => $answers,
+        'charts' => $charts,
+    );
+  }
+
+  return $items;
+}
+
+function _moonrock_share_findings_filter_items($items, $shared) {
+  $filtered = array();
+  foreach ($items as $nid => $subitems) {
+    if (array_search($nid, $shared) !== FALSE) {
+      $filtered[$nid] = array(
+          'answers' => array(),
+          'charts' => array(),
+      );
+      foreach ($subitems as $cat => $cat_items) {
+        foreach ($cat_items as $cat_item) {
+          if (array_search($cat_item, $shared)) {
+            $filtered[$nid][$cat][] = $cat_item;
+          }
+        }
+      }
+    }
+  }
+  return $filtered;
+}
+
+function _moonrock_share_findings_has_items($items, $type) {
+  foreach ($items as $subitems) {
+    if (count($subitems[$type]) > 0) {
+      return TRUE;
+    }
+  }
+  return FALSE;
+}
+
+function theme_moonrock_share_findings_node_form($form) {
+  drupal_add_css(drupal_get_path('module', 'moonrock_share_findings') . '/css/share_findings.css');
+  drupal_add_js(drupal_get_path('module', 'moonrock_share_findings') . '/js/selectShareFindings.js');
+
+  global $user;
+  $items = _moonrock_share_findings_get_items($user->uid);
+
+  if (count($items) > 0) {
+    $output = "<p>" . t('Select which key answers and charts you would like to share:') . "</p>";
+    $output .= "<ul>";
+    foreach ($items as $question_nid => $question_items) {
+      $output .= "<li>";
+      $question = node_load($question_nid);
+      $output .= "<div class='moonrock-share-findings-question'>"
+              . "<input type='checkbox' name='moonrock-share-findings-select' value='{$question_nid}' id='moonrock-share-findings-select-{$question_nid}' />"
+              . "<label for='moonrock-share-findings-select-{$question_nid}'>" . check_plain($question->title) . "</label>"
+              . "</div>";
+
+      if (count($question_items['answers']) > 0) {
+        $output .= "<div>" . t("Key answers:") . "</div>";
+        $output .= "<ul>";
+        foreach ($question_items['answers'] as $answer_nid) {
+          $answer = node_load($answer_nid);
+
+          $output .= "<li>"
+                  . "<div class='moonrock-share-findings-answer'>"
+                  . "<input type='checkbox' name='moonrock-share-findings-select' parent='{$question_nid}' value='{$answer_nid}' id='moonrock-share-findings-select-{$answer_nid}' />"
+                  . "<label for='moonrock-share-findings-select-{$answer_nid}'>" . check_plain($answer->title) . "</label>"
+                  . "</div>"
+                  . "</li>";
+        }
+        $output .= "</ul>";
+      }
+      if (count($question_items['charts']) > 0) {
+        $output .= "<div>" . t("Charts:") . "</div>";
+        $output .= "<ul>";
+        foreach ($question_items['charts'] as $chart_nid) {
+          $output .= "<li>";
+          $chart = node_load($chart_nid);
+          $output .= "<div class='moonrock-share-findings-chart'>"
+                  . "<input type='checkbox' name='moonrock-share-findings-select' parent='{$question_nid}' value='{$chart_nid}' id='moonrock-share-findings-select-{$chart_nid}' />"
+                  . "<label for='moonrock-share-findings-select-{$chart_nid}'>" . check_plain($chart->title) . "</label>"
+                  . "</div>"
+                  . "</li>";
+        }
+        $output .= "</ul>";
+      }
+
+      $output .= "</li>";
+    }
+    $output .= "</ul>";
+  } else {
+    $output = "<p>" . t('You have not created any key question or key answers to share.') . "</p>";
+  }
+
+
+  $output .= drupal_render($form); // Render rest of form components.
+  return $output;
+}
+
+function moonrock_share_fundings_get_formated_items($node, $require_answers = FALSE, $require_charts = FALSE) {
+  $items = _moonrock_share_findings_get_items($node->uid);
+  $shared = explode(",", $node->shareditems);
+  $filtered = _moonrock_share_findings_filter_items($items, $shared);
+  if ($require_answers && !_moonrock_share_findings_has_items($filtered, 'answers')) {
+    return FALSE;
+  } else if ($require_charts && !_moonrock_share_findings_has_items($filtered, 'charts')) {
+    return FALSE;
+  } else {
+    return _moonrock_share_findings_format_shared_items($node->uid, $filtered);
+  }
+}
+
+function _moonrock_share_findings_format_shared_items($uid, $items) {
+  if (count($items) > 0) {
+    $output = "<ul>";
+    foreach ($items as $question_nid => $question_items) {
+      $output .= "<li>";
+      $question = node_load($question_nid);
+      $output .= "<div class='moonrock-share-findings-question'>"
+              . check_plain($question->title)
+              . "</div>";
+
+      if (count($question_items['answers']) > 0) {
+        $output .= "<div class='moonrock-share-findings-hidden moonrock-share-findings-collapsible'><div class='button'></div>" . t("Key answers") . "</div>";
+        $output .= "<div class='moonrock-share-findings-hidden container'>";
+        $output .= "<div class='content'>";
+        $output .= "<ul>";
+        foreach ($question_items['answers'] as $answer_nid) {
+          $answer = node_load($answer_nid);
+
+          $output .= "<li>"
+                  . "<div class='moonrock-share-findings-answer'>"
+                  . check_plain($answer->title)
+                  . "</div>"
+                  . "</li>";
+        }
+        $output .= "</ul>";
+        $output .= "</div>";
+        $output .= "</div>";
+      }
+      if (count($question_items['charts']) > 0) {
+        $output .= "<div class='moonrock-share-findings-hidden moonrock-share-findings-collapsible'><div class='button'></div>" . t("Charts") . "</div>";
+        $output .= "<div class='moonrock-share-findings-hidden container'>";
+        $output .= "<div class='content'>";
+        $output .= "<ul>";
+        foreach ($question_items['charts'] as $chart_nid) {
+          $output .= "<li>";
+          $chart = node_load($chart_nid);
+          $activity_id = get_activity_id_for_nid($chart->nid);
+          $output .= "<div class='moonrock-share-findings-chart'>"
+                  . "<div>" . check_plain($chart->title) . "</div>"
+                  . "<img class='chart_image' src='?q=activity/{$activity_id}/chart.png'>"
+                  . "</div>"
+                  . "</li>";
+        }
+        $output .= "</ul>";
+        $output .= "</div>";
+        $output .= "</div>";
+      }
+
+      $output .= "</li>";
+    }
+    $output .= "</ul>";
+  } else {
+    global $user;
+    if ($user->uid == $uid) {
+      $output = "<p>" . t('You are not sharing any item.') . "</p>";
+    } else {
+      $output = "<p>" . check_plain($user->name) . t(' is not sharing any item.') . "</p>";
+    }
+  }
+
+  return $output;
+}
+
+function moonrock_share_findings_load_view_resources() {
+  drupal_add_css(drupal_get_path('module', 'moonrock_share_findings') . '/css/share_findings.css');
+  drupal_add_js(drupal_get_path('module', 'moonrock_share_findings') . '/js/viewShareFindings.js');
+  drupal_add_js(drupal_get_path('module', 'moonrock_share_findings') . '/lib/jquery.collapsible.js');
+}
+
+function theme_moonrock_share_findings($node, $teaser = TRUE) {
+  moonrock_share_findings_load_view_resources();
+  
+  $items = _moonrock_share_findings_get_items($node->uid);
+  $shared = explode(",", $node->shareditems);
+
+  $sq = 0;
+  $tq = 0;
+  $sa = 0;
+  $ta = 0;
+  $sc = 0;
+  $tc = 0;
+
+  foreach ($items as $question_nid => $question_items) {
+    $question_shared = array_search($question_nid, $shared) !== FALSE;
+    $tq++;
+    if ($question_shared) {
+      $sq++;
+    }
+
+    foreach ($question_items['answers'] as $i => $answer_nid) {
+      $ta++;
+      if ($question_shared && array_search($answer_nid, $shared) !== FALSE) {
+        $sa++;
+      }
+    }
+    foreach ($question_items['charts'] as $i => $chart_nid) {
+      $tc++;
+      if ($question_shared && array_search($chart_nid, $shared) !== FALSE) {
+        $sc++;
+      }
+    }
+  }
+
+  if ($teaser) {
+    $output = "<div>" . t("Your shared items:") . "</div><ul>"
+            . "<li>" . t("Key questions: ") . $sq . '/' . $tq . "</li>"
+            . "<li>" . t("Key answers: ") . $sa . '/' . $ta . "</li>"
+            . "<li>" . t("Charts: ") . $sc . '/' . $tc . "</li>"
+            . "</ul>";
+  } else {
+    $filtered_items = _moonrock_share_findings_filter_items($items, $shared);
+    $output .= _moonrock_share_findings_format_shared_items($node->uid, $filtered_items);
+  }
+
+  return $output;
+}

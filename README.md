@@ -7,6 +7,13 @@ Moonrock demonstators.
 
 Changes:
 
+-----------------
+27-08-2012
+
+- Updated share findings activities: 
+  + Modules 'moonrock_share_findings' and 'moonrock_review_findings' created.
+  + Modules 'moonrock_share_notes' and 'moonrock_review_notes' removed.
+
 
 -----------------
 25-08-2012
