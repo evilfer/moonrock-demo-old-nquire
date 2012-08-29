@@ -143,7 +143,7 @@
       this.append($("<img/>").attr("src", item.img).addClass("item-browser-item-img"));
 
       var title = $("<div/>").addClass("item-browser-item-title");
-      if (options.select) {
+      if (options.select && !item.params.unselectable) {
         var selectId = id + '-select';
         $(title).append($('<input id="' + selectId + '" type="radio" name="' + options.id + '" value="' + item.id + '" />'));
         $(title).append($('<label/>').html(item.title).attr('for', selectId));

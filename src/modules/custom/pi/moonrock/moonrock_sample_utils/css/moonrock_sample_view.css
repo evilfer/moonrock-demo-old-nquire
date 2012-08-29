@@ -52,6 +52,7 @@
 
 .item-browser-item-img {
   width: 100%;
+  cursor: pointer;
 }
 
 .item-browser-item-title {

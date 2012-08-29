@@ -21,8 +21,9 @@ function moonrock_sample_utils_create_sample_dialog($nid, $create_snashot_menu) 
 
   if ($sample) {
     global $user;
+    $itemid = $snapshot ? $snapshot->nid : $sample->nid;
 
-    $output .= "<div class='moonrock-sample-dlg' sample='{$sample->nid}' sample_name='" . check_plain($sample->title) . "'";
+    $output .= "<div class='moonrock-sample-dlg' item-id='{$itemid}' sample='{$sample->nid}' sample_name='" . check_plain($sample->title) . "'";
     if ($snapshot) {
       $output .= " snapshot='{$snapshot->nid}' snapshot_name='" . check_plain($snapshot->title) . "'";
     }
@@ -279,6 +280,7 @@ function moonrock_sample_utils_prepare_snapshot_object($nid) {
           "type" => "snapshot",
           "snapshot" => $snapshot->nid,
           "sampleref" => $snapshot->sample_ref,
+          "unselectable" => $user->uid != $snapshot->uid,
       ),
       "metadata" => array(
           "sampleref" => array(

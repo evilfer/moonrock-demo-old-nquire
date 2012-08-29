@@ -8,6 +8,14 @@ Moonrock demonstators.
 Changes:
 
 -----------------
+29-08-2012
+
+- Bugs fixed:
+  + Several dialogs would appear for the same snapshot/sample.
+  + Snapshot search would result in duplicate items.
+  + Snapshots created by others could be selected.
+
+-----------------
 27-08-2012
 
 - Updated share findings activities: 

@@ -86,7 +86,7 @@ function moonrock_sample_ajax_samplesearch() {
   if ($nid) {
     $nids[] = $nid;
   } else {
-    $query = "SELECT {node}.nid FROM {moonrock_sample} "
+    $query = "SELECT DISTINCT {node}.nid FROM {moonrock_sample} "
             . "LEFT JOIN {node} ON moonrock_sample.nid = node.nid ";
     $condition = "WHERE {node}.type = 'moonrock_sample' ";
 
@@ -132,10 +132,10 @@ function moonrock_sample_ajax_snapshotsearch() {
   if ($nid) {
     $nids[] = $nid;
   } else {
-    $query = "SELECT {node}.nid FROM {moonrock_snapshot} "
+    $query = "SELECT DISTINCT {node}.nid FROM {moonrock_snapshot} "
             . "LEFT JOIN {node} ON {moonrock_snapshot}.nid = {node}.nid ";
     $condition = "WHERE {node}.type = 'moonrock_snapshot' ";
-
+    
     $parameters = array();
 
     if ($samplerefs) {

@@ -19,7 +19,7 @@ var MoonrockSampleDialog = {
     if ($(dialogselector).length > 0) {
       $(dialogselector).dialog("moveToTop").dialogExtend("restore");
     } else {
-      var url = MoonrockSampleView.getBaseURL() + '/sample_dialog'
+      var url = MoonrockSampleView.getBaseURL() + '/sample_dialog';
       $("<div/>").load(url, {
         nid: itemId,
         snapshooting: snapshooting
