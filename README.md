@@ -8,6 +8,15 @@ Moonrock demonstators.
 Changes:
 
 -----------------
+30-08-2012
+
+- Changed pi_result_presentations interface
+- Added support for histograms in pi_chart
+- pChart library supports displaying series names over bars (for histogram chart creation).
+- Bugs:
+  + Saving result presentations doesn't work.
+
+-----------------
 29-08-2012
 
 - Bugs fixed:

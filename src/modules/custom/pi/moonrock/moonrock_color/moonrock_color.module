@@ -250,6 +250,15 @@ function moonrock_color_nquire_data_get_color_value($nid) {
   return array("R" => 255, "G" => 255, "B" => 255, "Alpha" => 50);
 }
 
+function moonrock_color_nquire_data_get_text_value($nid) {
+  $node = node_load($nid);
+  if ($node && $node->type == 'moonrock_color') {
+     return check_plain($node->title);
+  }
+  
+  return $nid;
+}
+
 function _moonrock_color_html2rgb($color) {
   if ($color[0] == '#') {
     $color = substr($color, 1);

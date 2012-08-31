@@ -19,7 +19,7 @@ function pi_result_presentations_node_info() {
           'has_title' => TRUE,
           'title_label' => t('Short title'),
           'has_body' => TRUE,
-          'body_label' => t('Prediction'),
+          'body_label' => t('Conclusion'),
           'locked' => TRUE
       )
   );
@@ -67,39 +67,19 @@ function pi_result_presentations_access($op, $node, $account) {
  * Implementation of hook_form().
  */
 function pi_result_presentations_form(&$node) {
-  global $user;
-  $node_details = get_inquiry_details_from_current_path();
-
-  if (is_numeric($node_details->activity_id)) {
-    $current_activity = load_activity($node_details->activity_id);
-  }
-
-  //**Pick up the key questions
-  // Add the categories of existing nodes and the options list for new nodes
-  $key_questions_nid = find_sort_key_questions_nid_for_uid_and_inquiry($user->uid, $node_details->inquiry_id);
-  if (isset($key_questions_nid)) {
-    $key_questions_node = node_load($key_questions_nid);
-    $sorted_key_questions = $key_questions_node->categories;
-  } else {
-    $sorted_key_questions = array();
-  }
-
   $all_key_questions = pi_sort_key_questions_get_options();
-
-  $key_questions_to_show = pi_merge_content_item_lists($sorted_key_questions, $all_key_questions);
-
   $key_question_options = array();
-  foreach ($key_questions_to_show as $key => $question) {
+  foreach ($all_key_questions as $key => $question) {
     $key_question_options[$key] = $question['#title'];
   }
 
-  if (isset($key_question_options) AND ($key_question_options != array())) {
+  if (count($key_question_options) > 0) {
     $form['key_question_id'] = array(
         '#type' => 'select',
         '#title' => t('Key question to investigate'),
         '#required' => TRUE,
         '#default_value' => $node->key_question_id,
-        '#description' => t('Select a key question to investigate'),
+        '#description' => t('Your graph will display evidence about Moon rocks that can be used to answer your key questions.'),
         '#options' => $key_question_options,
         '#weight' => 0
     );
@@ -110,68 +90,98 @@ function pi_result_presentations_form(&$node) {
       '#title' => t('Title'),
       '#required' => TRUE,
       '#default_value' => $node->title,
-      '#description' => t('Enter a title for your results presentation'),
+      '#description' => t('Enter a title for your graph'),
       '#weight' => -10
   );
 
-  $form['body_filter']['body'] = array(
+  // ['body_filter']
+  $form['body'] = array(
       '#type' => 'textarea',
-      '#title' => t('Prediction'),
+      '#title' => t('Conclusion'),
       '#required' => FALSE,
       '#default_value' => $node->body,
-      '#description' => t('Enter what you would predict this data set to show'),
+      '#description' => t('Enter the conclusion you extract from your graph'),
       '#weight' => -9
   );
 
-
-  // onepageprofile_categories and tree used for draggable menu items
-  $form['onepageprofile_categories'] = array(
-      '#tree' => TRUE,
-      '#weight' => 0
+  $chart_types = array(
+      'line-bar' => t('Bar chart'),
+      'histogram' => t('Histogram'),
   );
 
-  // Add the categories of existing nodes and the options list for new nodes
-  if (isset($node->nid)) {
-    $selected_results_measures = $node->categories;
-  } else {
-    $selected_results_measures = array();
+  $form['chart_type'] = array(
+      '#type' => 'radios',
+      '#title' => t('Chart type'),
+      '#options' => $chart_types,
+      '#required' => TRUE,
+      '#default_value' => strlen($node->chart_type) > 0 ? $node->chart_type : 'line-bar',
+      '#description' => t('Histograms are useful to plot any type of measures.</br>In contrast, bar graphs can plot several numeric measurements'),
+  );
+  $form['abscissa'] = array(
+      '#type' => 'radios',
+      '#title' => 'Abscissa variable',
+      '#required' => TRUE,
+      '#default_value' => $node->abscissa,
+  );
+  $form['ordinate'] = array(
+      '#type' => 'hidden',
+      '#required' => TRUE,
+      '#title' => 'Ordinate variables',
+      '#default_value' => $node->ordinate,
+  );
+  $form['color'] = array(
+      '#type' => 'hidden',
+      '#required' => FALSE,
+      '#default_value' => $node->color,
+  );
+
+  $measures = pi_result_presentations_get_options();
+  $all_measures = _pi_result_presentations_format_measure_options($measures, 'all');
+  $form['measures']['abscissas'] = array(
+      '#type' => 'select',
+      '#options' => $all_measures,
+      '#title' => t('Abscissa variable'),
+      '#required' => TRUE,
+      '#description' => t('Select the variable that will be used in the x asis of the graph')
+  );
+
+  $numeric_measures = _pi_result_presentations_format_measure_options($measures, 'numeric');
+  $form['measures']['bar_ordinate'] = array(
+      '#type' => 'checkboxes',
+      '#options' => $numeric_measures,
+      '#title' => t('Graph ordinate variables'),
+      '#required' => TRUE,
+      '#description' => t('Select the variables that will be used in the y asis of the graph')
+  );
+
+  $form['measures']['histogram_ordinate'] = array(
+      '#type' => 'select',
+      '#options' => $all_measures,
+      '#title' => t('Histogram ordinate variable'),
+      '#required' => TRUE,
+      '#description' => t('Select the variable that will be used in the y asis of the graph'),
+      '#default_value' => '',
+  );
+
+  if (count($measures['color']) == 1) {
+    $color_measure = $measures['measures'][$measures['color'][0]];
+    $value = array(
+        $color_measure->nid => $color_measure->nid == $node->color, // ? $color_measure->nid : '';
+    );
+
+    $form['measures']['bar_color'] = array(
+        '#type' => 'checkboxes',
+        '#title' => t('Graph color'),
+        '#options' => array(
+            $color_measure->nid => t('Use measure ') . check_plain($color_measure->title) . t(' to paint the graph'),
+        ),
+        '#description' => t("Decide whether you want to use a measure to select the graph colors"),
+        '#default_value' => $value,
+    );
   }
-  $all_results_measures = pi_result_presentations_get_options();
 
-  //merge the two lists as categories
-  $results_measures_to_show = pi_merge_content_item_lists($selected_results_measures, $all_results_measures);
-  // set $tree to point to the above $form['onepageprofile_categories'] object
-  $tree = &$form['onepageprofile_categories'];
 
-  foreach ($results_measures_to_show as $key => $category) {
-    $measure = node_load($key);
 
-    // format the measure units
-    if (isset($measure->units_short) AND ($measure->units_short != '')) {
-      $units = " (" . $measure->units_short . ")";
-    } elseif (isset($measure->units) AND ($measure->units != '')) {
-      $units = " (" . $measure->units . ")";
-    } else {
-      $units = "";
-    };
-
-    // add $tree entries for current category (i.e. $key)
-    $tree[$key]['title'] = array(
-        '#value' => t($category['#title'] . $units),
-    );
-
-    $tree[$key]['weight'] = array(
-        '#type' => 'weight',
-        '#delta' => max(10, count($results_measures_to_show)),
-        '#default_value' => $category['#weight'],
-    );
-
-    $tree[$key]['status'] = array(
-        '#type' => 'select',
-        '#default_value' => $category['#status'],
-        '#options' => array('0' => 'unselected', '1' => 'selected'),
-    );
-  }
   $prefix = '';
   /* 	$hypothesis_param = find_hypothesis_nid_for_uid_and_inquiry($user->uid, $node_details->inquiry_id);
 
@@ -187,6 +197,14 @@ function pi_result_presentations_form(&$node) {
   return $form;
 }
 
+function _pi_result_presentations_format_measure_options($measures, $type) {
+  $options = array();
+  foreach ($measures[$type] as $nid) {
+    $options[$nid] = $measures['measures'][$nid]->title;
+  }
+  return $options;
+}
+
 /**
  * This function validates the presentaion the user wants to create.
  * It checks that non of the selected y axis measures are non numeric.
@@ -194,7 +212,9 @@ function pi_result_presentations_form(&$node) {
  * @param $form
  * @param $form_state
  */
-function pi_result_presentations_validate(&$form, &$form_state) {
+function __pi_result_presentations_validate(&$form, &$form_state) {
+  return;
+
   global $user;
   $details = get_inquiry_details_from_current_path();
 
@@ -254,15 +274,10 @@ function pi_result_presentations_validate(&$form, &$form_state) {
  * Implementation of hook_insert().
  */
 function pi_result_presentations_insert($node) {
-  while ($measure = current($node->onepageprofile_categories)) {
-    $sql = "INSERT INTO {pi_result_presentations} (nid, vid, key_question_id, available_measure, status, weight)
-      VALUES ( %d, %d, %d, %d, '%s', %d )";
+  $sql = "INSERT INTO {pi_result_presentations} (nid, vid, key_question_id, chart_type, abscissa, ordinate, color)
+      VALUES ( %d, %d, %d, '%s', '%s', '%s', '%s' )";
 
-    db_query($sql, $node->nid, $node->vid, $node->key_question_id, key($node->onepageprofile_categories), $measure['status'], $measure['weight']);
-
-    next($node->onepageprofile_categories);
-  }
-  reset($node->onepageprofile_categories);
+  db_query($sql, $node->nid, $node->vid, $node->key_question_id, $node->chart_type, $node->abscissa, $node->ordinate, $node->color);
 }
 
 /**
@@ -289,13 +304,8 @@ function pi_result_presentations_delete(&$node) {
  * Implementation of hook_load().
  */
 function pi_result_presentations_load($node) {
-  $result = new stdClass;
-
-  $result->key_question_id = db_result(db_query('SELECT key_question_id FROM {pi_result_presentations} WHERE vid = %d', $node->vid));
-
-  $result->categories = pi_result_presentations_get_choice($node);
-
-  return $result;
+  $node = db_fetch_object(db_query('SELECT * FROM {pi_result_presentations} WHERE vid = %d', $node->vid));
+  return $node;
 }
 
 /**
@@ -669,7 +679,48 @@ function result_presentations_teaser_view($node) {
  * Theme pi_results_presentations form
  */
 function theme_pi_result_presentations_node_form($form) {
-  drupal_add_tabledrag('onepageprofile-categories', 'order', 'sibling', 'onepageprofile-element');
+  drupal_add_css(drupal_get_path('module', 'pi_result_presentations') . '/css/pi_result_presentations.css');
+  drupal_add_js(drupal_get_path('module', 'pi_result_presentations') . '/js/pi_result_presentations.js');
+
+  $output = '';
+  $output .= drupal_render($form['title']);
+  $output .= drupal_render($form['key_question_id']);
+
+  $output .= "<div><b>" . t("Graph configuration:") . "</b></div>";
+  $output .= '<div id="pi-result-presentations-measures">';
+
+  $output .= '<div id="pi-result-presentations-select-type" class="pi-result-presentations-measures-block">';
+  $output .= drupal_render($form['chart_type']);
+  $output .= '</div>';
+
+  $output .= '<div id="pi-result-presentations-select-abscissa" class="pi-result-presentations-measures-block">';
+  $output .= drupal_render($form['measures']['abscissas']);
+  $output .= '</div>';
+
+  $output .= '<div id="pi-result-presentations-select-ordinates" class="pi-result-presentations-measures-block">';
+  $output .= '<div id="pi-result-presentations-select-ordinates-bar" class="pi-result-presentations-measures-sub-block">';
+  $output .= drupal_render($form['measures']['bar_ordinate']);
+  $output .= '</div>';
+  $output .= '<div id="pi-result-presentations-select-ordinates-histogram" class="pi-result-presentations-measures-sub-block">';
+  $output .= drupal_render($form['measures']['histogram_ordinate']);
+  $output .= '</div>';
+  $output .= '</div>';
+
+  if (isset($form['measures']['bar_color'])) {
+    $output .= '<div id="pi-result-presentations-select-color" class="pi-result-presentations-measures-block">';
+    $output .= drupal_render($form['measures']['bar_color']);
+    $output .= '</div>';
+  }
+  $output .= "</div>";
+
+  $output .= "<div style='padding-top: 20px'><b>" . t('Preview') . "</div>";
+  $output .= "<div style='height: 250px;'>";
+  $output .= "<img id='pi-result-presentations-preview-no' src='" . drupal_get_path('module', 'pi_result_presentations') . '/images/no.png' . "'></img>";
+  $output .= "<img id='pi-result-presentations-preview-loading' src='" . drupal_get_path('module', 'pi_result_presentations') . '/images/throbber.gif' . "'></img>";
+  $output .= "<img id='pi-result-presentations-preview'></img>";
+  $output .= "</div>";
+  $output .= drupal_render($form);
+  return $output;
 
   // Header
   $header = array(
@@ -707,47 +758,38 @@ function theme_pi_result_presentations_node_form($form) {
 /**
  * Load the user edit form and grab all of the fieldsets
  */
-function pi_result_presentations_get_choice($node) {
-  $query = "SELECT * FROM {pi_result_presentations} WHERE nid = %d AND vid = %d ORDER BY status DESC, weight ASC";
-  $result = db_query($query, $node->nid, $node->vid);
-
-  $categories = array();
-  while ($row = db_fetch_object($result)) {
-    $loaded_node = node_load($row->available_measure);
-    $categories[$row->available_measure] = array('#weight' => count($categories),
-        '#title' => t($loaded_node->title),
-        '#status' => $row->status
-    );
-  }
-  return $categories;
-}
-
-/**
- * Load the user edit form and grab all of the fieldsets
- */
 function pi_result_presentations_get_options() {
   global $user;
   $details = get_inquiry_details_from_current_path();
 
 
-  $measures = find_selected_measures_nid_for_uid_and_inquiry($user->uid, $details->inquiry_id);
-  $measures_obj = node_load($measures);
+  $sort_measures_nid = find_selected_measures_nid_for_uid_and_inquiry($user->uid, $details->inquiry_id);
+  $sort_measures = node_load($sort_measures_nid);
 
-  $categories = array();
-  if (count($measures_obj->categories) > 0) {
-    foreach ($measures_obj->categories as $key => $measure) {
-      $measure_node = node_load($key);
-      if ($measure['#status'] == 'key' || $measure['#status'] == 'selected') {
-        $categories[$key] = array(
-            '#weight' => 1,
-            '#title' => t($measure_node->title),
-            '#status' => 'none'
-        );
+  $measures = array(
+      'measures' => array(),
+      'all' => array(),
+      'numeric' => array(),
+      'color' => array(),
+  );
+  foreach ($sort_measures->categories as $key => $measure_status) {
+    if ($measure_status['#status'] == 'key' || $measure_status['#status'] == 'selected') {
+      $measure = node_load($key);
+      $measures['measures'][$measure->nid] = $measure;
+      $measures['all'][] = $measure->nid;
+      if ($measure->data_type == 'numeric') {
+        $measures['numeric'][] = $measure->nid;
+      } else if ($measure->content_options) {
+        if (function_exists("{$measure->content_options}_nquire_data_get_numeric_value")) {
+          $measures['numeric'][] = $measure->nid;
+        } else if (function_exists("{$measure->content_options}_nquire_data_get_color_value")) {
+          $measures['color'][] = $measure->nid;
+        }
       }
     }
   }
 
-  return $categories;
+  return $measures;
 }
 
 function pi_data_export_csv() {
