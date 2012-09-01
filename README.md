@@ -8,6 +8,12 @@ Moonrock demonstators.
 Changes:
 
 -----------------
+01-09-2012
+
+- Changed VM dialog.
+- Improved sample/snapshot search.
+
+-----------------
 30-08-2012
 
 - Changed pi_result_presentations interface

@@ -73,8 +73,8 @@ var MoonrockSampleView = {
     }
   },
   
-  repeatSnapshotSearch: function() {
-    this.searchManagers.snapshot.repeatSearch();
+  newSnapshot: function(snapshot) {
+    this.searchManagers.snapshot.fetch(snapshot.nid);
   },
   /**
    * sample event callbacks

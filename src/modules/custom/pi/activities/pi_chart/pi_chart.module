@@ -140,6 +140,14 @@ function pi_chart_create_png($title, $type, $abscissa_nid, $ordinate_str, $color
       $cross[$data_index[0][$row[0]]][$data_index[1][$row[1]]]++;
     }
     
+    for($i = 0; $i < count($cross); $i++) {
+      for($j = 0; $j < count($cross[$i]); $j++) {
+        if ($cross[$i][$j] == 0) {
+          $cross[$i][$j] = VOID;
+        }
+      }
+    }
+    
     $colors = FALSE;
     if ($types[1]->content_options) {
       $function_name = "{$types[1]->content_options}_nquire_data_get_color_value";

@@ -1,0 +1,51 @@
+
+
+
+.vm-dlg-icon {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  display: inline-block;
+  margin-right: 3px;
+}
+
+.vm-dlg-icon-close {
+  background: url(close.png) no-repeat center;
+}
+.vm-dlg-icon-close:hover {
+  background: url(close-hover.png) no-repeat center;
+}
+
+.vm-dlg-icon-max {
+  background: url(max.png) no-repeat center;
+}
+.vm-dlg-icon-max:hover {
+  background: url(max-hover.png) no-repeat center;
+}
+.vm-dlg-icon-min {
+  background: url(min.png) no-repeat center;
+}
+.vm-dlg-icon-min:hover {
+  background: url(min-hover.png) no-repeat center;
+}
+
+.vm-dlg-dialog {
+  position: fixed !important;
+  padding: 5px;
+  top: 50px;
+  left: 50px;
+  background: white;
+  border: 5px solid gray;
+  border-radius: 15px;
+  width: 1000px;
+  height: 800px;
+}
+
+.vm-dlg-content {
+  width: auto;
+  height: auto;
+  padding: 5px;
+  padding-top: 10px;
+}
+
+

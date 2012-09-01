@@ -221,6 +221,9 @@ function moonrock_sample_utils_load_resources($link_vm, $sample_search, $snapsho
   drupal_add_js(drupal_get_path('module', 'moonrock_sample_utils') . '/js/MoonrockSampleSearch.js');
   drupal_add_js(drupal_get_path('module', 'moonrock_sample_utils') . '/js/MoonrockSampleSelection.js');
 
+  drupal_add_js(drupal_get_path('module', 'moonrock_sample_utils') . '/dlg/vm-dlg.js');
+  drupal_add_css(drupal_get_path('module', 'moonrock_sample_utils') . '/dlg/vm-dlg.css');
+
   drupal_add_js(drupal_get_path('module', 'moonrock_sample_utils') . '/js/init.js');
   drupal_add_css(drupal_get_path('module', 'moonrock_sample_utils') . '/css/moonrock_sample_view.css');
   drupal_add_css(drupal_get_path('module', 'moonrock_sample_utils') . '/css/moonrock_sample_dialog.css');

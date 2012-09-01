@@ -25,53 +25,57 @@ var MoonrockSampleSearch = function(settings) {
 MoonrockSampleSearch.prototype.init = function() {
   var self = this;
 
-  $(self.results).itemBrowser({
-    clip: true,
-    select: $(self.results).attr('select') === 'true',
-    eventCallback : function(event, item, containerId) {
-      MoonrockSampleView.itemEvent(event, item, containerId);
-    },
-    metadataCallback: self.settings.metadataCallback
-  });
+  if ($(self.results).length > 0) {
+    $(self.results).itemBrowser({
+      clip: true,
+      select: $(self.results).attr('select') === 'true',
+      eventCallback : function(event, item, containerId) {
+        MoonrockSampleView.itemEvent(event, item, containerId);
+      },
+      metadataCallback: self.settings.metadataCallback
+    });
 
-  $(self.dlg).dialog({
-    autoOpen:false,
-    width: 'auto',
-    height: 'auto',
-    minHeight: 100
-  });
+    $(self.dlg).dialog({
+      autoOpen:false,
+      width: 'auto',
+      height: 'auto',
+      minHeight: 100
+    });
 
-  $(self.throbber).itemBrowserThrobber();
+    $(self.throbber).itemBrowserThrobber();
 
-  $(self.form).find("input[type='text']").keypress(function(event) {
-    if (event.keyCode === 13) {
+    $(self.form).find("input[type='text']").keypress(function(event) {
+      if (event.keyCode === 13) {
+        self.newSearch();
+        event.stopPropagation();
+        event.preventDefault();
+      }
+    });
+    $(self.form).find("select").change(function() {
       self.newSearch();
-      event.stopPropagation();
-      event.preventDefault();
-    }
-  });
-  $(self.form).find("select").change(function() {
-    self.newSearch();
-  });
+    });
 
-  $(self.search).click(function() {
+    $(self.search).click(function() {
+      self.newSearch(true);
+    });
+    $(self.cancel).click(function() {
+      $(self.dlg).dialog('close');
+    });
+
+    $(self.cluetip).click(function() {
+      if ($(self.dlg).dialog('isOpen')) {
+        $(self.dlg).dialog('moveToTop');
+      } else {
+        $(self.dlg).dialog('open');
+      }
+    });
+
+    $(self.clear).click(function() {
+      self.clearSearch();
+    });
+
     self.newSearch(true);
-  });
-  $(self.cancel).click(function() {
-    $(self.dlg).dialog('close');
-  });
-
-  $(self.cluetip).click(function() {
-    if ($(self.dlg).dialog('isOpen')) {
-      $(self.dlg).dialog('moveToTop');
-    } else {
-      $(self.dlg).dialog('open');
-    }
-  });
-
-  $(self.clear).click(function() {
-    self.clearSearch();
-  });
+  }
 };
 
 MoonrockSampleSearch.prototype.newSearch = function(hideForm) {
@@ -144,7 +148,7 @@ MoonrockSampleSearch.prototype.fetch = function(id) {
       if (items.length === 1) {
         $(self.clear).addClass('search-tooltip-link-active');
         $(self.results).itemBrowser("addItem", items[0]);
-//        $(self.results).itemBrowser('clip', id);
+        $(self.results).itemBrowser('clip', id);
       }
     });
   }

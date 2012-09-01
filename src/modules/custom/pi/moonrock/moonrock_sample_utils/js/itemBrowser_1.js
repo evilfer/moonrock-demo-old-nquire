@@ -11,9 +11,7 @@
         select: false,
         eventCallback: null,
         metadataCallback: null,
-        itemWidth: 200,
-        itemMargin: 10,
-        taperingPortion: .2
+        itemWidth: 200
       }, options, {
         id: this.attr('id')
       });
@@ -21,43 +19,7 @@
       this.html("")
               .addClass("item-browser-container")
               .data('settings', settings)
-              .data('selected', null)
-              .data('scroll', 0)
-              .data('scrolling', false)
-              .data('scrollingPageX', 0);
-
-      var scrollContainer = $('<div/>').addClass("item-browser-scroll-container").appendTo(this);
-      $('<div/>').addClass('item-browser-scroll-bar').appendTo(scrollContainer);
-
-      var self = this;
-      this.find('.item-browser-scroll-bar').css('left', 0);
-
-      this.find('.item-browser-scroll-bar').mousedown(function(event) {
-        self.data('scrolling', true);
-        self.data('scrollingPageX', event.pageX);
-      });
-      $(document).mouseup(function() {
-        self.data('scrolling', false);
-      });
-      $(document).mousemove(function(event) {
-        if (self.data('scrolling')) {
-          var handleWidth = self.find('.item-browser-scroll-bar').width();
-          var scrollWidth = self.width() - handleWidth;
-          var dx = event.pageX - self.data('scrollingPageX');
-          self.data('scrollingPageX', event.pageX);
-          var pagePos = self.find('.item-browser-scroll-bar').offset().left;
-          if ((dx > 0 && event.pageX > pagePos) || (dx < 0 && event.pageX < pagePos + handleWidth)) {
-            var pos = parseInt(self.find('.item-browser-scroll-bar').css('left'));
-            var x = Math.max(0, Math.min(scrollWidth, dx + pos));
-            self.find('.item-browser-scroll-bar').css('left', x);
-            self.data('scroll', x / scrollWidth);
-            self.itemBrowser('_updatePositions');
-          }
-          event.preventDefault();
-        }
-      });
-
-
+              .data('selected', null);
       return this;
     },
     clear : function() {
@@ -70,49 +32,22 @@
       }
 
       var currentIds = {};
-      var itemsToRemove = [];
       this.find(".item-browser-item").each(function() {
         var id = $(this).attr('item-id');
         if (itemsToKeep[id]) {
           currentIds[id] = true;
         } else {
-          itemsToRemove.push(this);
+          $(this).itemBrowserItem('remove');
         }
       });
-      var count = itemsToRemove.length;
-      var self = this;
 
-      var afterRemove = function() {
-        var added = [];
-        for (var i in items) {
-          if (!currentIds[items[i].id]) {
-            self.itemBrowser("_addItem", items[i]);
-            added.push(items[i].id);
-          } else {
-            self.find('.item-browser-item[item-id="' + items[i].id + '"]').itemBrowserItem('stay');
-          }
-        }
-        self.itemBrowser('_updatePositionsAnimate');
-        /*        for (var i in added) {
-          self.find('.item-browser-item[item-id="' + added[i] + '"]').itemBrowserItem('playAppearAnimation');
-        }*/
-      };
-
-      if (count === 0) {
-        afterRemove();
-      } else {
-        var oneRemoved = function() {
-          count--;
-          if (count === 0) {
-            afterRemove();
-          }
-        };
-
-        for (var i in itemsToRemove) {
-          $(itemsToRemove[i]).itemBrowserItem('remove', oneRemoved);
+      for (var i in items) {
+        if (!currentIds[items[i].id]) {
+          this.itemBrowser("addItem", items[i]);
+        } else {
+          this.find('.item-browser-item[item-id="' + items[i].id + '"]').itemBrowserItem('stay');
         }
       }
-
       return this;
     },
     getItemIds : function() {
@@ -123,12 +58,8 @@
       return ids;
     },
     addItem :  function(item) {
-      this.itemBrowser('_addItem', item);
-      this.itemBrowser('_updatePositionsAnimate');
-      return this;
-    },
-    _addItem: function(item) {
       $("<div />").appendTo(this).itemBrowserItem(item, this.data('settings'));
+//      this.append(itemElement);
       return this;
     },
     _event: function(type, item) {
@@ -166,116 +97,6 @@
       var selection = this.find('.item-browser-item[item-id="' + itemId + '"]').itemBrowserItem('select').itemBrowserItem('getItem');
       this.data('selected', typeof(selection) === 'undefined' ? null : selection);
       return this.itemBrowser('hasItem', itemId);
-    },
-
-    _calculatePositions: function() {
-      var positions = [];
-
-      var width = this.width();
-      var itemWidth = this.data('settings').itemWidth;
-      var itemMargin = this.data('settings').itemMargin;
-      var itemCount = this.find('.item-browser-item').length;
-
-      var neededWidth = itemWidth * itemCount + (itemCount - 1) * itemMargin;
-      var useScroll = neededWidth > width;
-
-      if (useScroll) {
-        var scrollPosition = this.data('scroll');
-        var taperingPortion = this.data('settings').taperingPortion;
-        var realTapered = width * taperingPortion;
-        var realLeftTapered = scrollPosition * realTapered;
-        var realRightTapered = (1 - scrollPosition) * realTapered;
-        var untapered = width - realTapered;
-
-        var neededTapered = neededWidth - untapered;
-        var neededLeftTapered = scrollPosition * neededTapered;
-        var neededRightTapered = (1 - scrollPosition) * neededTapered;
-
-        var curve = function(xn, nw, rw) {
-          var e = nw / rw;
-          var k = rw / Math.pow(nw, e);
-          return k * Math.pow(Math.max(0, xn), e);
-        };
-        var realPos = function(x) {
-          if (x < neededLeftTapered) {
-            return curve(x, neededLeftTapered, realLeftTapered);
-          } else if (x <= neededLeftTapered + untapered) {
-            return x - neededLeftTapered + realLeftTapered;
-          } else {
-            var inverseXn = neededWidth - x;
-            var inverseXr = curve(inverseXn, neededRightTapered, realRightTapered);
-            return width - inverseXr;
-          }
-        };
-
-        var x = 0;
-        this.find('.item-browser-item').each(function() {
-          var x0 = realPos(x);
-          var x1 = realPos(x + itemWidth);
-          var w = x1 - x0;
-          x += itemWidth + itemMargin;
-
-          positions.push({
-            element: this,
-            oldx: $(this).position().left,
-            oldw : $(this).width(),
-            newx: x0,
-            neww: Math.max(.2, w),
-            showdata: w > .5 * itemWidth
-          });
-        });
-      } else {
-        var x0 = .5 * (width - neededWidth);
-        var x = x0;
-        this.find('.item-browser-item').each(function() {
-          positions.push({
-            element: this,
-            oldx: $(this).position().left,
-            oldw : $(this).width(),
-            newx: x,
-            neww: itemWidth,
-            showdata: true
-          });
-          x += itemWidth + itemMargin;
-        });
-
-      }
-      return {
-        scroll: {
-          active: useScroll,
-          width: useScroll ? Math.max(50, .5 * width * width / neededWidth) : 0
-        },
-        positions: positions
-      }
-    },
-    _updatePositions: function() {
-      var status = this.itemBrowser('_calculatePositions');
-      this.itemBrowser('_displayScroll', status.scroll);
-      for (var i in status.positions) {
-        var pos = status.positions[i];
-        $(pos.element).itemBrowserItem('showInfo', pos.showdata);
-        $(pos.element).css('left', pos.newx + 'px');
-        $(pos.element).css('width', pos.neww + 'px');
-      }
-    },
-    _updatePositionsAnimate: function() {
-      var status = this.itemBrowser('_calculatePositions');
-      this.itemBrowser('_displayScroll', status.scroll);
-      for (var i in status.positions) {
-        var pos = status.positions[i];
-        $(pos.element).itemBrowserItem('showInfo', pos.showdata);
-
-        $(pos.element).animate({
-          left: pos.newx + 'px',
-          width: pos.neww + 'px'
-        }, 'fast');
-      }
-    },
-    _displayScroll: function(scroll) {
-      var pos = this.data('scroll') * (this.find('.item-browser-scroll-container').width() - scroll.width);
-      this.find('.item-browser-scroll-bar').css('width', scroll.width).css('left', pos);
-      this.find('.item-browser-scroll-container').css('width', scroll.active ? '100%' : '0px');
-      return this;
     }
   };
 
@@ -371,7 +192,7 @@
       }
       this.append(title);
 
-      this.itemBrowserItem('stay');
+      this.itemBrowserItem('stay').fadeIn('fast');
 
       this.find('img').click(function() {
         $(this).parent().itemBrowserItem('_event', 'imgclick');
@@ -383,20 +204,6 @@
       this.itemBrowserItem('_event', 'itemadded');
 
       return this;
-    },
-    playAppearAnimation : function() {
-      this.css('opacity', 0);
-      this.animate({opacity: 1}, 'fast');
-      return this;
-    },
-    showInfo: function(show) {
-      if (show) {
-        this.find('.item-browser-item-title').css('width', 'auto');
-        this.find('.item-browser-item-header').show();
-      } else {
-        this.find('.item-browser-item-title').css('width', '0px');
-        this.find('.item-browser-item-header').hide();
-      }
     },
     getItem: function() {
       return this.data('item');
@@ -445,26 +252,29 @@
       this.data('wanted', true);
       return this;
     },
-    remove : function(callback) {
-      this.data('wanted', false).itemBrowserItem('_removeIfNeeded', callback);
+    remove : function() {
+      this.data('wanted', false)
+              .itemBrowserItem('_removeIfNeeded');
       return this;
     },
-    _removeIfNeeded: function(callback) {
+    _removeIfNeeded: function() {
       if (!this.data('wanted') && !this.find('.item-browser-item-header').hasClass('item-browser-item-header-clip')) {
         this.find().unbind('click');
         this.itemBrowserItem('_event', 'itemremoved');
         this.fadeOut('fast', function() {
           $(this).remove();
-          if (callback) {
-            callback();
-          }
         });
-      } else if (callback) {
-        callback();
       }
-
       return this;
-    }
+    },
+    /*_showTitle :function(show) {
+      if (show) {
+        this.find(".item-browser-item-title").show();
+      } else {
+        this.find(".item-browser-item-title").hide();
+      }
+      return this;
+    }*/
   };
 
   $.fn.itemBrowserItem = function(method) {
