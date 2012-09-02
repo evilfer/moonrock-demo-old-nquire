@@ -172,7 +172,92 @@ function pi_chart_show_chart_as_png($activity_id, $arg_node_function) {
 
   $nid = get_nid_for_inquiry_activity_and_any_user($details->inquiry_id, $activity_id);
   $node = node_load($nid);
-  pi_chart_create_png($node->title, $node->chart_type, $node->abscissa, $node->ordinate, $node->color);
+
+  $selected_measures = "";
+  $delim = "";
+
+  $SQL = "SELECT {available_measure} FROM {pi_result_presentations} WHERE nid = %d AND vid = %d AND status = '1' ORDER BY weight ASC";
+
+  $measures = db_query($SQL, $node->nid, $node->vid);
+
+  while ($measure = db_fetch_object($measures)) {
+    $selected_measures .= $delim . $measure->available_measure;
+    if ($delim == "") {
+      $delim = ", ";
+    };
+  }
+
+  $headers = get_selected_measures_headings_for_inquiry_and_user($details->inquiry_id, $selected_measures, $node->uid);
+  $rows = get_selected_measures_data_for_inquiry_and_user($details->inquiry_id, $selected_measures, $node->uid);
+  $types = get_selected_measures_types_for_inquiry_and_user($details->inquiry_id, $selected_measures, $node->uid);
+
+  /*
+   * Group by key measure
+   */
+
+  $key_numeric = $types[0]->data_type == 'numeric';
+
+  $numeric_fields = array();
+  $color_field = FALSE;
+
+  for ($i = 1; $i < count($types); $i++) {
+    if ($types[$i]->data_type == 'numeric') {
+      $numeric_fields[] = $i;
+    } else if ($types[$i]->content_options) {
+      if (function_exists("{$types[$i]->content_options}_nquire_data_get_numeric_value")) {
+        $numeric_fields[] = $i;
+      } else if (function_exists("{$types[$i]->content_options}_nquire_data_get_color_value")) {
+        $color_field = $i;
+      }
+    }
+  }
+
+  $grouped_rows = array();
+  foreach ($rows as $row) {
+    $row_has_data = FALSE;
+    foreach ($numeric_fields as $field) {
+      if (strlen($row[$field]) > 0) {
+        $row_has_data = TRUE;
+        break;
+      }
+    }
+    if ($row_has_data) {
+      $grouped_rows[$row[0]][] = $row;
+    }
+  }
+
+  /*
+   * determine chart type
+   */
+  if ($key_numeric) {
+    $type = 'scatter';
+  } else {
+    $max_data_count_per_key_field = 0;
+    foreach ($grouped_rows as $row_group) {
+      if (count($row_group) > $max_data_count_per_key_field) {
+        $max_data_count_per_key_field = count($row_group);
+      }
+    }
+
+    if ($max_data_count_per_key_field > 1) {
+      $type = 'plot';
+    } else {
+      $type = 'bar';
+    }
+  }
+
+  switch ($type) {
+    case 'bar':
+      _pi_chart_draw_bar_chart($node->title, $headers, $grouped_rows, $types, $numeric_fields, $color_field);
+      break;
+    case 'plot':
+      _pi_chart_draw_plot_chart($node->title, $headers, $grouped_rows, $types, $numeric_fields, $color_field);
+      break;
+    default:
+      break;
+  }
+
+  return;
 }
 
 function _pi_chart_get_numeric_value($value, $type) {
@@ -198,12 +283,8 @@ function _pi_chart_get_text_value($value, $type) {
     $function_name = "{$type->content_options}_nquire_data_get_text_value";
     return $function_name($value);
   } else {
-    return check_plain($value);
+    return check_simple($value);
   }
-}
-
-function pi_chart_get_text_value($value, $type) {
-  return _pi_chart_get_text_value($value, $type);
 }
 
 function _pi_chart_draw_histogram($title, $headers, $cross, $data_values, $colors) {

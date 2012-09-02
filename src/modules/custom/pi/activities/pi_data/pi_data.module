@@ -565,42 +565,6 @@ function pi_data_return_results($node) {
 }
 
 /**
- * FIX (eloy)
- * to show data table instead of activity list.
- */
-
-function pi_data_value_array($node) {
-  global $user;
-  $values = array();
-  
-  $details = get_inquiry_details_from_current_path();
-
-  // This is actually of type "pi_sort_measures"
-  $selected_measures_nid = find_selected_measures_nid_for_uid_and_inquiry($user->uid, $details->inquiry_id);
-
-  // If there's no sort_measures then just show all available
-  if (isset($selected_measures_nid)) {
-    $selected_measures_node = node_load($selected_measures_nid);
-    if ($selected_measures_node) {
-      $selected_measures_to_show = $selected_measures_node->measures_list;
-      $measures_to_show = $node->measures;
-      if (is_array($selected_measures_to_show)) {
-        foreach ($selected_measures_to_show as $measure_nid => $measure) {
-          $key = check_plain($selected_measures_nid . "-" . $measure_nid);
-          $measure_type = node_load($measure_nid);
-          if (array_key_exists($key, $measures_to_show)) {
-            $measure_value = $node->measures[$key]['#value'];
-          } else {
-            $measure_value = NULL;
-          }
-          $values[] = pi_chart_get_text_value($measure_value, $measure_type);
-        }
-      }
-    }
-  }  
-  return $values;
-}
-/**
  * Implementation of pi_data_view().
  */
 function pi_data_view($node, $teaser = FALSE, $page = FALSE, $link = FALSE) {

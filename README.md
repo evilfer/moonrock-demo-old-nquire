@@ -8,13 +8,6 @@ Moonrock demonstators.
 Changes:
 
 -----------------
-02-09-2012
-
-- Fixed sample/snapshot dialog.
-- Improved Sort my data.
-- Fixed My result presentations.
-
------------------
 01-09-2012
 
 - Changed VM dialog.
