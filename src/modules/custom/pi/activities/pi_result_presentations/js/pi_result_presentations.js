@@ -5,7 +5,24 @@ var PiResultPresentations = {
 
   init : function() {
     $('#pi-result-presentations-preview-loading, #pi-result-presentations-preview').hide();
-
+    
+    
+    var color = $('#edit-color').val();
+    $("input[name^='bar_color'][value='" + color + "']").attr('checked', 'checked');
+    
+    var ordinate = $('#edit-ordinate').val();
+    var type = this._getChartType();
+    if (type === 'histogram') {
+      $("select[name='histogram_ordinate']").val(ordinate);
+    } else {
+      var ordinates = ordinate.split(',');
+      for (var i in ordinates) {
+        $("input[name^='bar_ordinate'][value='" + ordinates[i] + "']").attr('checked', 'checked');
+      }
+    }
+    
+    
+    
     $('input[name="chart_type"]').change(function() {
       PiResultPresentations._updateOrdinate(false);
       PiResultPresentations._upateGrahDef();
@@ -23,7 +40,7 @@ var PiResultPresentations = {
 
 
 
-    $("select[name='abscissas']").change(function() {
+    $("select[name='abscissa']").change(function() {
       PiResultPresentations._updateAvailableValues(false);
       PiResultPresentations._upateGrahDef();
     });
@@ -45,7 +62,7 @@ var PiResultPresentations = {
   },
 
   _updateAvailableValues : function(init) {
-    var abscissa = $("select[name='abscissas']").attr('value');
+    var abscissa = $("select[name='abscissa']").attr('value');
     console.log("abscissa: " + abscissa);
 
     var barOrdinateCount = 0;
@@ -58,12 +75,6 @@ var PiResultPresentations = {
         barOrdinateCount++;
       }
     });
-
-    if (barOrdinateCount === 0) {
-      $('#pi-result-presentations-select-ordinates-bar > .form-item > .form-checkboxes').prepend('<p>No numeric measures available!</p>');
-    } else {
-      $('#pi-result-presentations-select-ordinates-bar > .form-item > .form-checkboxes > p').remove();
-    }
 
 
     var needNewSelection = $("select[name='histogram_ordinate']").val() == abscissa;
@@ -82,9 +93,13 @@ var PiResultPresentations = {
     });
 
   },
-
+  
+  _getChartType:function() {
+    return $("input[value='line-bar']")[0].checked ? 'line-bar' : 'histogram';//attr('value');
+  },
   _updateOrdinate: function(init) {
-    var type = $("input[value='line-bar']")[0].checked ? 'line-bar' : 'histogram';//attr('value');
+    var type = this._getChartType();
+    
     console.log("type: " + type);
 
     if (type === 'line-bar') {
@@ -123,7 +138,7 @@ var PiResultPresentations = {
     var title = $('#edit-title').attr('value');
 
     var type = $("input[value='line-bar']")[0].checked ? 'line-bar' : 'histogram';
-    var abscissa = $("select[name='abscissas']").attr('value');
+    var abscissa = $("select[name='abscissa']").attr('value');
     var ordinate = null;
     var color = null;
     if (type === 'line-bar') {
@@ -140,12 +155,25 @@ var PiResultPresentations = {
         }
       });
     } else {
-      ordinate = [$("select[name='histogram_ordinate']").attr('value')];
+      ordinate = [$("select[name='histogram_ordinate']").val()];
       color = '';
     }
 
+    if (abscissa.length > 0) {
+      $('#edit-abscissa').attr('value', abscissa);
+    } else {
+      $('#edit-abscissa').removeAttr('value');
+    }
+    if (ordinate.length > 0) {
+      $('#edit-ordinate').attr('value', ordinate.join(','));
+    } else {
+      $('#edit-ordinate').removeAttr('value');
+    }
+    $('#edit-color').attr('value', color);
+
     if (abscissa.length > 0 && ordinate.length > 0) {
-      $('#pi-result-presentations-preview').hide();
+        $('#pi-result-presentations-preview').show();
+      //$('#pi-result-presentations-preview').hide();
       $('#pi-result-presentations-preview-no').hide();
       $('#pi-result-presentations-preview-loading').show();
       var url = this.getBaseURL() + "&title=" + title +
@@ -154,7 +182,6 @@ var PiResultPresentations = {
               "&color=" + color;
       $('#pi-result-presentations-preview').attr('src', url).load(function() {
         $('#pi-result-presentations-preview-loading').hide();
-        $('#pi-result-presentations-preview').show();
       });
 
     } else {

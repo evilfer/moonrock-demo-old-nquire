@@ -117,12 +117,18 @@ function pi_result_presentations_form(&$node) {
       '#default_value' => strlen($node->chart_type) > 0 ? $node->chart_type : 'line-bar',
       '#description' => t('Histograms are useful to plot any type of measures.</br>In contrast, bar graphs can plot several numeric measurements'),
   );
+
+  $measures = pi_result_presentations_get_options();
+  $all_measures = _pi_result_presentations_format_measure_options($measures, 'all');
   $form['abscissa'] = array(
-      '#type' => 'radios',
-      '#title' => 'Abscissa variable',
+      '#type' => 'select',
+      '#options' => $all_measures,
+      '#title' => t('Abscissa variable'),
       '#required' => TRUE,
+      '#description' => t('Select the variable that will be used in the x asis of the graph'),
       '#default_value' => $node->abscissa,
   );
+
   $form['ordinate'] = array(
       '#type' => 'hidden',
       '#required' => TRUE,
@@ -135,15 +141,7 @@ function pi_result_presentations_form(&$node) {
       '#default_value' => $node->color,
   );
 
-  $measures = pi_result_presentations_get_options();
-  $all_measures = _pi_result_presentations_format_measure_options($measures, 'all');
-  $form['measures']['abscissas'] = array(
-      '#type' => 'select',
-      '#options' => $all_measures,
-      '#title' => t('Abscissa variable'),
-      '#required' => TRUE,
-      '#description' => t('Select the variable that will be used in the x asis of the graph')
-  );
+
 
   $numeric_measures = _pi_result_presentations_format_measure_options($measures, 'numeric');
   $form['measures']['bar_ordinate'] = array(
@@ -365,81 +363,15 @@ function theme_pi_result_presentations($node, $teaser) {
       $loaded_key_question = node_load($node->key_question_id);
       $output .= "<p><strong>Key question:</strong> " . check_plain($loaded_key_question->title) . "</p>";
     }
-
     $output .= $node->body;
   } else {
     $output .= $node->teaser;
   }
 
-
-  $selected_measures = "";
-  $delim = "";
-
-  $query = "SELECT available_measure FROM {pi_result_presentations} WHERE nid = %d AND vid = %d AND status = '1' ORDER BY weight ASC";
-  $measures = db_query($query, $node->nid, $node->vid);
-  while ($measure = db_fetch_object($measures)) {
-    $selected_measures .= $delim . $measure->available_measure;
-    if ($delim == "") {
-      $delim = ",";
-      $first_measure = $measure->available_measure;
-    }
-  }
-  $header = get_selected_measures_headings_for_inquiry_and_user($details->inquiry_id, $selected_measures, $user->uid);
-  $rows = get_selected_measures_data_for_inquiry_and_user($details->inquiry_id, $selected_measures, $user->uid);
-
-  /* CANDIDATE_FIX
-   * change content_option values into readable values
-   */
-  module_load_include('inc', 'pi_data', 'pi_data.content_options');
-  for ($i = 0; $i < count($rows); $i++) {
-    for ($j = 0; $j < count($rows[$i]); $j++) {
-      $rows[$i][$j] = pi_data_content_options_as_key_measure($rows[$i][$j]);
-    }
-  }
-
-  if (!$teaser) {
-    $table_output .= theme('table', $header, $rows);
-  }
-
-  $data = spin_array($rows);
-
-  $x_axis_labels_heading = $header[0]; //array_shift($header);
-  $x_axis_labels = array_shift($data);
-
-  /* FIX
-   * to check whether there are numeric and non-numeric data
-   */
-  for ($i = 0; $i < count($data); $i++) {
-    for ($j = 0; $j < count($data[$i]); $j++) {
-      if (strlen($data[$i][$j]) > 0) {
-        if (is_numeric($data[$i][$j])) {
-          $there_is_numeric_data = true;
-        } else {
-          $there_is_nonnumeric_data = true;
-        }
-      }
-    }
-  }
-
-  if ($there_is_numeric_data) {
-    $output .= "<p><img class='chart_image' src='?q=activity/" . $chart_activity_id . "/chart.png'></p>";
-  }
-
-  // if ($there_is_nonnumeric_data) {
-  //$output .= pi_chart_create_data_table($rows, $header);
-  // }
-
-  if (!$teaser) {
-    $output .= $table_output;
-  }
+  $output .= "<p><img class='chart_image' src='?q=activity/" . $chart_activity_id . "/chart.png'></p>";
 
   if (!$teaser) {
     $output .= '<p>' . l('Download (csv) data file', 'export/' . $details->activity_id . '/csv') . '</p>';
-
-    $first_measure_node = node_load($first_measure);
-    if (($first_measure_node->content_options == 'pi_location_lat_long') || ($first_measure_node->content_options == 'pi_location_lat_long_2')) {
-      $output .= '<p>' . l('Download (kml) data file', 'export/' . $details->activity_id . '/kml') . '</p>';
-    }
   }
 
   return $output;
@@ -694,7 +626,7 @@ function theme_pi_result_presentations_node_form($form) {
   $output .= '</div>';
 
   $output .= '<div id="pi-result-presentations-select-abscissa" class="pi-result-presentations-measures-block">';
-  $output .= drupal_render($form['measures']['abscissas']);
+  $output .= drupal_render($form['abscissa']);
   $output .= '</div>';
 
   $output .= '<div id="pi-result-presentations-select-ordinates" class="pi-result-presentations-measures-block">';
@@ -713,11 +645,14 @@ function theme_pi_result_presentations_node_form($form) {
   }
   $output .= "</div>";
 
-  $output .= "<div style='padding-top: 20px'><b>" . t('Preview') . "</div>";
-  $output .= "<div style='height: 250px;'>";
-  $output .= "<img id='pi-result-presentations-preview-no' src='" . drupal_get_path('module', 'pi_result_presentations') . '/images/no.png' . "'></img>";
-  $output .= "<img id='pi-result-presentations-preview-loading' src='" . drupal_get_path('module', 'pi_result_presentations') . '/images/throbber.gif' . "'></img>";
+  $output .= "<div style='padding-top: 20px'><b>" . t('Preview') . "</b></div>";
+  $output .= "<div id='pi-result-presentations-preview-container'>";
+  $output .= "<div id='pi-result-presentations-preview-no' class='messages error'><ul><li>"
+          . t("No ordinate variable has been selected.")
+          . "</ul></div>";
   $output .= "<img id='pi-result-presentations-preview'></img>";
+//  $output .= "<img id='pi-result-presentations-preview-loading' src='" . drupal_get_path('module', 'pi_result_presentations') . '/images/throbber.gif' . "'></img>";
+  $output .= "<div id='pi-result-presentations-preview-loading'></div>";
   $output .= "</div>";
   $output .= drupal_render($form);
   return $output;
@@ -800,21 +735,11 @@ function pi_data_export_csv() {
   $nid = get_nid_for_inquiry_activity_and_user($details->inquiry_id, $details->activity_id, $user->uid);
   $node = node_load($nid);
 
-  $selected_measures = "";
-  $delim = "";
-
-  $sql = "SELECT available_measure FROM {pi_result_presentations} WHERE nid = %d AND vid = %d AND status = '1' ORDER BY weight ASC";
-  $measures = db_query($sql, $node->nid, $node->vid);
-
-  while ($measure = db_fetch_object($measures)) {
-    $selected_measures .= $delim . $measure->available_measure;
-    if ($delim == "") {
-      $delim = ", ";
-    };
-  };
+  $selected_measures = "{$node->abscissa},{$node->ordinate}";
 
   $header = get_selected_measures_headings_for_inquiry_and_user($details->inquiry_id, $selected_measures, $user->uid);
   $rows = get_selected_measures_data_for_inquiry_and_user($details->inquiry_id, $selected_measures, $user->uid);
+  $types = get_selected_measures_types_for_inquiry_and_user($details->inquiry_id, $selected_measures, $user->uid);
 
 
   $name = str_replace(' ', '_', $node->title);
@@ -826,14 +751,14 @@ function pi_data_export_csv() {
 
   header('Content-Disposition: attachment; filename=' . $filename);
 
-  echo create_csv_from_table($header, $rows);
+  echo create_csv_from_table($header, $rows, $types);
 
   module_invoke_all('exit');
   exit();
 }
 
 //
-function create_csv_from_table($header, $rows) {
+function create_csv_from_table($header, $rows, $types) {
 
   $output = "";
 
@@ -844,8 +769,8 @@ function create_csv_from_table($header, $rows) {
   $count = 1;
   foreach ($rows as $row) {
     $elements = array();
-    foreach ($row as $item) {
-      $elements[] = $item;
+    foreach ($row as $i => $item) {
+      $elements[] = pi_chart_get_text_value($item, $types[$i]);
     }
     $output .= "\"" . implode("\",\"", $elements) . "\"\r\n";
     $count++;
