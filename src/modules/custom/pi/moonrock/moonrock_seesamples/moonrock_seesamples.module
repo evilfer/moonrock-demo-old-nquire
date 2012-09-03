@@ -69,10 +69,17 @@ function moonrock_seesamples_form(&$node) {
   }
 
   $form['title'] = array(
-      '#type' => 'hidden',
+      '#type' => 'textfield',
       '#title' => check_plain($type->title_label),
       '#required' => FALSE,
-      '#default_value' => $type->title_label,
+      '#default_value' => $node->title,
+      '#weight' => -5
+  );
+  $form['body'] = array(
+      '#type' => 'textarea',
+      '#title' => t('Type the introduction to this activity'),
+      '#required' => TRUE,
+      '#default_value' => $node->body,
       '#weight' => -5
   );
 
@@ -141,13 +148,18 @@ function moonrock_seesamples_link_alter(&$links, $node) {
  */
 function moonrock_seesamples_view($node, $teaser = FALSE, $page = FALSE) {
   // Use Drupal's default node view.
+  $original_body = $node->body;
   $node = node_prepare($node, $teaser);
 
   $node->content['moonrock_seesamples'] = array(
       '#value' => theme('moonrock_seesamples', $node, $teaser),
       '#weight' => 2
   );
-
+  
+  if (!$teaser) {
+    $node->content['body']['#value'] = $original_body;
+  }
+  
   return $node;
 }
 
@@ -171,13 +183,11 @@ function moonrock_seesamples_theme() {
  * @return string
  */
 function theme_moonrock_seesamples($node, $teaser) {
-  if ($teaser) {
-    $output = "Here you can examine three different samples of rocks collected from the Moon under the microscope.";
-  } else {
+  //$output = $node->body;
+  if (!$teaser) {
     module_load_include('inc', 'moonrock_seesamples', 'moonrock_seesamples.table');
-    $output = moonrock_seesamples_create_sample_table($node);
+    $output .= moonrock_seesamples_create_sample_table($node);
   }
   return $output;
 }
-
 

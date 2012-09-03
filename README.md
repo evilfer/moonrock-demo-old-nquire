@@ -7,6 +7,16 @@ Moonrock demonstators.
 
 Changes:
 
+
+-----------------
+03-09-2012
+
+- Fixed bug: phases were not ordered by weight.
+- Only teachers can change measure selection.
+- Corrected texts (partially done).
+- Added open VM icon.
+- Added map and source for Sample content type.
+
 -----------------
 02-09-2012
 

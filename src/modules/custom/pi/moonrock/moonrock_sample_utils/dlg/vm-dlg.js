@@ -70,7 +70,9 @@
     },
 
     close: function() {
-      this.remove();
+      this.fadeOut('fast', function() {
+        $(this).remove();
+      });
     },
 
     maximize: function() {

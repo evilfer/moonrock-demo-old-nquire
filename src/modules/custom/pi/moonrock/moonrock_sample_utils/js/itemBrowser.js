@@ -335,8 +335,10 @@
         var contentId = id + '-metadata-content';
         var content = $('<div style="display: none" id="' + contentId + '"/>');
         var cluetip = $('<div/>').addClass('item-browser-item-title-cluetip').attr('rel', '#' + contentId);
+        var open = $('<div/>').addClass('item-browser-item-title-open');
         $(title).append(content);
         $(title).append(cluetip);
+        $(title).append(open);
 
         var metadata = self.parent().itemBrowser('_getMetadata', self.data('item'));
 
@@ -346,7 +348,7 @@
             text: metadata.content
           },
           show: {
-            delay: 10
+            delay: 0
           },
           hide: {
             fixed: true,
@@ -369,13 +371,15 @@
           }
         });
       }
+
       this.append(title);
 
       this.itemBrowserItem('stay');
 
-      this.find('img').click(function() {
-        $(this).parent().itemBrowserItem('_event', 'imgclick');
+      this.find('img,.item-browser-item-title-open').click(function() {
+        $(this).parents('.item-browser-item').itemBrowserItem('_event', 'imgclick');
       });
+
       this.find('#' + id + '-select').change(function() {
         $(this).parents('.item-browser-item[item-id="' + $(this).attr('value') + '"]').itemBrowserItem('_select');
       });

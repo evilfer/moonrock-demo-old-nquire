@@ -83,7 +83,7 @@ function moonrock_sample_form(&$node) {
 
   $form['body_filter']['vm'] = array(
       '#type' => 'textfield',
-      '#title' => check_plain($type->vm_label),
+      '#title' => t('Virtual Microscope URL'),
       '#required' => TRUE,
       '#default_value' => $node->vm,
       '#description' => t('Specify the URL where the VM for this sample can be found'),
@@ -92,7 +92,7 @@ function moonrock_sample_form(&$node) {
 
   $form['body_filter']['snapshot'] = array(
       '#type' => 'textfield',
-      '#title' => check_plain($type->snapshot_label),
+      '#title' => t('Snapshot image URL'),
       '#required' => TRUE,
       '#default_value' => $node->snapshot,
       '#description' => t('Specify the URL where a snapshot image for this sample can be found'),
@@ -101,10 +101,26 @@ function moonrock_sample_form(&$node) {
 
   $form['body_filter']['location'] = array(
       '#type' => 'textfield',
-      '#title' => check_plain($type->location_label),
+      '#title' => t('Sample origin'), 
       '#required' => TRUE,
       '#default_value' => $node->location,
       '#description' => t('Specify the location where this sample was found'),
+      '#weight' => -2
+  );  
+  $form['body_filter']['map_url'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Sample origin map URL'),
+      '#required' => TRUE,
+      '#default_value' => $node->map_url,
+      '#description' => t('Specify the URL to a map where the location can be seen'),
+      '#weight' => -2
+  );  
+  $form['body_filter']['source'] = array(
+      '#type' => 'textfield',
+      '#title' => t('How the sample was obtained'),
+      '#required' => TRUE,
+      '#default_value' => $node->source,
+      '#description' => t('Specify how the sample was obtained'),
       '#weight' => -2
   );
 
@@ -122,7 +138,7 @@ function moonrock_sample_form(&$node) {
  * Implementation of hook_insert().
  */
 function moonrock_sample_insert($node) {
-  db_query("INSERT INTO {moonrock_sample} (nid, vid, vm, snapshot, location) VALUES ('%d', '%d', '%s', '%s', '%s')", $node->nid, $node->vid, $node->vm, $node->snapshot, $node->location);
+  db_query("INSERT INTO {moonrock_sample} (nid, vid, vm, snapshot, location, map_url, source) VALUES ('%d', '%d', '%s', '%s', '%s', '%s', '%s')", $node->nid, $node->vid, $node->vm, $node->snapshot, $node->location, $node->map_url, $node->source);
 }
 
 /**
@@ -132,7 +148,7 @@ function moonrock_sample_update($node) {
   if ($node->revision) {
     moonrock_sample_insert($node);
   } else {
-    db_query("UPDATE {moonrock_sample} SET vm='%s', snapshot='%s', location='%s' WHERE vid = %d", $node->vm, $node->snapshot, $node->location, $node->vid);
+    db_query("UPDATE {moonrock_sample} SET vm='%s', snapshot='%s', location='%s', source='%s', map_url='%s' WHERE vid = %d", $node->vm, $node->snapshot, $node->location, $node->source, $node->map_url, $node->vid);
   }
 }
 

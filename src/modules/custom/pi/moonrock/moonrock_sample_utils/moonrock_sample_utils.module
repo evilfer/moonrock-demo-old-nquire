@@ -254,8 +254,12 @@ function moonrock_sample_utils_prepare_sample_object($nid) {
       "metadata" => array(
           "location" => array(
               "title" => t("Location: "),
-              "value" => $sample->location,
+              "value" => $sample->location . ' <a href="' . $sample->map_url . '" target="_blank" class="external_link"><div></div></a>',
           ),
+          "source" => array(
+              "title" => t("Sample source: "),
+              "value" => $sample->source,
+          )
       ),
   );
 }

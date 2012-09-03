@@ -76,6 +76,18 @@ function moonrock_sample_schema() {
               'size' => 'normal',
               'not null' => TRUE,
           ),
+          'map_url' => array(
+              'description' => t('Sample origin url'),
+              'type' => 'text',
+              'size' => 'normal',
+              'not null' => TRUE,
+          ),
+          'source' => array(
+              'description' => t('Sample collection'),
+              'type' => 'text',
+              'size' => 'normal',
+              'not null' => TRUE,
+          ),
       ),
       'primary key' => array('vid'),
       'indexes' => array(

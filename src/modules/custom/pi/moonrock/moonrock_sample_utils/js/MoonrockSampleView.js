@@ -6,7 +6,11 @@ var MoonrockSampleView = {
   init : function() {
     var items = [];
     $("#moonrock-sample-main-list").find("div").each(function() {
-      var item = JSON.parse($(this).attr('item-def'));
+      var itemdef = unescape($(this).attr('item-def'));
+      console.log(itemdef);
+      var itemdef = itemdef.replace(/\\x26/g, "&").replace(/\\x3c/g, "<").replace(/\\x3e/g, ">");
+      console.log(itemdef);
+      var item = JSON.parse(itemdef);
       items.push(item);
     });
 
@@ -157,12 +161,12 @@ var MoonrockSampleView = {
   /*
    * Metadata callbacks
    */
-  _formatMetadataTable: function(metadata) {
+  _formatMetadataTable: function(itemId, metadata) {
     var table = $('<table/>').addClass('moonrock-sample-tip-table');
     for (var key in metadata) {
       var tr = $('<tr/>').addClass('moonrock-sample-tip-row').appendTo(table);
       $('<td/>').addClass('moonrock-sample-tip-td moonrock-sample-tip-td-key').addClass('moonrock-sample-tip-td-key-' + key).html(metadata[key].title).appendTo(tr);
-      $('<td/>').addClass('moonrock-sample-tip-td moonrock-sample-tip-td-value').addClass('moonrock-sample-tip-td-value-' + key).html(metadata[key].value).appendTo(tr);
+      $('<td/>').attr('id', 'sample-' + itemId + '-tip-value-' + key).addClass('moonrock-sample-tip-td moonrock-sample-tip-td-value').addClass('moonrock-sample-tip-td-value-' + key).html(metadata[key].value).appendTo(tr);
     }
     $(table).find('tr').filter(':odd').addClass("moonrock-sample-tip-row-odd");
     
@@ -171,7 +175,7 @@ var MoonrockSampleView = {
   _formatItemMetadata : function(item) {
     var metadata = {
       title: item.title,
-      content: this._formatMetadataTable(item.metadata)
+      content: this._formatMetadataTable(item.id, item.metadata)
     };
 
     return metadata;
