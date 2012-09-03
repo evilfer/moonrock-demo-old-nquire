@@ -31,21 +31,42 @@
 
 .vm-dlg-dialog {
   position: fixed !important;
-  padding: 5px;
   top: 50px;
   left: 50px;
-  background: white;
+  width: 600px;
+  height: 480px;
   border: 5px solid gray;
   border-radius: 15px;
-  width: 1000px;
-  height: 800px;
+  padding: 5px;
+  
+    overflow: hidden;
+
+
+  display: -moz-inline-box;
+  display: -webkit-inline-box;
+
+  -webkit-box-orient: vertical;
+  -moz-box-orient: vertical;
+
+  background: white;
+}
+
+.vm-dlg-buttons {
+  height: 30px;
+}
+
+.vm-dlg-title {
+  display: inline-block;
+  font-weight: bold;
 }
 
 .vm-dlg-content {
-  width: auto;
-  height: auto;
-  padding: 5px;
-  padding-top: 10px;
+  -webkit-box-flex: 1;
+  -moz-box-flex: 1;
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+
+  padding: 10px;
 }
 
 
