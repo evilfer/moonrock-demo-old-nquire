@@ -212,8 +212,7 @@ function moonrock_color_nquire_data_form_prefix() {
   $output .= "<div id='moonrockColorPicker'></div>";
   $output .= "</div>";
 
-  drupal_add_js(drupal_get_path('module', 'moonrock_color') . '/js/jquery-simple-color/jquery.simple-color_m.js');
-  drupal_add_js(drupal_get_path('module', 'moonrock_color') . '/js/moonrockColorSelect.js');
+  _moonrock_color_load_form_resources();
 
   return $output;
 }
@@ -234,9 +233,17 @@ function moonrock_color_nquire_measure_choose_explanation() {
   return t("Choose from the list one relevant color identified in a sample");
 }
 
-function moonrock_color_nquire_data_form_after_build($form_element, &$form_state) {
+function _moonrock_color_load_form_resources() {
+  drupal_add_js(drupal_get_path('module', 'moonrock_color') . '/js/jquery.mousewheel.js');
   drupal_add_js(drupal_get_path('module', 'moonrock_color') . '/js/jquery-simple-color/jquery.simple-color_m.js');
   drupal_add_js(drupal_get_path('module', 'moonrock_color') . '/js/moonrockColorSelect.js');
+  drupal_add_js(drupal_get_path('module', 'moonrock_color') . '/js/rockColorPicker.js');
+  drupal_add_js(drupal_get_path('module', 'moonrock_color') . '/js/raphael-min.js');
+  drupal_add_css(drupal_get_path('module', 'moonrock_color') . '/css/rockColorPicker.css');
+}
+
+function moonrock_color_nquire_data_form_after_build($form_element, &$form_state) {
+  _moonrock_color_load_form_resources();
   return $form_element;
 }
 

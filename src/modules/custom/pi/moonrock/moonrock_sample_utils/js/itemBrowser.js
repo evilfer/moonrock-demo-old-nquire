@@ -12,7 +12,7 @@
         eventCallback: null,
         metadataCallback: null,
         itemWidth: 200,
-        itemMargin: 10,
+        itemMargin: 20,
         taperingPortion: .2
       }, options, {
         id: this.attr('id')
@@ -34,25 +34,25 @@
 
       this.find('.item-browser-scroll-bar').mousedown(function(event) {
         self.data('scrolling', true);
-        self.data('scrollingPageX', event.pageX);
+        self.data('scrollPositionInHandle', event.pageX - self.find('.item-browser-scroll-bar').position().left);
+        $('body').disableSelection();
       });
       $(document).mouseup(function() {
         self.data('scrolling', false);
+        $('body').enableSelection();
       });
       $(document).mousemove(function(event) {
         if (self.data('scrolling')) {
-          var handleWidth = self.find('.item-browser-scroll-bar').width();
-          var scrollWidth = self.width() - handleWidth;
-          var dx = event.pageX - self.data('scrollingPageX');
-          self.data('scrollingPageX', event.pageX);
-          var pagePos = self.find('.item-browser-scroll-bar').offset().left;
-          if ((dx > 0 && event.pageX > pagePos) || (dx < 0 && event.pageX < pagePos + handleWidth)) {
-            var pos = parseInt(self.find('.item-browser-scroll-bar').css('left'));
-            var x = Math.max(0, Math.min(scrollWidth, dx + pos));
-            self.find('.item-browser-scroll-bar').css('left', x);
-            self.data('scroll', x / scrollWidth);
+          var scrollWidth = self.width() - self.find('.item-browser-scroll-bar').width();
+          var currentPos = self.find('.item-browser-scroll-bar').position().left;
+          var newPos = Math.max(0, Math.min(scrollWidth, event.pageX - self.data('scrollPositionInHandle')));
+          if (newPos !== currentPos) {
+            self.find('.item-browser-scroll-bar').css('left', newPos);
+            self.data('scroll', newPos / scrollWidth);
+            self.data('scrollingPageX', event.pageX);
             self.itemBrowser('_updatePositions');
           }
+          event.stopPropagation();
           event.preventDefault();
         }
       });
@@ -123,8 +123,10 @@
       return ids;
     },
     addItem :  function(item) {
-      this.itemBrowser('_addItem', item);
-      this.itemBrowser('_updatePositionsAnimate');
+      if ($(this).find('.item-browser-item[item-id="' + item.id + '"]').length === 0) {
+        this.itemBrowser('_addItem', item);
+        this.itemBrowser('_updatePositionsAnimate');
+      }
       return this;
     },
     _addItem: function(item) {
@@ -178,6 +180,8 @@
 
       var neededWidth = itemWidth * itemCount + (itemCount - 1) * itemMargin;
       var useScroll = neededWidth > width;
+
+
 
       if (useScroll) {
         var scrollPosition = this.data('scroll');
@@ -253,9 +257,14 @@
       this.itemBrowser('_displayScroll', status.scroll);
       for (var i in status.positions) {
         var pos = status.positions[i];
-        $(pos.element).itemBrowserItem('showInfo', pos.showdata);
-        $(pos.element).css('left', pos.newx + 'px');
-        $(pos.element).css('width', pos.neww + 'px');
+
+        if ((pos.neww > 1 || pos.oldw > 1) && (Math.abs(pos.newx - pos.oldx) > 1 || Math.abs(pos.neww - pos.oldw) > 1)) {
+          $(pos.element).itemBrowserItem('showInfo', pos.showdata);
+          $(pos.element).css({
+            left: pos.newx,
+            width: pos.neww
+          });
+        }
       }
     },
     _updatePositionsAnimate: function() {

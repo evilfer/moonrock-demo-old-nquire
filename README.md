@@ -7,6 +7,11 @@ Moonrock demonstators.
 
 Changes:
 
+-----------------
+04-09-2012
+
+- Texts improved.
+- Started replacing color picker.
 
 -----------------
 03-09-2012

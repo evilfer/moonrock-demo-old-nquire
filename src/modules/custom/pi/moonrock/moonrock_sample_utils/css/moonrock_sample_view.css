@@ -35,14 +35,14 @@
 .item-browser-container {
   position: relative;
   margin-left: 25px;
-  height: 176px;
+  height: 190px;
   margin-bottom: 20px;
 }
 
 .item-browser-scroll-container {
   position: absolute;
   overflow: hidden;
-  top: 160px;
+  top: 175px;
   left: 0px;
   height: 16px;
   width: 100%;
@@ -68,6 +68,7 @@
 .item-browser-item-selected {
   border: 1px solid black;
   background: lightgreen;
+  z-index: 1000;
 }
 
 .item-browser-item-img {

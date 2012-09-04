@@ -14,13 +14,13 @@ function pi_wiki_notes_node_info() {
 
     return array(
     'pi_wiki_notes' => array(
-    'name' => t('Inquiry group notes'), // Required.
+    'name' => t('Inquiry notes'), // Required.
     'module' => 'pi_wiki_notes',  // Required.
     'description' => t('Keep notes related to a topic'), // Required.
     'has_title' => TRUE,
-    'title_label' => t('Group notes'),
+    'title_label' => t('Notes'),
     'has_body' => TRUE,
-    'body_label' => t('Group notes'),
+    'body_label' => t('Notes'),
     'locked' => TRUE)
     );
 
@@ -73,16 +73,18 @@ function pi_wiki_notes_form(&$node) {
         '#type' => 'hidden',
         '#title' => check_plain($type->title_label),
         '#required' => FALSE,
-        '#default_value' => $type->title_label,
+        '#default_value' => $type->title_label . t(' of ') . $user->name,
         '#weight' => -5
     );
-
+    
+    $description = $current_activity->audience === 'individual' ? t('Type your notes into the above box and click on the Save button when you are finished') : t('Type your group notes into the above box and click on the Save button when you are finished');
+    
     $form['body_filter']['notes'] = array(
         '#type' => 'textarea',
         '#title' => t('Notes'),
         '#required' => TRUE,
         '#default_value' => $node->notes,
-        '#description' => t('Type your group notes into the above box and click on the Save button when you are finished'),
+        '#description' => $description,
         '#resizable' => TRUE,
         '#rows' => 8,
         '#cols' => 40,

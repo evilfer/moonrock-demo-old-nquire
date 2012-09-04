@@ -2471,10 +2471,19 @@ class pDraw {
           $Height = $this->GraphAreaY2 - $this->GraphAreaY1;
         }
 
+        /* FIX (eloy)
+         * to prevent division by 0 error with no data
+         
         if ($Points == 1)
           $Data["Axis"][$AxisID]["Margin"] = $Height / 2;
         else
           $Data["Axis"][$AxisID]["Margin"] = ($Height / $Points) / 2;
+
+         */
+        if ($Points > 1)
+          $Data["Axis"][$AxisID]["Margin"] = ($Height / $Points) / 2;
+        else
+          $Data["Axis"][$AxisID]["Margin"] = $Height / 2;
       }
       else {
         $Data["Axis"][$AxisID]["Margin"] = $XMargin;

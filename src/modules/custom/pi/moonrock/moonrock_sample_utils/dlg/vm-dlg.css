@@ -49,6 +49,7 @@
   -moz-box-orient: vertical;
 
   background: white;
+  z-index: 3000;
 }
 
 .vm-dlg-buttons {

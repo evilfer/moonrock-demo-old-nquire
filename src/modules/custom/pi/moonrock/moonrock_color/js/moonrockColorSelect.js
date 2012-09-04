@@ -1,14 +1,14 @@
 
 $(function() {
   var colors = [];
-  for(var color in MoonrockColorKeys) {
+  for (var color in MoonrockColorKeys) {
     colors.push(color.substr(1));
   }
   var defaultcolor = $('[measure_content_type="moonrock_color"]').attr('value');
   if (defaultcolor.length == 0) {
     defaultcolor = null;
   }
-  
+
   $('#moonrockColorPicker').simpleColor({
     cellWidth : 15,
     cellHeight : 15,
@@ -17,7 +17,7 @@ $(function() {
     colors: colors,
     defaultColor: defaultcolor ? MoonrockColorColors[defaultcolor].color : null
   });
-	
+
   var listener = {
     setValue: function(value) {
       var nid = MoonrockColorKeys["#" + value];
@@ -29,10 +29,18 @@ $(function() {
       $('[measure_content_type="moonrock_color"]').attr("name", "");
     }
   };
-  
+
   if (defaultcolor) {
     $("#moonrockColorPickerName").html(MoonrockColorColors[defaultcolor].title);
   }
 
   ColorPickerSelection.setListener(listener);
+  
+  $('body').rockColorPicker(colors, defaultcolor);
 });
+
+$(function() {
+  
+  
+});
+

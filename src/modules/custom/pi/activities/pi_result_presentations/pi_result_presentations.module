@@ -710,15 +710,17 @@ function pi_result_presentations_get_options() {
   foreach ($sort_measures->categories as $key => $measure_status) {
     if ($measure_status['#status'] == 'key' || $measure_status['#status'] == 'selected') {
       $measure = node_load($key);
-      $measures['measures'][$measure->nid] = $measure;
-      $measures['all'][] = $measure->nid;
-      if ($measure->data_type == 'numeric') {
-        $measures['numeric'][] = $measure->nid;
-      } else if ($measure->content_options) {
-        if (function_exists("{$measure->content_options}_nquire_data_get_numeric_value")) {
+      if ($measure->data_type != 'text') {
+        $measures['measures'][$measure->nid] = $measure;
+        $measures['all'][] = $measure->nid;
+        if ($measure->data_type == 'numeric') {
           $measures['numeric'][] = $measure->nid;
-        } else if (function_exists("{$measure->content_options}_nquire_data_get_color_value")) {
-          $measures['color'][] = $measure->nid;
+        } else if ($measure->content_options) {
+          if (function_exists("{$measure->content_options}_nquire_data_get_numeric_value")) {
+            $measures['numeric'][] = $measure->nid;
+          } else if (function_exists("{$measure->content_options}_nquire_data_get_color_value")) {
+            $measures['color'][] = $measure->nid;
+          }
         }
       }
     }
