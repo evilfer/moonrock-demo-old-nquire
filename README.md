@@ -8,6 +8,13 @@ Moonrock demonstators.
 Changes:
 
 -----------------
+05-09-2012
+
+- New color picker working (only 24 colors).
+- Fixed bugs in sample/snapshot browser.
+
+
+-----------------
 04-09-2012
 
 - Texts improved.

@@ -169,6 +169,10 @@
       this.data('selected', typeof(selection) === 'undefined' ? null : selection);
       return this.itemBrowser('hasItem', itemId);
     },
+    clip: function(itemId) {
+      this.find('.item-browser-item[item-id="' + itemId + '"]').itemBrowserItem('_clip');
+      return this;
+    },
 
     _calculatePositions: function() {
       var positions = [];
@@ -434,7 +438,6 @@
       this.parent().itemBrowser('_event', type, this.data('item'));
       return this;
     },
-
     _clip: function() {
       this.find('.item-browser-item-header').addClass('item-browser-item-header-clip');
       return this;

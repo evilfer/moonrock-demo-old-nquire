@@ -7,33 +7,31 @@
  * Install....
  */
 
-
 /**
  * Implementation of moonrock_color_install().
  *
  * @return unknown_type
  */
 function moonrock_color_install() {
-	// Create tables.
-	drupal_install_schema('moonrock_color');
+  // Create tables.
+  drupal_install_schema('moonrock_color');
 
-	variable_set("node_options_moonrock_color", array('status','revision'));
-	variable_set("comment_moonrock_color", COMMENT_NODE_DISABLED);
-	variable_set("upload_moonrock_color", 0);
+  variable_set("node_options_moonrock_color", array('status', 'revision'));
+  variable_set("comment_moonrock_color", COMMENT_NODE_DISABLED);
+  variable_set("upload_moonrock_color", 0);
 }
 
 /**
  * Implementation of moonrock_color_uninstall().
  */
 function moonrock_color_uninstall() {
-	// Remove tables.
-	drupal_uninstall_schema('moonrock_color');
-	variable_del('moonrock_color');
+  // Remove tables.
+  drupal_uninstall_schema('moonrock_color');
+  variable_del('moonrock_color');
 
-	variable_del("node_options_moonrock_color");
-	variable_del("comment_moonrock_color");
-	variable_del("upload_moonrock_color");
-
+  variable_del("node_options_moonrock_color");
+  variable_del("comment_moonrock_color");
+  variable_del("upload_moonrock_color");
 }
 
 /**
@@ -41,38 +39,54 @@ function moonrock_color_uninstall() {
  */
 function moonrock_color_schema() {
 
-	$schema['moonrock_color'] = array(
-			'description' => t('Moonrock colour'),
-			'fields' => array(
-					'nid' => array(
-							'description' => t('node id'),
-							'type' => 'int',
-							'unsigned' => TRUE,
-							'not null' => TRUE,
-							'size' => 'small',
-							'default' => 0,
-					),
-					'vid' => array(
-							'description' => t('The current vid version identifier'),
-							'type' => 'int',
-							'unsigned' => TRUE,
-							'not null' => TRUE,
-							'size' => 'small',
-							'default' => 0,
-					),
-					'color' => array(
-							'description' => t('Colour'),
-							'type' => 'text',
-							'size' => 'normal',
-							'not null' => TRUE,
-					)
-			),
-			'primary key' => array('vid'),
-			'indexes' => array(
-					'nid' => array('nid'),
-			),
-	);
+  $schema['moonrock_color'] = array(
+      'description' => t('Moonrock colour'),
+      'fields' => array(
+          'nid' => array(
+              'description' => t('node id'),
+              'type' => 'int',
+              'unsigned' => TRUE,
+              'not null' => TRUE,
+              'size' => 'small',
+              'default' => 0,
+          ),
+          'vid' => array(
+              'description' => t('The current vid version identifier'),
+              'type' => 'int',
+              'unsigned' => TRUE,
+              'not null' => TRUE,
+              'size' => 'small',
+              'default' => 0,
+          ),
+          'color' => array(
+              'description' => t('Colour'),
+              'type' => 'text',
+              'size' => 'normal',
+              'not null' => TRUE,
+          ),
+          'row' => array(
+              'description' => t('The row for this color'),
+              'type' => 'int',
+              'unsigned' => TRUE,
+              'not null' => TRUE,
+              'size' => 'small',
+              'default' => 0,
+          ),
+          'col' => array(
+              'description' => t('The column for this color'),
+              'type' => 'int',
+              'unsigned' => TRUE,
+              'not null' => TRUE,
+              'size' => 'small',
+              'default' => 0,
+          ),
 
-	return $schema;
+      ),
+      'primary key' => array('vid'),
+      'indexes' => array(
+          'nid' => array('nid'),
+      ),
+  );
 
+  return $schema;
 }

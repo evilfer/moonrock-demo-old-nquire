@@ -25,6 +25,18 @@ function moonrock_color_node_info() {
   );
 }
 
+function moonrock_color_menu() {
+  $items = array();
+
+  $items['admin/moonrock_colors'] = array(
+      'title' => t('Import colors'),
+      'page callback' => '_moonrock_color_import_colors',
+      'access callback' => '_moonrock_color_import_colors_access',
+      'type' => MENU_NORMAL_ITEM,
+  );
+  return $items;
+}
+
 /**
  * Implementation of hook_perm().
  */
@@ -89,6 +101,22 @@ function moonrock_color_form(&$node) {
       '#description' => t('Specify colour in format: #rgb'),
       '#weight' => -2
   );
+  $form['body_filter']['row'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Row'),
+      '#required' => TRUE,
+      '#default_value' => $node->row,
+      '#description' => t('Specify the row for the position of this node'),
+      '#weight' => -2
+  );
+  $form['body_filter']['col'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Column'),
+      '#required' => TRUE,
+      '#default_value' => $node->col,
+      '#description' => t('Specify the column for the position of this node'),
+      '#weight' => -2
+  );
 
 
   $prefix = "";
@@ -105,7 +133,7 @@ function moonrock_color_form(&$node) {
  * Implementation of hook_insert().
  */
 function moonrock_color_insert($node) {
-  db_query("INSERT INTO {moonrock_color} (nid, vid, color) VALUES ('%d', '%d', '%s')", $node->nid, $node->vid, $node->color);
+  db_query("INSERT INTO {moonrock_color} (nid, vid, color, row, col) VALUES ('%d', '%d', '%s', '%d', '%d')", $node->nid, $node->vid, $node->color, $node->row, $node->col);
 }
 
 /**
@@ -115,7 +143,7 @@ function moonrock_color_update($node) {
   if ($node->revision) {
     moonrock_color_insert($node);
   } else {
-    db_query("UPDATE {moonrock_color} SET color = '%s', WHERE vid = %d", $node->color, $node->vid);
+    db_query("UPDATE {moonrock_color} SET color = '%s', row = %d, col = %d WHERE vid = %d", $node->color, $node->row, $node->col, $node->vid);
   }
 }
 
@@ -187,32 +215,116 @@ function theme_moonrock_color($node, $teaser) {
 }
 
 function moonrock_color_nquire_data_form_prefix() {
-  $query = "SELECT nid FROM {node} WHERE {node}.type='moonrock_color' ";
-  $result = db_query($query);
 
-  $colors = array();
-  $keys = array();
-  while ($object = db_fetch_object($result)) {
-    $color = node_load($object->nid);
-    $colors[$color->nid] = array(
-        "color" => $color->color,
-        "title" => $color->title,
-    );
-    $keys[$color->color] = $color->nid;
-  }
-
-  $output .= "<script type='text/javascript'>\n";
-  $output .= "var MoonrockColorColors = " . json_encode($colors) . ";\n";
-  $output .= "var MoonrockColorKeys = " . json_encode($keys) . ";\n";
-  $output .= "</script>\n";
-
-  $output .= "<div style='padding-top:20px;'>";
-  $output .= "<div><b>Colour:</b></div>";
-  $output .= "<div id='moonrockColorPickerName'> </div>";
-  $output .= "<div id='moonrockColorPicker'></div>";
+  $output .= "<div style='padding-top:20px;'><b>Colour:</b></div>";
+  $output .= "<div id='moonrockColorPickerSelection'>";
+  $output .= "<div id='moonrockColorPickerSelectionColor' class='moonrockColorPickerSelectionNoColor'> </div>";
+  $output .= "<div id='moonrockColorPickerSelectionName'> </div>";
+  $output .= "<div id='moonrockColorPickerSelectionNoName'>" . t('No color selected.') . "</div>";
   $output .= "</div>";
+  $output .= "<div id='moonrockColorPickerButtons'>";
+  $output .= "<button type='button' id='moonrockColorPickerOpen'>" . t("Open") . "</button>";
+  $output .= "<button type='button' id='moonrockColorPickerClose' style='display: none;'>" . t("Close") . "</button>";
+  $output .= "<button type='button' id='moonrockColorPickerClear'>" . t("Clear") . "</button>";
+  $output .= "</div>";
+  $output .= "<div id='moonrockColorPickerExplanation'><small>"
+          . t("Click the 'Open' buttons to open the color chart and click on a color to select it.<br/>You can also open and close it at any time by pressing the 'c' key")
+          . "</small></div>";
+  $output .= _moonrock_color_create_color_picker_image();
 
   _moonrock_color_load_form_resources();
+
+  return $output;
+}
+
+function _moonrock_color_create_color_picker_image() {
+
+  $colors = array();
+  $result = db_query("SELECT DISTINCT nid FROM {node} where {node}.type='moonrock_color'");
+  $maxrow = 0;
+  $maxcol = 0;
+  while ($obj = db_fetch_object($result)) {
+    $color = node_load($obj->nid);
+    $maxcol = max($maxcol, $color->col);
+    $maxrow = max($maxrow, $color->row);
+    $colors[] = $color;
+  }
+
+  $chipWidth = 30;
+  $chipHeight = 40;
+  $chipVGap = 20;
+  $chipHGap = 5;
+  $margin = 40;
+  $selection_gap = 2;
+
+  $holeRadius = .5 * $chipWidth;
+  $halfVGap = .5 * $chipVGap;
+  $chipArcRadius = $holeRadius - 1;
+
+  $borderCenterVDistance = .5 * $chipVGap;
+  $borderCenterHDistance = sqrt($chipArcRadius * $chipArcRadius - $borderCenterVDistance * $borderCenterVDistance);
+  $borderArcLength = 2 * $borderCenterHDistance;
+  $borderCircleCrossX = .5 * $chipWidth - $borderCenterHDistance;
+
+  $bottomArcPath = "a $chipArcRadius,$chipArcRadius 0 0,1 $borderArcLength,0";
+  $topArcPath = "a $chipArcRadius,$chipArcRadius 0 0,1 -$borderArcLength,0";
+
+  $topChipPath = "v $chipHeight h $borderCircleCrossX $bottomArcPath  h $borderCircleCrossX v -$chipHeight z";
+  $bottomChipPath = "v $chipHeight h $chipWidth v -$chipHeight h -$borderCircleCrossX $topArcPath z";
+  $middleChipPath = "v $chipHeight h $borderCircleCrossX $bottomArcPath  h $borderCircleCrossX v -$chipHeight h -$borderCircleCrossX $topArcPath z";
+
+  $topChipPathNoArc = "m $borderCircleCrossX,$chipHeight h -$borderCircleCrossX v -$chipHeight h $chipWidth v $chipHeight h -$borderCircleCrossX";
+  $bottomChipPathNoArc = "m $borderCircleCrossX,0 h -$borderCircleCrossX v $chipHeight h $chipWidth v -$chipHeight h -$borderCircleCrossX";
+  $middleChipPathNoArc = "m $borderCircleCrossX,0 h -$borderCircleCrossX v $chipHeight h $borderCircleCrossX m $borderArcLength,0  h $borderCircleCrossX v -$chipHeight h -$borderCircleCrossX";
+
+  $selectionHeight = $chipHeight + 2 * $selection_gap;
+  $selectionWidth = $chipWidth + 2 * $selection_gap;
+  $selectionBorderArcLength = $borderArcLength + 2 * $selection_gap;
+
+  $topChipPathSelection = "m -$selection_gap,-$selection_gap m $borderCircleCrossX,$selectionHeight h -$borderCircleCrossX v -$selectionHeight h $selectionWidth v $selectionHeight h -$borderCircleCrossX";
+  $bottomChipPathSelection = "m -$selection_gap,-$selection_gap m $borderCircleCrossX,0 h -$borderCircleCrossX v $selectionHeight h $selectionWidth v -$selectionHeight h -$borderCircleCrossX";
+  $middleChipPathSelection = "m -$selection_gap,-$selection_gap m $borderCircleCrossX,0 h -$borderCircleCrossX v $selectionHeight h $borderCircleCrossX m $selectionBorderArcLength,0  h $borderCircleCrossX v -$selectionHeight h -$borderCircleCrossX";
+
+  $width = 2 * $margin + $maxcol * ($chipWidth + $chipHGap) + $chipWidth;
+  $height = 2 * $margin + $maxrow * ($chipHeight + $chipVGap) + $chipHeight;
+
+  $output = '';
+  $output .= "<div id='rock-color-picker-container' style='width: {$width}px; height: {$height}px;'>";
+  $output .= "<svg id='rock-color-picker-svg' version='1.1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' viewBox='0 0 $width $height'>";
+  $output .= '<g id="rock-color-picker-svg-group" fill-rule="evenodd" style="font-size: 18px; text-anchor: middle; font-family: serif;">';
+
+  $holesPath = '';
+  $chipElements = '';
+  $holePath = "a $holeRadius,$holeRadius 0 0,0 $chipWidth,0 a $holeRadius,$holeRadius 0 0,0 -$chipWidth,0 z";
+
+  foreach ($colors as $color) {
+    $path = $color->row == 0 ? $topChipPath : ($color->row < $maxrow ? $middleChipPath : $bottomChipPath);
+    $border = $color->row == 0 ? $topChipPathNoArc : ($color->row < $maxrow ? $middleChipPathNoArc : $bottomChipPathNoArc);
+    $selectionBorder = $color->row == 0 ? $topChipPathSelection : ($color->row < $maxrow ? $middleChipPathSelection : $bottomChipPathSelection);
+
+    $x = $margin + $color->col * ($chipWidth + $chipHGap);
+    $y = $margin + $color->row * ($chipHeight + $chipVGap);
+
+    $chipElements .= "<g color-value='{$color->nid}' color-html='{$color->color}' title='{$color->title}' class='rock-color-picker-chip'>";
+    $chipElements .= "<path d='M $x,$y $path' fill='{$color->color}'/>";
+    $chipElements .= "<path class='rock-color-picker-border' d='M $x,$y $border' fill='none' />";
+    $chipElements .= "<path class='rock-color-picker-selection-border' d='M $x,$y $selectionBorder' fill='none' />";
+    $chipElements .= "</g>";
+  }
+
+  for ($j = 0, $y = $margin + $chipHeight + $halfVGap; $j < $maxrow; $j++, $y += $chipHeight + $chipVGap) {
+    for ($i = 0, $x = $margin; $i <= $maxcol; $i++, $x += $chipWidth + $chipHGap) {
+      $holesPath .= "M $x,$y $holePath ";
+    }
+  }
+
+  $output .= "<path d='M 0,0 v $height h $width v -$height z $holesPath' fill='#fafafa' fill-opacity='0.85'></path>";
+  $output .= "<rect x='0' y ='0' width='$width' height='$height' fill-opacity='0' stroke='black' stroke-width='1'></rect>";
+  $output .= $chipElements;
+
+  $output .= "</g>";
+  $output .= "</svg>";
+  $output .= "</div>"; // rock-color-picker-container
 
   return $output;
 }
@@ -235,10 +347,8 @@ function moonrock_color_nquire_measure_choose_explanation() {
 
 function _moonrock_color_load_form_resources() {
   drupal_add_js(drupal_get_path('module', 'moonrock_color') . '/js/jquery.mousewheel.js');
-  drupal_add_js(drupal_get_path('module', 'moonrock_color') . '/js/jquery-simple-color/jquery.simple-color_m.js');
   drupal_add_js(drupal_get_path('module', 'moonrock_color') . '/js/moonrockColorSelect.js');
   drupal_add_js(drupal_get_path('module', 'moonrock_color') . '/js/rockColorPicker.js');
-  drupal_add_js(drupal_get_path('module', 'moonrock_color') . '/js/raphael-min.js');
   drupal_add_css(drupal_get_path('module', 'moonrock_color') . '/css/rockColorPicker.css');
 }
 
@@ -260,9 +370,9 @@ function moonrock_color_nquire_data_get_color_value($nid) {
 function moonrock_color_nquire_data_get_text_value($nid) {
   $node = node_load($nid);
   if ($node && $node->type == 'moonrock_color') {
-     return check_plain($node->title);
+    return check_plain($node->title);
   }
-  
+
   return $nid;
 }
 
@@ -285,4 +395,59 @@ function _moonrock_color_html2rgb($color) {
   $b = hexdec($b);
 
   return array($r, $g, $b);
+}
+
+function _moonrock_color_import_colors_access() {
+  return true;
+}
+
+function _moonrock_color_import_colors() {
+
+  $current_colors = array();
+  $result = db_query("SELECT DISTINCT nid FROM {node} where {node}.type='moonrock_color'");
+  while ($obj = db_fetch_object($result)) {
+    $color = node_load($obj->nid);
+    node_delete($color);
+    $current_colors[$color->color] = $color;
+  }
+
+  echo "Current colors:<br/>";
+  echo _moonrock_color_displayTree($current_colors);
+
+  $file = fopen(drupal_get_path('module', 'moonrock_color') . '/data/colors.csv', 'r');
+  while (($data = fgetcsv($file)) !== FALSE) {
+    $c = $data[3];
+    if (isset($current_colors[$c])) {
+      $node = $current_colors[$c];
+      $node->title = $data[0];
+      $node->row = $data[1];
+      $node->col = $data[2];
+      node_save($color);
+      echo "<br/>Updated: " . _moonrock_color_displayTree($node);
+    } else {
+      $node = new stdClass();
+      $node->type = 'moonrock_color';
+      $node->title = $data[0];
+      $node->row = $data[1];
+      $node->col = $data[2];
+      $node->color = $data[3];
+      node_save($node);
+      echo "<br/>Added: " . _moonrock_color_displayTree($node);
+    }
+  }
+
+  fclose($file);
+}
+
+function _moonrock_color_displayTree($array) {
+  $newline = "<br>";
+  foreach ($array as $key => $value) {    //cycle through each item in the array as key => value pairs
+    if (is_array($value) || is_object($value)) {        //if the VALUE is an array, then
+      //call it out as such, surround with brackets, and recursively call displayTree.
+      $value = "Array()" . $newline . "(<ul>" . _moonrock_color_displayTree($value) . "</ul>)" . $newline;
+    }
+    //if value isn't an array, it must be a string. output its' key and value.
+    $output .= "[$key] => " . $value . $newline;
+  }
+  return $output;
 }

@@ -1,23 +1,73 @@
 
 
-.rock-color-picker-overlay-bottom {
-  position: absolute;
-  left: 0px;
-  top: 0px;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(255, 255, 255, .6);
-  z-index: 2000;
+
+
+
+
+
+
+
+
+
+
+#moonrockColorPickerSelection {
 }
 
-.rock-color-picker-overlay-top {
-  position: absolute;
+#moonrockColorPickerSelectionColor {
+  width: 120px;
+  height: 60px;
+  display: inline-block;
+  border: solid 1px black;
+  margin-right: 5px;
+}
+.moonrockColorPickerSelectionNoColor {
+  border: solid 1px gray !important;
+  background: white !important;
+}
+
+#moonrockColorPickerSelectionName {
+  font-weight: bold;
+  display: inline-block;
+}
+
+#moonrockColorPickerSelectionNoName {
+  font-style: italic;
+  display: inline-block;
+}
+
+#moonrockColorPickerButtons {
+  
+}
+
+#moonrockColorPickerExplanation {
+  font-size: small;
+}
+
+
+
+#rock-color-picker-container {
+  position: fixed;
   left: 0px;
   top: 0px;
-  width: 100%;
-  height: 100%;
   z-index: 4000;
-  overflow: hidden;
+  display: none;
 }
 
+.rock-color-picker-chip {
+  cursor: pointer;
+}
 
+.rock-color-picker-chip:hover .rock-color-picker-border {
+  stroke: black;
+}
+
+.rock-color-picker-chip[selected=true] .rock-color-picker-selection-border  {
+  stroke: blue;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.rock-color-picker-chip[selected=true] .rock-color-picker-border {
+  stroke: none;
+}
