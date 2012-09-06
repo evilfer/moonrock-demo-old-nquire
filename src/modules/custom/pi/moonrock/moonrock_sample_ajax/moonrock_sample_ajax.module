@@ -48,16 +48,16 @@ function moonrock_sample_ajax_access() {
   return TRUE;
 }
 
-function _moonrock_sample_ajax_search_getparam($name, $type = NULL, $param = NULL) {
+function _moonrock_sample_ajax_search_getparam($name, $type = NULL, $param = NULL, $default = FALSE) {
   if (!isset($_REQUEST[$name])) {
-    return FALSE;
+    return $default;
   } else {
     $value = $_REQUEST[$name];
     if (is_array($value)) {
       return count($value) > 0 ? $value : FALSE;
     } else {
       if (strlen($value) == 0) {
-        return FALSE;
+        return $default;
       } else if ($type == 'int') {
         return intval($value);
       } else if ($type == 'array') {
@@ -135,12 +135,16 @@ function moonrock_sample_ajax_snapshotsearch() {
     $query = "SELECT DISTINCT {node}.nid FROM {moonrock_snapshot} "
             . "LEFT JOIN {node} ON {moonrock_snapshot}.nid = {node}.nid ";
     $condition = "WHERE {node}.type = 'moonrock_snapshot' ";
-    
+
     $parameters = array();
 
-    if ($samplerefs) {
-      $condition .= "AND {moonrock_snapshot}.sample_ref IN (" . db_placeholders($samplerefs, "int") . ") ";
-      $parameters = array_merge($parameters, $samplerefs);
+    if ($usesamplerefs) {
+      if ($samplerefs) {
+        $condition .= "AND {moonrock_snapshot}.sample_ref IN (" . db_placeholders($samplerefs, "int") . ") ";
+        $parameters = array_merge($parameters, $samplerefs);
+      } else {
+        $condition .= "AND FALSE ";
+      }
     }
 
     if ($author === "me") {
@@ -161,6 +165,7 @@ function moonrock_sample_ajax_snapshotsearch() {
     }
   }
 
+  $snapshots = array();
   foreach ($nids as $nid) {
     $snapshots[] = moonrock_sample_utils_prepare_snapshot_object($nid);
   }

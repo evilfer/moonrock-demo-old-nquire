@@ -51,6 +51,9 @@ MoonrockSampleSearch.prototype.init = function() {
         event.preventDefault();
       }
     });
+    $(self.form).find("input[type='checkbox']").change(function(event) {
+      self.newSearch();
+    });
     $(self.form).find("select").change(function() {
       self.newSearch();
     });
@@ -144,7 +147,9 @@ MoonrockSampleSearch.prototype.fetch = function(id) {
   if ($(self.results).itemBrowser("hasItem", id)) {
     $(self.results).itemBrowser('clip', id);
   } else {
-    self._querySearch({nid: id}, function(items) {
+    self._querySearch({
+      nid: id
+    }, function(items) {
       if (items.length === 1) {
         $(self.clear).addClass('search-tooltip-link-active');
         $(self.results).itemBrowser("addItem", items[0]);

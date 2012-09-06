@@ -8,6 +8,15 @@ Moonrock demonstators.
 Changes:
 
 -----------------
+06-09-2012
+
+- Added all rock colors (115).
+- Completed snapshot search (except search by area).
+- Fixed bug that kept sample/snapshot dialogs on the bottom.
+- Fixed bug that kept new snapshot dialog under sample/snapshot dialogs.
+- Fixed bug that prevented sample/snapshot scroll bar from reappearing correctly.
+
+-----------------
 05-09-2012
 
 - New color picker working (only 24 colors).

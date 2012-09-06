@@ -7,7 +7,8 @@ var MoonrockSampleDialog = {
       title: "Create snapshot",
       width: "auto",
       autoOpen: false,
-      modal: true
+      modal: true,
+      zIndex: 3500
     });
   },
 

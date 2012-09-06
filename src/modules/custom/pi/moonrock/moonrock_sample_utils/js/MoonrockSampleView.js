@@ -6,10 +6,7 @@ var MoonrockSampleView = {
   init : function() {
     var items = [];
     $("#moonrock-sample-main-list").find("div").each(function() {
-      var itemdef = unescape($(this).attr('item-def'));
-      console.log(itemdef);
-      var itemdef = itemdef.replace(/\\x26/g, "&").replace(/\\x3c/g, "<").replace(/\\x3e/g, ">");
-      console.log(itemdef);
+      var itemdef = unescape($(this).attr('item-def')).replace(/\\x26/g, "&").replace(/\\x3c/g, "<").replace(/\\x3e/g, ">");
       var item = JSON.parse(itemdef);
       items.push(item);
     });
@@ -70,10 +67,25 @@ var MoonrockSampleView = {
 
 
   processSnapshotForm: function() {
+    if ($('input[name="useanysampleref"]').length > 0) {
+      var any = $('input[name="useanysampleref"]').attr('checked');
+      $('#moonrock-sample-search-snapshots-usesamplerefs').attr('value', any ? 0 : 1);
+    }
+      
     if ($('#moonrock-sample-search-snapshots-usesamplerefs').attr('value')) {
-      var samplerefs = $('#moonrock-sample-search-samples-results').itemBrowser('getItemIds')
-              .concat($('#moonrock-sample-main-list').itemBrowser('getItemIds'));
-      $('#moonrock-sample-search-snapshots-samplerefs').attr('value', samplerefs.join(' '));
+      var samples = null;
+      if ($('input[name="usemainsample"]').length > 0) {
+        samples = [];
+        $('input[name="usemainsample"]').each(function() {
+          if ($(this).attr('checked')) {
+            samples.push($(this).attr('value'));
+          }
+        });
+      }else {
+        samples = $('#moonrock-sample-search-samples-results').itemBrowser('getItemIds')
+        .concat($('#moonrock-sample-main-list').itemBrowser('getItemIds'));
+      }
+      $('#moonrock-sample-search-snapshots-samplerefs').attr('value', samples.join(' '));
     }
   },
   

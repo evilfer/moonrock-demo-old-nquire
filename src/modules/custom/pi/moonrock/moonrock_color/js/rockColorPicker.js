@@ -50,9 +50,10 @@
         };
 
         $('#rock-color-picker-container').css(newpos);
+        
+        event.preventDefault();
+        event.stopPropagation();
       });
-
-
 
       $('#rock-color-picker-container').mousedown(function(event) {
         self.data('rock-color-picker-selection-mousedown', true);

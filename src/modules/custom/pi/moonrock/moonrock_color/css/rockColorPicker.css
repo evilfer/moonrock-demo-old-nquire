@@ -63,7 +63,7 @@
 
 .rock-color-picker-chip[selected=true] .rock-color-picker-selection-border  {
   stroke: blue;
-  stroke-width: 2;
+  stroke-width: 3;
   stroke-linecap: round;
   stroke-linejoin: round;
 }

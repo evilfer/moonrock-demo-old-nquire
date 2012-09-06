@@ -45,7 +45,7 @@
   top: 175px;
   left: 0px;
   height: 16px;
-  width: 100%;
+  width: 0px;
   background: #fafafa;
 }
 
@@ -125,6 +125,10 @@
 
 .moonrock-sample-search-table tbody {
   border : none;
+}
+
+.moonrock-sample-search-table td {
+    padding-top: 10px;
 }
 
 .moonrock-sample-search-dlg {

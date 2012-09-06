@@ -253,9 +253,9 @@ function _moonrock_color_create_color_picker_image() {
   $chipWidth = 30;
   $chipHeight = 40;
   $chipVGap = 20;
-  $chipHGap = 5;
+  $chipHGap = 10;
   $margin = 40;
-  $selection_gap = 2;
+  $selection_gap = 3;
 
   $holeRadius = .5 * $chipWidth;
   $halfVGap = .5 * $chipVGap;

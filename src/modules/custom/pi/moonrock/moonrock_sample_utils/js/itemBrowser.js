@@ -285,9 +285,11 @@
       }
     },
     _displayScroll: function(scroll) {
-      var pos = this.data('scroll') * (this.find('.item-browser-scroll-container').width() - scroll.width);
-      this.find('.item-browser-scroll-bar').css('width', scroll.width).css('left', pos);
       this.find('.item-browser-scroll-container').css('width', scroll.active ? '100%' : '0px');
+      this.find('.item-browser-scroll-bar').css({
+        width: scroll.width,
+        left: this.data('scroll') * (this.find('.item-browser-scroll-container').width() - scroll.width)
+      });
       return this;
     }
   };
