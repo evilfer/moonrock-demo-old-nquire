@@ -78,6 +78,13 @@ function moonrock_snapshot_form(&$node) {
       '#description' => t('Select a sample'),
       '#weight' => 2
   );
+  
+  $form['snapshot_id'] = array(
+      '#type' => 'hidden',
+      '#required' => FALSE,
+      '#default_value' => $node->nid,
+      '#weight' => 2
+  );
 
   $form['notes'] = array(
       '#type' => 'textarea',
@@ -97,16 +104,22 @@ function moonrock_snapshot_form(&$node) {
   );
 
   $form['submit'] = array(
-      '#type' => 'submit',
+      '#type' => 'button',
       '#value' => t('Save'),
       '#weight' => 5,
-      '#attributes' => array('onClick' => 'MoonrockSampleDialog.submitNewSnapshot();return false;'),
+      '#attributes' => array('onClick' => 'MoonrockSampleDialog.submitSnapshot();return false;'),
+  );
+  $form['delete'] = array(
+      '#type' => 'button',
+      '#value' => t('Delete'),
+      '#weight' => 5,
+      '#attributes' => array('onClick' => 'MoonrockSampleDialog.deleteSnapshot();return false;'),
   );
   $form['cancel'] = array(
       '#type' => 'button',
       '#value' => t('Cancel'),
       '#weight' => 6,
-      '#attributes' => array('onClick' => 'MoonrockSampleDialog.cancelNewSnapshot();return false;'),
+      '#attributes' => array('onClick' => 'MoonrockSampleDialog.cancelSnapshot();return false;'),
   );
 
   return $form;

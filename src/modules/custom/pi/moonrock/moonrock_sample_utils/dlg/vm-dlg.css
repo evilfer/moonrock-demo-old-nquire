@@ -38,8 +38,8 @@
   border: 5px solid #aaa;
   border-radius: 15px;
   padding: 5px;
-  
-    overflow: hidden;
+
+  overflow: hidden;
 
 
   display: -moz-inline-box;
@@ -54,9 +54,12 @@
 
 .vm-dlg-buttons {
   height: 30px;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 .vm-dlg-title {
+  padding-left: 25px;
   display: inline-block;
   font-weight: bold;
 }
@@ -72,6 +75,6 @@
 
 
 .ui-widget-overlay {
-    z-index: 3500;
+  z-index: 3500;
 }
 

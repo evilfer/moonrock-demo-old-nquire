@@ -39,14 +39,16 @@
         var k = delta > 0 ? 1.25 : .8;
 
         var w = $('#rock-color-picker-container').width();
-        var h = $('#rock-color-picker-container').height();
+        var neww = Math.max(50, Math.min(2000, k*w));
+        var appliedk = neww / w;
+        var newh = appliedk * $('#rock-color-picker-container').height();
         var pos = $('#rock-color-picker-container').position();
-
+        
         var newpos = {
-          left: event.pageX - k * (event.pageX - pos.left),
-          top: event.pageY - k * (event.pageY - pos.top),
-          width: k * w,
-          height: k * h
+          left: event.pageX - appliedk * (event.pageX - pos.left) - $(window).scrollLeft(),
+          top: event.pageY - appliedk * (event.pageY - pos.top) - $(window).scrollTop(),
+          width: neww,
+          height: newh
         };
 
         $('#rock-color-picker-container').css(newpos);
@@ -56,12 +58,30 @@
       });
 
       $('#rock-color-picker-container').mousedown(function(event) {
+        self.data('rock-color-picker-selection-drag-mx', event.pageX - $('#rock-color-picker-container').position().left);
+        self.data('rock-color-picker-selection-drag-my', event.pageY - $('#rock-color-picker-container').position().top);
         self.data('rock-color-picker-selection-mousedown', true);
         self.data('rock-color-picker-selection-dragging', false);
       });
       self.mousemove(function(event) {
         if (self.data('rock-color-picker-selection-mousedown')) {
+          event.preventDefault();
+          event.stopPropagation();
+
           self.data('rock-color-picker-selection-dragging', true);
+          var current_pos = $('#rock-color-picker-container').position();
+          var margin = 100;
+          var w = $('#rock-color-picker-container').width();
+          var h = $('#rock-color-picker-container').height();
+          var ww = $(window).width();
+          var wh = $(window).height();
+          var dx = event.pageX - $(window).scrollLeft() - self.data('rock-color-picker-selection-drag-mx');
+          var dy = event.pageY - $(window).scrollTop() - self.data('rock-color-picker-selection-drag-my');
+          
+          $('#rock-color-picker-container').css({
+            left: Math.max(margin - w, Math.min(ww - margin, dx)),
+            top: Math.max(margin - h, Math.min(wh - margin, dy))
+          });
         }
       });
       $('.rock-color-picker-chip').mouseup(function(event) {
@@ -74,9 +94,6 @@
           self.data('rock-color-picker-selection-mousedown', false);
         }
       });
-
-
-      $('#rock-color-picker-container').draggable();
 
       this.rockColorPicker('_setValue', _options.defaultValue, true);
     },

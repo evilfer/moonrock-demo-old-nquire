@@ -180,8 +180,6 @@ function moonrock_sample_ajax_snapshotsearch() {
 function moonrock_sample_ajax_newsnapshot_submit() {
   $form_state = array();
   module_load_include('inc', 'node', 'node.pages');
-  $node = new stdClass();
-  $node->type = 'moonrock_snapshot';
 
   $form_state['values']['title'] = $_POST['title'];
   $form_state['values']['notes'] = $_POST['notes'];
@@ -199,6 +197,12 @@ function moonrock_sample_ajax_newsnapshot_submit() {
     $output .= '</ul></div>';
     $result = array("status" => FALSE, "data" => $output);
   } else {
+    if (isset($_POST['snapshot_id']) && strlen($_POST['snapshot_id']) > 0) {
+      $node = node_load($_POST['snapshot_id']);
+    } else {
+      $node = new stdClass();
+      $node->type = 'moonrock_snapshot';
+    }
     $node->title = $_POST['title'];
     $node->notes = $_POST['notes'];
     $node->vm_parameters = $_POST['vm_parameters'];
@@ -210,6 +214,7 @@ function moonrock_sample_ajax_newsnapshot_submit() {
         "snapshot" => array(
             "nid" => $node->nid,
             "title" => $node->title,
+            "notes" => $node->notes,
         ),
     );
   }

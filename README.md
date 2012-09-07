@@ -8,6 +8,14 @@ Moonrock demonstators.
 Changes:
 
 -----------------
+07-09-2012
+
+- Snapshots can be edited after creation.
+- Completed sample/snapshot dialog menu.
+- Sample/snapshot code refactored in jquery plugin style.
+- Fixed bugs with color picker movement and zooming.
+
+-----------------
 06-09-2012
 
 - Added all rock colors (115).
@@ -21,7 +29,6 @@ Changes:
 
 - New color picker working (only 24 colors).
 - Fixed bugs in sample/snapshot browser.
-
 
 -----------------
 04-09-2012

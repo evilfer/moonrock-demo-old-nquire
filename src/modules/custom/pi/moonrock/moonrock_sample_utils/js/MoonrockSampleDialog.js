@@ -20,85 +20,53 @@ var MoonrockSampleDialog = {
       url: MoonrockSampleView.getBaseURL() + '/sample_dialog',
       snapshooting: snapshooting
     }, ".item-browser-item[item-id='" + itemId + "']", function(dialog) {
-      MoonrockSampleDialog._initDialog(dialog);
+      dialog.find('.moonrock-sample-dlg').vmManager();
     });
   },
 
-  _initDialog: function(dialogElement) {
-
-    this._setDialogTitle(dialogElement);
-    this._enableButton(dialogElement, 'save', true);
-    //this._enableButton(dialogElement, 'reload', false);
-
-    $(dialogElement).find(".moonrock-sample-dlg-menu-save").click(function() {
-      if ($(this).hasClass("enabled")) {
-        MoonrockSampleDialog.openSnapshotForm($(this).parents(".moonrock-sample-dlg"));
-      }
-    });
+  
+  openEditSnapshotForm: function(sampleElement) {
+    this.prepareSnapshotForm(sampleElement, true);
   },
-
-  _setDialogTitle : function(dialogElement) {
-    var info = this._getDialogInfo(dialogElement);
-    var title = info.sampleTitle;
-    if (info.snapshotTitle) {
-      title += " > " + info.snapshotTitle;
-    }
-
-    $(dialogElement).find('.vm-dlg-title').html(title);
+  
+  openNewSnapshotForm : function(sampleElement) {
+    this.prepareSnapshotForm(sampleElement, false);
   },
+  prepareSnapshotForm: function(sampleElement, isEditing) {
+    this._callingSampleElement = sampleElement;
 
-  _getDialogInfo : function(dialogElement) {
-    var element = $(dialogElement).hasClass(".moonrock-sample-dlg") ? dialogElement : $(dialogElement).find(".moonrock-sample-dlg");
-
-    return {
-      element : element,
-      sample : $(element).attr("sample"),
-      snapshot : $(element).filter("[snapshot]").attr("snapshot"),
-      sampleTitle : $(element).attr("sample_name"),
-      snapshotTitle : $(element).attr("snapshot_name")
-    };
-  },
-
-  _enableButton : function(dialogElement, button, enabled) {
-    if (enabled) {
-      $(dialogElement).find(".moonrock-sample-dlg-menu-" + button).addClass("enabled");
-    } else {
-      $(dialogElement).find(".moonrock-sample-dlg-menu-" + button).removeClass("enabled");
-    }
-  },
-
-  _setSnapshot : function(dialogElement, snapshot) {
-    $(dialogElement).attr("snapshot", snapshot.nid);
-    $(dialogElement).attr("snapshot_name", snapshot.title);
-    var parent = $(dialogElement).parents(".vm-dlg-dialog");
-    parent.attr('item-id', snapshot.nid);
-    this._setDialogTitle(parent);
-  },
-
-  openSnapshotForm : function(dialogElement) {
-    this._callingSampleDialog = dialogElement;
     /**
      * temporary trick
      */
-    var info = this._getDialogInfo(dialogElement);
-    var img = $('.item-browser-item[item-id="' + info.sample + '"]').find('.item-browser-item-img').attr('src');
+    var sampleInfo = sampleElement.vmManager('sampleInfo');
+    var img = $('.item-browser-item[item-id="' + sampleInfo.id + '"]').find('.item-browser-item-img').attr('src');
 
-    $("#edit-sample-ref").attr("value", info.sample);
+    $("#edit-sample-ref").attr("value", sampleInfo.id);
+    $("#moonrock-snapshot-form-sample").html(sampleInfo.name);
+    $("#moonrock-snapshot-form-img").attr('src', img);
     $("#edit-vm-parameters").attr("value", "vmParameters");
     $('#moonrock-snapshot-form-messages').html("");
-    $("#moonrock-snapshot-form-sample").html(info.sampleTitle);
-    $("#moonrock-snapshot-form-img").attr('src', img);
-    $("#edit-title").attr("value", "");
-    $("#edit-notes").attr("value", "");
+
+    if (isEditing) {
+      var snapshotInfo = sampleElement.vmManager('snapshotInfo');
+      $('#moonrock-sample-newsnapshot-dlg').find('.ui-dialog-title').html('Edit snapshot: ' + snapshotInfo.name);
+      $("#edit-snapshot-id").attr("value", snapshotInfo.id);
+      $("#edit-title").attr("value", snapshotInfo.name);
+      $("#edit-notes").attr("value", snapshotInfo.notes);
+    } else {
+      $('#moonrock-sample-newsnapshot-dlg').find('.ui-dialog-title').html('New snapshot');
+      $("#edit-title").attr("value", "");
+      $("#edit-notes").attr("value", "");
+    }
     $('#moonrock-sample-newsnapshot-dlg').dialog("open");
   },
 
-  cancelNewSnapshot: function() {
-    this._callingSampleDialog = null;
+  cancelSnapshot: function() {
+    this._callingSampleElement = null;
     $('#moonrock-sample-newsnapshot-dlg').dialog("close");
   },
 
-  submitNewSnapshot: function() {
+  submitSnapshot: function() {
     var data = $("#moonrock-snapshot-form").serialize();
 
     $.ajax({
@@ -108,8 +76,8 @@ var MoonrockSampleDialog = {
       dataType: 'json',
       success: function(data) {
         if (data.status) {
-          MoonrockSampleDialog._setSnapshot(MoonrockSampleDialog._callingSampleDialog, data.snapshot);
-          MoonrockSampleDialog.cancelNewSnapshot();
+          MoonrockSampleDialog._callingSampleElement.vmManager('setSnapshot', data.snapshot);
+          MoonrockSampleDialog.cancelSnapshot();
           if (typeof(MoonrockSampleView) !== 'undefined') {
             MoonrockSampleView.newSnapshot(data.snapshot);
           }
