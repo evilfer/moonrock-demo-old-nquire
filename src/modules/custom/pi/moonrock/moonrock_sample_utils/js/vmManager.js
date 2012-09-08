@@ -22,6 +22,12 @@
           MoonrockSampleDialog.openEditSnapshotForm(self);
         }
       });
+      this.find(".moonrock-sample-dlg-menu-search").click(function() {
+        if ($(this).hasClass("enabled")) {
+          MoonrockSampleView.searchSnapshotByView(self.vmManager('sampleInfo'), 'vmParameters');
+          self.vmManager('getDlg').vmDialog('minimize');
+        }
+      });
     },
     updateTitle: function() {
       var sampleName = this.attr("sample_name");

@@ -24,7 +24,7 @@ var MoonrockSampleSearch = function(settings) {
 
 MoonrockSampleSearch.prototype.init = function() {
   var self = this;
-
+  
   if ($(self.results).length > 0) {
     $(self.results).itemBrowser({
       clip: true,
@@ -35,11 +35,14 @@ MoonrockSampleSearch.prototype.init = function() {
       metadataCallback: self.settings.metadataCallback
     });
 
+    var y = $(self.results).position().top + $(self.results).height() + 80;
     $(self.dlg).dialog({
       autoOpen:false,
       width: 'auto',
       height: 'auto',
-      minHeight: 100
+      minHeight: 200,
+      zIndex: 5000,
+      position: ['center', y]
     });
 
     $(self.throbber).itemBrowserThrobber();

@@ -40,6 +40,10 @@ var MoonrockSampleView = {
       })
     };
     
+    $('#moonrock-sample-search-snapshots-view-clear').click(function() {
+      MoonrockSampleView.clearSearchSnapshotByView();
+    });
+    
     if (typeof(MoonrockSampleSelection) !== 'undefined') {
       if (MoonrockSampleSelection.sample && !$('#moonrock-sample-main-list').itemBrowser('hasItem', MoonrockSampleSelection.sample)) {
         this.searchManagers.sample.fetch(MoonrockSampleSelection.sample);
@@ -63,7 +67,38 @@ var MoonrockSampleView = {
       return "?q=moonrock_sample_ajax";
     }
   },
+  
+  searchSnapshotByView: function(sample, vmParameters) {
+    
+    $('input[name="useanysampleref"], input[name="usemainsample"], select[name="usesamplerefs"]').attr('disabled', 'disabled');
+    
+    $('#moonrock-sample-search-snapshots-view-noview').hide();
+    $('#moonrock-sample-search-snapshots-view-view').show();
+    
+    var img = $('.item-browser-item[item-id="' + sample.id + '"]').find('.item-browser-item-img').attr('src');
+    $('#moonrock-sample-search-snapshots-view-img').attr('src', img);
+    $('#moonrock-sample-search-snapshots-view-sample').html(sample.name);
+    $('input[name="useviewsample"]').attr('value', sample.id);
+    $('input[name="useviewparameters"]').attr('value', vmParameters);
+    $('#moonrock-sample-search-snapshots-dlg').dialog('open');
+    
+    $('#moonrock-sample-search-snapshots-view-view').find('.item-browser-item-title-open').unbind('click').click(function() {
+      MoonrockSampleView._itemImageClicked($('input[name="useviewsample"]').attr('value'));
+    });
+    this.searchManagers.snapshot.newSearch();
+  },
+  
+  clearSearchSnapshotByView: function() {
+    $('input[name="useanysampleref"], input[name="usemainsample"], select[name="usesamplerefs"]').removeAttr('disabled', 'enabled');
 
+    $('#moonrock-sample-search-snapshots-view-view').hide();
+    $('#moonrock-sample-search-snapshots-view-noview').show();
+
+    $('input[name="useviewsample"]').attr('value', '');
+    $('input[name="useviewparameters"]').attr('value', '');
+    
+    this.searchManagers.snapshot.newSearch();
+  },
 
 
   processSnapshotForm: function() {
@@ -104,7 +139,7 @@ var MoonrockSampleView = {
   itemEvent: function(event, item, containerId) {
     switch (event) {
       case "imgclick":
-        this._itemImageClicked(item, containerId);
+        this._itemImageClicked(item.id);
         break;
       case "itemselected":
         this._itemSelected(item, containerId);
@@ -122,8 +157,8 @@ var MoonrockSampleView = {
         break;
     }
   },
-  _itemImageClicked: function(item, containerId) {
-    MoonrockSampleDialog.open(item.id);
+  _itemImageClicked: function(itemId) {
+    MoonrockSampleDialog.open(itemId);
   },
   _itemSelected: function(item, containerId) {
     MoonrockSampleSelection.select(item);

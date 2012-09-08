@@ -8,6 +8,12 @@ Moonrock demonstators.
 Changes:
 
 -----------------
+08-09-2012
+
+- Added filter by view to snapshot search (not functional).
+- Improved search form presentation.
+
+-----------------
 07-09-2012
 
 - Snapshots can be edited after creation.

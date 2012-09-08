@@ -122,18 +122,34 @@
   background-position: right;
 }
 
+.moonrock-sample-search-table {
+  border: none;
+}
 
 .moonrock-sample-search-table tbody {
   border : none;
 }
 
-.moonrock-sample-search-table td {
-    padding-top: 10px;
+.moonrock-sample-search-table td, .moonrock-sample-search-table th {
+    padding: 10px;
+    border: 1px solid lightgray;
+    vertical-align: top;
 }
+
+.moonrock-sample-search-snapshots-view-tab {
+  height: 180px;
+}
+#moonrock-sample-search-snapshots-view-view {
+  display: none;
+}
+
 
 .moonrock-sample-search-dlg {
   font-size: 12px;
+}
 
+.ui-dialog-title {
+  font-size: 14px;
 }
 
 a.external_link div {

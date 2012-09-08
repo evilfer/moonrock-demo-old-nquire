@@ -120,9 +120,16 @@ function moonrock_sample_ajax_snapshotsearch() {
   $nid = _moonrock_sample_ajax_search_getparam('nid');
 
   if (!$nid) {
-    $usesamplerefs = _moonrock_sample_ajax_search_getparam('usesamplerefs', 'int');
-    if ($usesamplerefs) {
-      $samplerefs = _moonrock_sample_ajax_search_getparam('samplerefs', 'array', ' ');
+    $useviewsample = _moonrock_sample_ajax_search_getparam('useviewsample', 'int');
+
+    if ($useviewsample) {
+      $usesamplerefs = TRUE;
+      $samplerefs = array($useviewsample);
+    } else {
+      $usesamplerefs = _moonrock_sample_ajax_search_getparam('usesamplerefs', 'int');
+      if ($usesamplerefs) {
+        $samplerefs = _moonrock_sample_ajax_search_getparam('samplerefs', 'array', ' ');
+      }
     }
     $author = _moonrock_sample_ajax_search_getparam('author');
     $keyword = _moonrock_sample_ajax_search_getparam('keyword');

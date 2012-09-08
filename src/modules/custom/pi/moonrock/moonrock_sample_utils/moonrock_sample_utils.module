@@ -149,78 +149,122 @@ function moonrock_sample_utils_create_sample_table($main_samples, $link_vm, $sam
   }
 
   if ($snapshot_search) {
-    $search = '<div class="moonrock-sample-search-dlg" id="moonrock-sample-search-snapshots-dlg" title="' . t('Snapshot search') . '">';
+    $headers = array();
+    $cells = array();
+    $hidden = '';
 
-    $search .= '<form class="moonrock-sample-search-form" id="moonrock-sample-search-snapshots-form">';
-    $search .= '<table class="moonrock-sample-search-table">';
+    $hidden .= '<input type="hidden" id="moonrock-sample-search-snapshots-samplerefs" name="samplerefs" />';
 
     if ($main_samples) {
-      $search .= '<tr>';
-      $search .= '<td>';
-      $search .= t('Snapshots of samples: ');
-      $search .= '</td><td>';
+      $headers[] = t('Snapshots of samples: ');
+      $hidden .= '<input id="moonrock-sample-search-snapshots-usesamplerefs" type="hidden" name="usesamplerefs" value="1" />';
+      $cell = '';
+      
       if ($sample_search) {
-        $search .= '<input type="checkbox" name="useanysampleref" value="any" '
-                . "id='moonrock-sample-search-snapshots-usesamplerefs' />";
-        $search .= "<label for='moonrock-sample-search-snapshots-usesamplerefs'>" . t('Any') . "</label><br/>";
+        $cell .= '<input type="checkbox" name="useanysampleref" value="any" '
+                . "id='moonrock-sample-search-snapshots-usesamplerefs' />"
+                . "<label for='moonrock-sample-search-snapshots-usesamplerefs'>" . t('Any') . "</label><br/>";
       }
-      $search .= '<input id="moonrock-sample-search-snapshots-usesamplerefs" type="hidden" name="usesamplerefs" value="1" />';
-
       foreach ($main_samples as $sample) {
         $id = "moonrock-sample-search-snapshots-main-samples-{$sample->nid}";
-        $search .= '<input type="checkbox" name="usemainsample" '
-                . "id='$id' value='{$sample->nid}' checked='checked'/>";
-        $search .= "<label for='$id'>{$sample->title}</label><br/>";
+        $cell .= '<input type="checkbox" name="usemainsample" '
+                . "id='$id' value='{$sample->nid}' checked='checked'/>"
+                . "<label for='$id'>{$sample->title}</label><br/>";
       }
-      $search .= '</td>';
-      $search .= '</tr>';
+      
+      $cells[] = $cell;
     } else if ($sample_search) {
-      $search .= '<tr>';
-      $search .= '<td>';
-      $search .= '<label for="moonrock-sample-search-snapshots-usesamplerefs">' . t('Snapshots of samples: ') . '</label>';
-      $search .= '</td><td>';
-      $search .= '<select id="moonrock-sample-search-snapshots-usesamplerefs" name="usesamplerefs">';
-      $search .= '<option value="1">' . t('Shown samples') . '</option>';
-      $search .= '<option value="0">' . t('Any sample') . '</option>';
-      $search .= '</select>';
-      $search .= '</td>';
-      $search .= '</tr>';
+      $headers[] = t('Snapshots of samples: ');
+      $cell = '<select id="moonrock-sample-search-snapshots-usesamplerefs" name="usesamplerefs">'
+              . '<option value="1">' . t('Shown samples') . '</option>'
+              . '<option value="0">' . t('Any sample') . '</option>'
+              . '</select>';
+      $cells[] = $cell;
     } else {
-      $search .= '<input id="moonrock-sample-search-snapshots-usesamplerefs" type="hidden" name="usesamplerefs" value="1" />';
+      $hidden .= '<input id="moonrock-sample-search-snapshots-usesamplerefs" type="hidden" name="usesamplerefs" value="0" />';
     }
-    $search .= '<input type="hidden" id="moonrock-sample-search-snapshots-samplerefs" name="samplerefs" />';
 
-    $search .= '<tr>';
-    $search .= '<td>';
-    $search .= '<label for="moonrock-sample-search-snapshots-author">' . t('Snapshots created by: ') . '</label>';
-    $search .= '</td><td>';
-    $search .= '<select id="moonrock-sample-search-snapshots-author" name="author">';
-    $search .= '<option value="me">' . t('Me') . '</option>';
-    $search .= '<option value="any">' . t('Anyone') . '</option>';
-    $search .= '</select>';
-    $search .= '</td>';
-    $search .= '</tr>';
 
-    $search .= '<tr>';
-    $search .= '<td>';
-    $search .= '<label for="moonrock-sample-search-snapshots-keyword">' . t('Keyword') . '</label>';
-    $search .= '</td><td>';
-    $search .= '<input type="text" id="moonrock-sample-search-snapshots-keyword" name="keyword" />';
-    $search .= '</td>';
-    $search .= '</tr>';
-    $search .= '</table>';
-    $search .= '</form>';
-    $search .= '<div style="text-align: center;">';
-    $search .= '<button id="moonrock-sample-search-snapshots-search">' . t('Search') . '</button>';
-    $search .= '<button id="moonrock-sample-search-snapshots-cancel">' . t('Close') . '</button>';
-    $search .= '</div>';
 
-    $search .= '</div>';
+    $headers[] = t('Snapshots created by: ');
+    $cell = '<select id="moonrock-sample-search-snapshots-author" name="author">'
+            . '<option value="me">' . t('Me') . '</option>'
+            . '<option value="any">' . t('Anyone') . '</option>'
+            . '</select>';
+    $cells[] = $cell;
+
+    $headers[] = t('Keyword:');
+    $cells[] = '<input type="text" id="moonrock-sample-search-snapshots-keyword" name="keyword" />';
+
+
+
+    $headers[] = t('Similar view of a sample:');
+    $explanation = '<p>' . t('No view has been selected.') . '</p><p>'
+            . t('To filter snapshots by view:') . '</p><ul>'
+            . '<li>' . t('Open a microscope for any sample or snapshot.') . '</li>'
+            . '<li>' . t('Zoom to an interesting spot.') . '</li>'
+            . '<li>' . t('Click on the button:') . '<div class="moonrock-sample-dlg-menu-search">'
+            . '<div class="moonrock-sample-dlg-menu-item-buttom"></div><div style="font-size: smaller; font-weight: bold; color:gray;" class="moonrock-sample-dlg-menu-item-label">'
+            . t('Search snapshots of this view') . '</div></div>'
+            . '</li></ul>';
+
+    $cell = '<div class="moonrock-sample-search-snapshots-view-tab" id="moonrock-sample-search-snapshots-view-noview">'
+            . $explanation
+            . '</div>'
+            . '<div class="moonrock-sample-search-snapshots-view-tab" id="moonrock-sample-search-snapshots-view-view">'
+            . '  <div style="width:150px;">'
+            . '    <img id="moonrock-sample-search-snapshots-view-img" style="width:100%;" />'
+            . '    <div style="width: 100%; text-align: center;">'
+            . '      <div id="moonrock-sample-search-snapshots-view-sample" style="display: inline-block;padding-left:10px;"></div><div class="item-browser-item-title-open"></div>'
+            . '    </div>'
+            . '  </div>'
+            . '<div><p>' 
+            . t('With ') . '<select id="moonrock-sample-search-snapshots-view-position" name="viewzoom">'
+            . '<option value="0">' . t('same zoom') . '</option>'
+            . '<option value="1">' . t('similar zoom') . '</option>'
+            . '<option value="2">' . t('any zoom') . '</option>'
+            . '</select>'
+            . t(' and ') . '<select id="moonrock-sample-search-snapshots-view-position" name="viewzoom">'
+            . '<option value="0">' . t('same position') . '</option>'
+            . '<option value="1">' . t('similar positions') . '</option>'
+            . '<option value="2">' . t('any position') . '</option>'
+            . '</select>'
+            . '</p></div>'
+            
+            . '<div><button type="button" id="moonrock-sample-search-snapshots-view-clear">' . t('Clear view filter') . '</button></div>'
+            . '</div>';
+    $cells[] = $cell;
+    $hidden .= '<input type="hidden" id="moonrock-sample-search-snapshots-useviewsample" name="useviewsample" />';
+    $hidden .= '<input type="hidden" id="moonrock-sample-search-snapshots-useviewparameters" name="useviewparameters" />';
+
+
+
+    $search = '<div class="moonrock-sample-search-dlg" id="moonrock-sample-search-snapshots-dlg" title="' . t('Snapshot search') . '">'
+            . '<form class="moonrock-sample-search-form" id="moonrock-sample-search-snapshots-form">'
+            . $hidden
+            . '<table class="moonrock-sample-search-table">'
+            . '<tr>';
+    
+    foreach ($headers as $header) {
+      $search .= "<th>$header</th>";
+    }
+    $search .= '</tr><tr>';
+    foreach ($cells as $cell) {
+      $search .= "<td>$cell</td>";
+    }
+
+    $search .= '</tr>'
+            . '</table>'
+            . '</form>'
+            . '<div style="text-align: center;">'
+            . '<button id="moonrock-sample-search-snapshots-search">' . t('Search') . '</button>'
+            . '<button id="moonrock-sample-search-snapshots-cancel">' . t('Close') . '</button>'
+            . '</div>'
+            . '</div>';
 
 
     $output .= "<div class='search-tooltip-line'>";
     $output .= "<div class='search-tooltip-element'>" . t("Snapshot search") . "</div>";
-//    $output .= "<div id='moonrock-sample-search-snapshots' class='search-tooltip-element search-tooltip-link search-tooltip-link-search search-tooltip-link-active' tooltip-content='$search'></div>";
     $output .= "<div id='moonrock-sample-search-snapshots' class='search-tooltip-element search-tooltip-link search-tooltip-link-search search-tooltip-link-active'>$search</div>";
     $output .= "<div id='moonrock-sample-search-snapshots-clear' class='search-tooltip-element search-tooltip-link search-tooltip-link-clear'></div>";
     $output .= '<div id="moonrock-sample-search-snapshots-throbber" class="search-tooltip-element"></div>';
