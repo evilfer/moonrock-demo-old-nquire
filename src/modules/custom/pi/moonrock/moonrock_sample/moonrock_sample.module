@@ -232,22 +232,6 @@ function moonrock_sample_nquire_data_form_prefix($delegators) {
 
 
 
-function moonrock_sample_nquire_display_as_link($node) {
-  return moonrock_sample_nquire_display_as_measure($node, false);
-}
-
-function moonrock_sample_nquire_display_as_measure($node, $teaser = true) {
-  global $user;
-  $node_details = get_inquiry_details_from_current_path();
-  $sample_view_nid = find_unique_node_type_for_uid_and_inquiry('moonrock_seesamples', $user->uid, $node_details->inquiry_id);
-  if ($sample_view_nid) {
-    module_load_include('inc', 'moonrock_seesamples', 'moonrock_seesamples.table');
-    $title = moonrock_seesamples_specific_sample_title(node_load($sample_view_nid), $node);
-  }
-
-  return check_plain($title ? $title : $node->title);
-}
-
 function moonrock_sample_nquire_data_get_text_value($nid) {
   $node = node_load($nid);
   if ($node && $node->type == 'moonrock_sample') {
@@ -256,6 +240,11 @@ function moonrock_sample_nquire_data_get_text_value($nid) {
 
   return $nid;
 }
+
+function moonrock_sample_nquire_data_get_html_value($nid) {
+  return moonrock_sample_utils_format_html_data($nid);
+}
+
 
 function moonrock_sample_nquire_measure_choose_explanation() {
   return t("Choose one rock sample from the list");

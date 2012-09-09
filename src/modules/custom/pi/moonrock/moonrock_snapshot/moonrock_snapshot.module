@@ -231,17 +231,6 @@ function theme_moonrock_snapshot_form($form) {
   return $output;
 }
 
-function moonrock_snapshot_nquire_display_as_link($node) {
-  return moonrock_snapshot_nquire_display_as_key_measure($node, true);
-}
-
-function moonrock_snapshot_nquire_display_as_measure($node, $teaser = true) {
-  return check_plain($node->title);
-}
-
-function moonrock_snapshot_nquire_display_as_key_measure($node, $teaser = true) {
-  return moonrock_snapshot_nquire_display_as_measure($node, $teaser);
-}
 
 function moonrock_snapshot_nquire_measure_choose_explanation() {
   return t("Choose one snapshot of a rock sample");
@@ -262,9 +251,14 @@ function moonrock_snapshot_nquire_data_form_after_build($form_element, &$form_st
 
 function moonrock_snapshot_nquire_data_get_text_value($nid) {
   $node = node_load($nid);
+  $sample = node_load($node->sample_ref);
   if ($node && $node->type == 'moonrock_snapshot') {
-    return check_plain($node->title);
+    return check_plain($node->title) . "\n". check_plain($sample->title);
   }
 
   return $nid;
+}
+
+function moonrock_snapshot_nquire_data_get_html_value($nid) {
+  return moonrock_sample_utils_format_html_data($nid);
 }

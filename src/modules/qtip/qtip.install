@@ -1,0 +1,22 @@
+<?php
+// $Id: qtip.install,v 1.1 2010/08/19 06:03:47 bocaj Exp $
+
+/**
+ * @file
+ * Install, update and uninstall functions for the qtip module.
+ */
+
+/**
+ * Implementation of hook_install().
+ */
+function qtip_install() {
+  // un-comment this once you've implemented the schema
+  //drupal_install_schema('qtip');
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function qtip_uninstall() {
+  db_query("DELETE FROM {variable} WHERE name LIKE 'qtip_*'");
+}

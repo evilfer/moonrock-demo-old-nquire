@@ -1,0 +1,12 @@
+/* $Id: qtip.css,v 1.1 2010/09/05 20:07:21 bocaj Exp $ */
+
+.qtip-link {
+  border-bottom: 3px double blue;
+  cursor: pointer;
+  color: blue;
+}
+
+.qtip-header,
+.qtip-tooltip {
+  display: none;
+}

@@ -8,6 +8,16 @@ Moonrock demonstators.
 Changes:
 
 -----------------
+09-09-2012
+
+- Added libraries folder to source code.
+- Added qTip module and library.
+- Added icon to sample/snapshots images to show they can be opened.
+- Added measure info tooltips.
+- Fixed problem with styles of sorting of data table.
+- Fixed numeric histograms.
+
+-----------------
 08-09-2012
 
 - Added filter by view to snapshot search (not functional).

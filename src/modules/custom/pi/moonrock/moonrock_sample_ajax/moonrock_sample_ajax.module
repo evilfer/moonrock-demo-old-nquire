@@ -185,6 +185,7 @@ function moonrock_sample_ajax_snapshotsearch() {
 }
 
 function moonrock_sample_ajax_newsnapshot_submit() {
+  global $user;
   $form_state = array();
   module_load_include('inc', 'node', 'node.pages');
 
@@ -209,6 +210,7 @@ function moonrock_sample_ajax_newsnapshot_submit() {
     } else {
       $node = new stdClass();
       $node->type = 'moonrock_snapshot';
+      $node->uid = $user->uid;
     }
     $node->title = $_POST['title'];
     $node->notes = $_POST['notes'];

@@ -1,0 +1,23 @@
+// $Id: CHANGELOG.txt,v 1.3 2010/09/06 01:24:02 bocaj Exp $
+
+qTip 6.x-1.x-beta2, 2010-09-05
+-------------------------------
+- Removed js and css files from root directory (this did not happen as expected in beta1)
+- Forgot to run Coder module on beta1 release
+- Changed $_SERVER['REQUEST_URI'] lines to request_uri() function to prevent xss attacks
+
+qTip 6.x-1.x-beta1, 2010-09-05
+-------------------------------
+[#890518] - Changed path for qTip library to be /sites/all/libraries
+Added ability to add HTML content to qTip tooltip content
+Reorganized the admin settings page
+Added notification of qTip version that should be used on admin/settings/qtip
+Added ability to use uncompressed qTip library file if desired
+Added javascript to admin settings page to clarify conditional settings
+Moved js files to js sub-directory
+Moved css file to css sub-directory
+Updated README.txt
+
+qTip 6.x-1.x-dev, 2010-08-18
+-------------------------------
+Initial release of qTip module (early development).

@@ -125,40 +125,88 @@ function pi_chart_create_png($title, $type, $abscissa_nid, $ordinate_str, $color
     $data_index = array(array(), array());
     $data_values = array(array(), array());
 
+    $numeric_data_limits = array(FALSE, FALSE);
+    $ngaps = 5;
+
+    for ($i = 0; $i < 2; $i++) {
+      if (_pi_chart_type_is_numeric($types[$i])) {
+        $min = 0.0;
+        $max = 0.0;
+        foreach ($rows as $row) {
+          if (strlen($row[$i]) > 0) {
+            $min = min($min, _pi_chart_get_numeric_value($row[$i], $types[$i]));
+            $max = max($max, _pi_chart_get_numeric_value($row[$i], $types[$i]));
+          }
+        }
+        $max = $ngaps * ceil($max / $ngaps);
+        $min = $ngaps * floor($min / $ngaps);
+
+        $gap = $max > $min ? ($max - $min) / $ngaps : 5;
+        $limits = array();
+        for ($j = 0; $j < $ngaps; $j++) {
+          $l0 = $min + $j * $gap;
+          $l1 = $l0 + $gap;
+
+          $limits[$j] = $l1;
+          $data_values[$i][$j] = "$l0-$l1";
+        }
+        $numeric_data_limits[$i] = $limits;
+      } else {
+        foreach ($rows as $row) {
+          if (strlen($row[$i]) > 0) {
+            $v = $row[$i];
+            if (!isset($data_index[$i][$v])) {
+              $j = count($data_index[$i]);
+              $data_index[$i][$v] = $j;
+              $data_values[$i][$j] = _pi_chart_get_text_value($v, $types[$i]);
+            }
+          }
+        }
+      }
+    }
+    $cross = array_fill(0, max(1, count($data_index[0])), array_fill(0, max(1, count($data_index[1])), 0));
     foreach ($rows as $row) {
+      $indexes = array(-1, 1);
       for ($i = 0; $i < 2; $i++) {
-        $v = $row[$i];
-        if (!isset($data_index[$i][$v])) {
-          $j = count($data_index[$i]);
-          $data_index[$i][$v] = $j;
-          $data_values[$i][$j] = _pi_chart_get_text_value($v, $types[$i]);
+        if (strlen($row[$i]) > 0) {
+          if ($numeric_data_limits[$i]) {
+            $v = _pi_chart_get_numeric_value($row[$i], $types[$i]);
+            for ($j = 0; $j < $ngaps - 1; $j++) {
+              if ($numeric_data_limits[$i][$j] >= $v) {
+                break;
+              }
+            }
+            $indexes[$i] = $j;
+          } else {
+            $indexes[$i] = $data_index[$i][$row[$i]];
+          }
         }
       }
-    }
-    $cross = array_fill(0, count($data_index[0]), array_fill(0, count($data_index[1]), 0));
-    foreach ($rows as $row) {
-      $cross[$data_index[0][$row[0]]][$data_index[1][$row[1]]]++;
-    }
-    
-    for($i = 0; $i < count($cross); $i++) {
-      for($j = 0; $j < count($cross[$i]); $j++) {
-        if ($cross[$i][$j] == 0) {
-          $cross[$i][$j] = VOID;
-        }
+
+      if ($indexes[0] >= 0 && $indexes[1] >= 0) {
+        $cross[$indexes[0]][$indexes[1]]++;
       }
     }
-    
+
+    /* for ($i = 0; $i < count($cross); $i++) {
+      for ($j = 0; $j < count($cross[$i]); $j++) {
+      if ($cross[$i][$j] == 0) {
+      $cross[$i][$j] = VOID;
+      }
+      }
+      } */
+
     $colors = FALSE;
     if ($types[1]->content_options) {
       $function_name = "{$types[1]->content_options}_nquire_data_get_color_value";
       if (function_exists($function_name)) {
         $colors = array();
-        foreach($data_index[1] as $nid => $index) {
+        foreach ($data_index[1] as $nid => $index) {
           $colors[$index] = _pi_chart_get_color_value($nid, $types[1]);
         }
       }
     }
-    
+
     _pi_chart_draw_histogram($title, $headers, $cross, $data_values, $colors);
   }
 
@@ -202,8 +250,21 @@ function _pi_chart_get_text_value($value, $type) {
   }
 }
 
+function _pi_chart_get_html_value($value, $type) {
+  if ($type->content_options) {
+    $function_name = "{$type->content_options}_nquire_data_get_html_value";
+    return $function_name($value);
+  } else {
+    return _pi_chart_get_text_value($value, $type);
+  }
+}
+
 function pi_chart_get_text_value($value, $type) {
   return _pi_chart_get_text_value($value, $type);
+}
+
+function pi_chart_get_html_value($value, $type) {
+  return _pi_chart_get_html_value($value, $type);
 }
 
 function _pi_chart_draw_histogram($title, $headers, $cross, $data_values, $colors) {
@@ -282,12 +343,16 @@ function _pi_chart_draw_histogram($title, $headers, $cross, $data_values, $color
           //"InnerSurrounding" => 100,
   );
 
-    $settings["Gradient"] = TRUE;
-    $settings["GradientMode"] = GRADIENT_SIMPLE;
+  $settings["Gradient"] = TRUE;
+  $settings["GradientMode"] = GRADIENT_SIMPLE;
 
-    $myPicture->drawBarChart($settings);
+  $myPicture->drawBarChart($settings);
   /* Render the picture (choose the best way) */
   $myPicture->Stroke();
+}
+
+function _pi_chart_type_is_numeric($type) {
+  return $type->data_type == 'numeric' || ($measure->content_options && function_exists("{$measure->content_options}_nquire_data_get_numeric_value"));
 }
 
 function _pi_chart_draw_bar_chart($title, $headers, $grouped_rows, $types, $numeric_fields, $color_field) {

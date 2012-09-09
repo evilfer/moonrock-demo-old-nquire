@@ -303,8 +303,8 @@ function pi_sort_data_view($node, $teaser, $page = FALSE) {
     $data_item_activity_id = get_activity_id_for_nid($sorted_data_items_nid);
     if ($data_item_activity_id) {
       $data_item_node = node_load($sorted_data_items_nid);
-      $values = pi_data_value_array($data_item_node);
-      $values[] = "<small>" . build_activity_link_alternative_text($node_details->inquiry_id, $node_details->stage_id, $node_details->phase_id, $data_item_activity_id, $user->uid, t('Edit'), 'heading') . "</small>";
+      $values = pi_data_table_row_values($data_item_node);
+      $values[] = "<small>" . build_activity_link_alternative_text($node_details->inquiry_id, $node_details->stage_id, $node_details->phase_id, $data_item_activity_id, $user->uid, t('Edit'), 'heading', 'edit') . "</small>";
 
       $data_values[] = $values;
     }

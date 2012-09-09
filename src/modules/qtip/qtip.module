@@ -1,0 +1,147 @@
+<?php
+// $Id: qtip.module,v 1.3 2010/09/06 01:24:02 bocaj Exp $
+
+/**
+ * Define constants for qTip module
+ */
+define('QTIP_VERSION', '1.0.0-rc3');
+define('QTIP_PATH', variable_get('qtip_path_to_library', 'sites/all/libraries/qtip') . '/');
+define('QTIP_FILE', 'jquery.qtip-' . QTIP_VERSION . (variable_get('qtip_use_uncompressed_js', 0) == 1 ? '' : '.min') . '.js');
+
+/**
+ * Implementation of hook_init().
+ */
+function qtip_init() {
+  // We have to get the right setting for the tooltip
+  switch (variable_get('qtip_target_position', 'topRight')) {
+    case 'topLeft':
+      $tooltip_position = 'bottomRight';
+      break;
+    case 'topMiddle':
+      $tooltip_position = 'bottomMiddle';
+      break;
+    case 'topRight':
+      $tooltip_position = 'bottomLeft';
+      break;
+    case 'rightMiddle':
+      $tooltip_position = 'leftMiddle';
+      break;
+    case 'bottomRight':
+      $tooltip_position = 'topLeft';
+      break;
+    case 'bottomMiddle':
+      $tooltip_position = 'topMiddle';
+      break;
+    case 'bottomLeft':
+      $tooltip_position = 'topRight';
+      break;
+    case 'leftMiddle':
+      $tooltip_position = 'rightMiddle';
+  }
+
+  // Settings set by the administrator to send to qtip.js
+  drupal_add_js(array(
+    'qtip' => array(
+      'target_position' => variable_get('qtip_target_position', 'topRight'),
+      'tooltip_position' => $tooltip_position,
+      'show_speech_bubble_tip' => variable_get('qtip_show_speech_bubble_tip', TRUE),
+      'show_speech_bubble_tip_side' => variable_get('qtip_show_speech_bubble_tip_side', FALSE),
+      'color' => variable_get('qtip_color', 'blue'),
+      'border_radius' => variable_get('qtip_border_radius', '3'),
+      'border_width' => variable_get('qtip_border_width', '3'),
+      'show_event_type' => variable_get('qtip_show_event_type', 'mouseover'),
+      'hide_event_type' => variable_get('qtip_hide_event_type', 'mouseout'),
+      'show_solo' => variable_get('qtip_show_solo', TRUE),
+    )
+  ), 'setting');
+
+  drupal_add_css(drupal_get_path('module', 'qtip') .'/css/qtip.css');
+  // Check to see if qtip library is in sites/all/libraries/qtip first...
+  if (file_exists(QTIP_PATH . QTIP_FILE)) {
+    drupal_add_js(QTIP_PATH . '/jquery.qtip-' . QTIP_VERSION . '.min.js');
+  }
+  // If qtip library is found in the "old" location...go ahead and run,
+  // but notify admin that this will be deprecated in future releases.
+  elseif (file_exists(drupal_get_path('module', 'qtip') .'/library/' . QTIP_FILE)) {
+    drupal_add_js(drupal_get_path('module', 'qtip') .'/library/' . QTIP_FILE);
+    // Only show the 'deprecated' message if on the qtips settings page...
+    if (strstr(request_uri(), 'admin/settings/qtip')) {
+      drupal_set_message('The recommended location for the qtip library is \'sites/all/libraries\'.<br />
+        This module will function properly, but future releases of the qTip module will no longer look for the library in the old (/sites/all/modules/qtip/library) location. Changing the location now for future compatibility is advised!', 'warning');
+    }
+  }
+  drupal_add_js(drupal_get_path('module', 'qtip') .'/js/qtip.js');
+  
+  // Only load qtip.admin.js file if currently viewing qTip settings page
+  if (strstr(request_uri(), 'admin/settings/qtip')) {
+    drupal_add_js(drupal_get_path('module', 'qtip') . '/js/qtip.admin.js');
+  }
+}
+
+/**
+ * Implementation of hook_menu().
+ */
+function qtip_menu() {
+  $items = array();
+
+  $items['admin/settings/qtip'] = array(
+    'title' => t('qTip settings'),
+    'description' => t('Settings for the qTip module'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('qtip_settings_form'),
+    'access arguments' => array(''),
+    'type' => MENU_NORMAL_ITEM,
+    'file' => 'qtip.admin.inc',
+  );
+  
+  return $items;
+}
+
+/**
+ * Implementation of hook_filter().
+ */
+function qtip_filter($op, $delta = 0, $format = -1, $text = '') {
+  switch ($op) {
+    case 'list':
+      return array(0 => t('qTips'));
+      
+    case 'description':
+      return t("Add jquery qtip (tooltip) to text. Usage [qtip:Text to highlight|The tooltip's content]");
+      
+    case 'prepare':
+      return $text;
+      
+    case 'process':
+      $text = qtip_replacement($text);
+      return $text;
+      
+    default:
+      return $text;
+  }
+}
+
+/**
+ * Implementation of hook_filter_tips().
+ */
+function qtip_filter_tips($delta, $format, $long = FALSE) {
+  return 'Generate stylish tooltips. Format: [qtip:Text to highlightThe tooltip\'s content]';
+}
+
+/**
+ * Private functions
+ */
+function qtip_replacement($text) {
+  if (preg_match_all("/\[qtip:([^\|\\]]+)\|?([^\\]]*)?\]/i", $text, $match)) {
+    // Set the default delta value to be used in the foreach statement below for <span> ids
+    $delta = 0;
+    foreach ($match[2] as $key => $value) {
+      $link = $match[1][$key];
+      $tip = $match[2][$key];
+      $search[] = $match[0][$key];
+      $replace[] = '<span id="qtip-link-' . $delta . '" class="qtip-link ' . ($delta % 2 ? 'qtip-link-even' : 'qtip-link-odd') . '" title="' . $tip . '">' . $link . '</span>';
+      $delta++;
+    }
+    return str_replace($search, $replace, $text);
+  }
+  return $text;
+}

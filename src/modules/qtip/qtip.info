@@ -1,0 +1,12 @@
+; $Id: qtip.info,v 1.1 2010/08/19 06:03:47 bocaj Exp $
+name = "qTip"
+description = "Stylish tooltips for your web pages."
+;dependencies =
+package = User interface
+core = 6.x
+; Information added by drupal.org packaging script on 2010-09-06
+version = "6.x-1.0-beta2"
+core = "6.x"
+project = "qtip"
+datestamp = "1283736407"
+

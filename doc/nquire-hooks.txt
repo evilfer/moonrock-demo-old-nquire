@@ -28,3 +28,5 @@ as data, for which forms should be created.
 - hook_nquire_data_get_color_value($nid)
 
 - hook_nquire_data_get_text_value($nid)
+
+- hook_nquire_data_get_html_value($nid)

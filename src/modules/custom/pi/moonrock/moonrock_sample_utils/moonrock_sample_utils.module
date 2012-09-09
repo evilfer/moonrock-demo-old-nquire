@@ -85,6 +85,16 @@ function moonrock_sample_utils_create_table_for_current_inquiry($link_vm, $selec
   return moonrock_sample_utils_create_sample_table($main_samples, $link_vm, $search, TRUE, $select_mode);
 }
 
+function moonrock_sample_utils_add_info_tooltip($title, $content) {
+  $output = "<span class='qtip-link'>"
+          . "<div class='qtip-header'>$title</div>"
+          . "<div class='qtip-tooltip'>$content</div>"
+          . "<div class='item-browser-item-title-cluetip'></div>"
+          . "</span>";
+
+  return $output;
+}
+
 /**
  * 
  * @param type $select_mode Possible values: 'none', 'sample', 'snapshot'
@@ -96,7 +106,10 @@ function moonrock_sample_utils_create_sample_table($main_samples, $link_vm, $sam
   $output = '';
 
   if ($select_mode & MOONROCK_SEARCH_SAMPLE) {
-    $output .= "<div><b>" . t("Select a sample:") . "</b></div>";
+    $output .= "<div><b>" . t("Select a sample:") . "</b>"
+            . moonrock_sample_utils_add_info_tooltip('Rock sample', '<p>This measure simply represents the selection of the Moon rock for which you are collecting data.</p>'
+                    . '<p>When you make a measurement (for instance, the size of a grain in a rock), use the <b>Rock sample</b> to specify the rock in which the measure was made.</p>')
+            . "</div>";
   }
 
   if ($main_samples != NULL) {
@@ -145,7 +158,11 @@ function moonrock_sample_utils_create_sample_table($main_samples, $link_vm, $sam
   }
 
   if ($select_mode & MOONROCK_SEARCH_SNAPSHOT) {
-    $output .= "<div><b>" . t("Select a snapshot:") . "</b></div>";
+    $output .= "<div><b>" . t("Select a snapshot:") . "</b>"
+            . moonrock_sample_utils_add_info_tooltip('Sample snapshot', '<p>This measure complements Rock sample. A Sample snapshot is a close-up view of the precise point in a Rock sample where you found your data.</p>'
+                    . '<p>This is useful when you want to review your data, and to provide prove of your data. When you collect new data, don\'t forget to select the right snapshot!</p>'
+                    . '<p>You can only select your own snapshots. To create new snapshots, open a microscope for a sample, center the view on an interesting feature of the sample, and click on the <b>New snapshot</b> button.</p>')
+            . "</div>";
   }
 
   if ($snapshot_search) {
@@ -159,7 +176,7 @@ function moonrock_sample_utils_create_sample_table($main_samples, $link_vm, $sam
       $headers[] = t('Snapshots of samples: ');
       $hidden .= '<input id="moonrock-sample-search-snapshots-usesamplerefs" type="hidden" name="usesamplerefs" value="1" />';
       $cell = '';
-      
+
       if ($sample_search) {
         $cell .= '<input type="checkbox" name="useanysampleref" value="any" '
                 . "id='moonrock-sample-search-snapshots-usesamplerefs' />"
@@ -171,7 +188,7 @@ function moonrock_sample_utils_create_sample_table($main_samples, $link_vm, $sam
                 . "id='$id' value='{$sample->nid}' checked='checked'/>"
                 . "<label for='$id'>{$sample->title}</label><br/>";
       }
-      
+
       $cells[] = $cell;
     } else if ($sample_search) {
       $headers[] = t('Snapshots of samples: ');
@@ -218,7 +235,7 @@ function moonrock_sample_utils_create_sample_table($main_samples, $link_vm, $sam
             . '      <div id="moonrock-sample-search-snapshots-view-sample" style="display: inline-block;padding-left:10px;"></div><div class="item-browser-item-title-open"></div>'
             . '    </div>'
             . '  </div>'
-            . '<div><p>' 
+            . '<div><p>'
             . t('With ') . '<select id="moonrock-sample-search-snapshots-view-position" name="viewzoom">'
             . '<option value="0">' . t('same zoom') . '</option>'
             . '<option value="1">' . t('similar zoom') . '</option>'
@@ -230,7 +247,6 @@ function moonrock_sample_utils_create_sample_table($main_samples, $link_vm, $sam
             . '<option value="2">' . t('any position') . '</option>'
             . '</select>'
             . '</p></div>'
-            
             . '<div><button type="button" id="moonrock-sample-search-snapshots-view-clear">' . t('Clear view filter') . '</button></div>'
             . '</div>';
     $cells[] = $cell;
@@ -244,7 +260,7 @@ function moonrock_sample_utils_create_sample_table($main_samples, $link_vm, $sam
             . $hidden
             . '<table class="moonrock-sample-search-table">'
             . '<tr>';
-    
+
     foreach ($headers as $header) {
       $search .= "<th>$header</th>";
     }
@@ -305,7 +321,7 @@ function moonrock_sample_utils_load_resources($link_vm, $sample_search, $snapsho
   drupal_add_css(drupal_get_path('module', 'moonrock_sample_utils') . '/css/moonrock_sample_dialog.css');
   drupal_add_css(drupal_get_path('module', 'moonrock_sample_utils') . '/css/moonrock_sample_metadata.css');
 
-  drupal_add_js(drupal_get_path('module', 'moonrock_sample_utils') . '/lib/qtip/jquery.qtip-1.0.0-rc3.js');
+  //drupal_add_js(drupal_get_path('module', 'moonrock_sample_utils') . '/lib/qtip/jquery.qtip-1.0.0-rc3.js');
 
   jquery_ui_add("ui.dialog");
   jquery_ui_add("ui.resizable");
@@ -338,6 +354,20 @@ function moonrock_sample_utils_prepare_sample_object($nid) {
           )
       ),
   );
+}
+
+function moonrock_sample_utils_format_html_data($nid) {
+  $node = node_load($nid);
+  if ($node->type === 'moonrock_snapshot') {
+    $sample = node_load($node->sample_ref);
+    $img = $sample->snapshot;
+  } else {
+    $img = $node->snapshot;
+  }
+
+  $title = check_plain($node->title);
+
+  return "<img style='width: 50px' src='$img'></img><span style='padding-left: 10px;'>$title</span>";
 }
 
 function moonrock_sample_utils_prepare_snapshot_object($nid) {

@@ -216,7 +216,11 @@ function theme_moonrock_color($node, $teaser) {
 
 function moonrock_color_nquire_data_form_prefix() {
 
-  $output .= "<div style='padding-top:20px;'><b>Colour:</b></div>";
+  $output .= "<div style='padding-top:20px;'><b>Colour:</b>"
+          . moonrock_sample_utils_add_info_tooltip('Colour', '<p>This is relevant a colour that you identify in a sample.</p>'
+                  . '<p>Geologists use a set of names of colors useful to describe features of samples; you can select a color from this list.</p>'
+                  . '<p>To quickly open and close the colour list, press key \'<b>c</b>\'.</p><p>You can move and zoom the list with the mouse. To select a colour, just click on it.</p>')
+          . "</div>";
   $output .= "<div id='moonrockColorPickerSelection'>";
   $output .= "<div id='moonrockColorPickerSelectionColor' class='moonrockColorPickerSelectionNoColor'> </div>";
   $output .= "<div id='moonrockColorPickerSelectionName'> </div>";
@@ -329,18 +333,6 @@ function _moonrock_color_create_color_picker_image() {
   return $output;
 }
 
-function moonrock_color_nquire_display_as_link($node) {
-  return moonrock_color_nquire_display_as_key_measure($node, true);
-}
-
-function moonrock_color_nquire_display_as_measure($node, $teaser = true) {
-  return theme_moonrock_color($node, $teaser);
-}
-
-function moonrock_color_nquire_display_as_key_measure($node, $teaser = true) {
-  return check_plain($node->title);
-}
-
 function moonrock_color_nquire_measure_choose_explanation() {
   return t("Choose from the list one relevant color identified in a sample");
 }
@@ -371,6 +363,16 @@ function moonrock_color_nquire_data_get_text_value($nid) {
   $node = node_load($nid);
   if ($node && $node->type == 'moonrock_color') {
     return check_plain($node->title);
+  }
+
+  return $nid;
+}
+
+function moonrock_color_nquire_data_get_html_value($nid) {
+  $node = node_load($nid);
+  if ($node && $node->type == 'moonrock_color') {
+    return "<div style='width: 20px; height: 20px; border: 1px solid black; background: {$node->color}; display: inline-block'></div><span style='padding-left: 10px;'>"
+            . check_plain($node->title) . "</span>";
   }
 
   return $nid;
