@@ -14,6 +14,11 @@
       }, options);
 
       var self = this;
+      var picker = $('#rock-color-picker-container');
+      picker.css({
+        top: '100px',
+        left: .5 * ($(window).width() - picker.width())
+      });
 
       self.data('rock-color-picker-selection-callback', _options.selectionCallback);
       self.data('rock-color-picker-openclose-callback', _options.opencloseCallback);
@@ -35,14 +40,14 @@
         }
       });
 
-      $('#rock-color-picker-container').mousewheel(function(event, delta) {
+      picker.mousewheel(function(event, delta) {
         var k = delta > 0 ? 1.25 : .8;
 
-        var w = $('#rock-color-picker-container').width();
+        var w = picker.width();
         var neww = Math.max(50, Math.min(2000, k*w));
         var appliedk = neww / w;
-        var newh = appliedk * $('#rock-color-picker-container').height();
-        var pos = $('#rock-color-picker-container').position();
+        var newh = appliedk * picker.height();
+        var pos = picker.position();
         
         var newpos = {
           left: event.pageX - appliedk * (event.pageX - pos.left) - $(window).scrollLeft(),
@@ -51,15 +56,15 @@
           height: newh
         };
 
-        $('#rock-color-picker-container').css(newpos);
+        picker.css(newpos);
         
         event.preventDefault();
         event.stopPropagation();
       });
 
-      $('#rock-color-picker-container').mousedown(function(event) {
-        self.data('rock-color-picker-selection-drag-mx', event.pageX - $('#rock-color-picker-container').position().left);
-        self.data('rock-color-picker-selection-drag-my', event.pageY - $('#rock-color-picker-container').position().top);
+      picker.mousedown(function(event) {
+        self.data('rock-color-picker-selection-drag-mx', event.pageX - picker.position().left);
+        self.data('rock-color-picker-selection-drag-my', event.pageY - picker.position().top);
         self.data('rock-color-picker-selection-mousedown', true);
         self.data('rock-color-picker-selection-dragging', false);
       });
@@ -69,16 +74,16 @@
           event.stopPropagation();
 
           self.data('rock-color-picker-selection-dragging', true);
-          var current_pos = $('#rock-color-picker-container').position();
+          var current_pos = picker.position();
           var margin = 100;
-          var w = $('#rock-color-picker-container').width();
-          var h = $('#rock-color-picker-container').height();
+          var w = picker.width();
+          var h = picker.height();
           var ww = $(window).width();
           var wh = $(window).height();
           var dx = event.pageX - $(window).scrollLeft() - self.data('rock-color-picker-selection-drag-mx');
           var dy = event.pageY - $(window).scrollTop() - self.data('rock-color-picker-selection-drag-my');
           
-          $('#rock-color-picker-container').css({
+          picker.css({
             left: Math.max(margin - w, Math.min(ww - margin, dx)),
             top: Math.max(margin - h, Math.min(wh - margin, dy))
           });

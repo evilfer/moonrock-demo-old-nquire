@@ -223,17 +223,9 @@ function theme_moonrock_review_findings($node, $teaser) {
     drupal_set_title(t($current_activity->name));
   }
 
-  if ($teaser) {
-    $break_position = strpos($node->body, '<!--break-->');
-    if ($break_position) {
-      $output = substr($node->body, 0, $break_position);
-    } else {
-      $output = $node->body;
-    }
-  } else {
-    $output = $node->body;
-  }
-
+  
+  $output = '';
+  
   if (!$teaser) {
     $output .= '</br>';
     $output .= drupal_get_form("moonrock_review_findings_search_form");

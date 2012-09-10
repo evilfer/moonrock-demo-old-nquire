@@ -1,0 +1,18 @@
+<?php
+
+/**
+ * Implementation of hook_user
+ *
+ */
+function moonrock_group_management_user($op, &$edit, &$account, $category = NULL) {
+  if (module_exists('og') && $op === 'insert' && $account->uid) {
+    /* TRICK (eloy)
+     * temporary group assignation.
+     */
+    
+    og_save_subscription(1237, $account->uid, array('is_active' => 1));
+    og_save_subscription(1234, $account->uid, array('is_active' => 1));
+    og_save_subscription(1235, $account->uid, array('is_active' => 1));
+  }
+}
+

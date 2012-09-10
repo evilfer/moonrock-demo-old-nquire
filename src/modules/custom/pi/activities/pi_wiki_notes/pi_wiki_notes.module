@@ -44,7 +44,10 @@ function pi_wiki_notes_access($op, $node, $account) {
         return check_node_function_of_activity ($details->inquiry_id, $details->activity_id, $user->uid, 'add');
     }
 
-    if ($op == 'update' || $op == 'delete') {
+    /* FIX (eloy)
+     * 
+     */
+    if ($op == 'update') {// || $op == 'delete') {
         return check_node_function_of_activity ($details->inquiry_id, $details->activity_id, $user->uid, 'edit');
     }
 }

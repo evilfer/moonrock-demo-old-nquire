@@ -78,6 +78,7 @@
 
 .item-browser-item-img {
   width: 100%;
+  image-rendering: optimizeQuality;
 }
 
 .item-browser-item-img-open {

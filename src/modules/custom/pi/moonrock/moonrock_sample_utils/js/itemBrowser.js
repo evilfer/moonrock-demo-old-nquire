@@ -180,7 +180,8 @@
       var width = this.width();
       var itemWidth = this.data('settings').itemWidth;
       var itemMargin = this.data('settings').itemMargin;
-      var itemCount = this.find('.item-browser-item').length;
+      var items = this.find('.item-browser-item');
+      var itemCount = items.length;
 
       var neededWidth = itemWidth * itemCount + (itemCount - 1) * itemMargin;
       var useScroll = neededWidth > width;
@@ -217,7 +218,7 @@
         };
 
         var x = 0;
-        this.find('.item-browser-item').each(function() {
+        items.each(function() {
           var x0 = realPos(x);
           var x1 = realPos(x + itemWidth);
           var w = x1 - x0;
@@ -234,17 +235,17 @@
         });
       } else {
         var x0 = .5 * (width - neededWidth);
-        var x = x0;
-        this.find('.item-browser-item').each(function() {
+        
+        items.each(function() {
           positions.push({
             element: this,
             oldx: $(this).position().left,
             oldw : $(this).width(),
-            newx: x,
+            newx: x0,
             neww: itemWidth,
             showdata: true
           });
-          x += itemWidth + itemMargin;
+          x0 += itemWidth + itemMargin;
         });
 
       }

@@ -352,7 +352,7 @@ function theme_pi_sort_key_answers($node, $teaser, $key_questions_to_show, $key_
 		$count++;
 	}	
 	
-	if (!$key_answers_to_show) {
+	if (!$key_questions_to_show) {
 		$list[] = array('data' => t('No key questions are available to answer.'), 'class' => 'activity');
 	}
 	else {

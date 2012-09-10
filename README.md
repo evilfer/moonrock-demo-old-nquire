@@ -8,6 +8,15 @@ Moonrock demonstators.
 Changes:
 
 -----------------
+10-09-2012
+
+- Enabled new user creation.
+- Added moonrock_group_management module to add new users to student groups automatically.
+- Fixed throbber in pi_result_presentations, which was not visible in Firefox.
+- Centered in screen color picker widget.
+- Fixed duplicated activity description in moonrock_review_findings.
+ 
+-----------------
 09-09-2012
 
 - Added libraries folder to source code.

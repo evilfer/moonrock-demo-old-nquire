@@ -42,7 +42,7 @@ function moonrock_share_findings_access($op, $node, $account) {
     return true;
   } else if ($op == 'create') {
     return check_node_function_of_activity($details->inquiry_id, $details->activity_id, $user->uid, 'add');
-  } else if ($op == 'update' || $op == 'delete') {
+  } else if ($op == 'update') { // || $op == 'delete') {
     return check_node_function_of_activity($details->inquiry_id, $details->activity_id, $user->uid, 'edit');
   }
 }
@@ -78,7 +78,7 @@ function moonrock_share_findings_form(&$node) {
   $form['body_filter']['shareditems'] = array(
       '#type' => 'hidden',
       '#title' => t('Shared items'),
-      '#required' => TRUE,
+      '#required' => FALSE,
       '#default_value' => $node->shareditems,
       '#description' => t('List of shared items'),
       '#weight' => -2

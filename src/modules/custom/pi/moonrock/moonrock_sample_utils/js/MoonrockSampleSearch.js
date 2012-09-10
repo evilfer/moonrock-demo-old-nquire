@@ -35,14 +35,12 @@ MoonrockSampleSearch.prototype.init = function() {
       metadataCallback: self.settings.metadataCallback
     });
 
-    var y = $(self.results).position().top + $(self.results).height() + 80;
     $(self.dlg).dialog({
       autoOpen:false,
       width: 'auto',
       height: 'auto',
       minHeight: 200,
-      zIndex: 5000,
-      position: ['center', y]
+      zIndex: 5000
     });
 
     $(self.throbber).itemBrowserThrobber();
@@ -62,7 +60,8 @@ MoonrockSampleSearch.prototype.init = function() {
     });
 
     $(self.search).click(function() {
-      self.newSearch(true);
+//      self.newSearch(true);
+      self.newSearch(false);
     });
     $(self.cancel).click(function() {
       $(self.dlg).dialog('close');

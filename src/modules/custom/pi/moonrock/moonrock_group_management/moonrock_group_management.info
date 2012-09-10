@@ -1,0 +1,9 @@
+; $Id: moonrock_group_management.info,v 1.2 2012/09/10 11:18:00 evilfer Exp $
+name = Moonrock automatic student grouping
+description = Puts new users automatically in student groups.
+package = nQuire / moonrock
+dependencies[] = og
+dependencies[] = pi
+core = 6.x
+version = "6.x-10.08-dev"
+

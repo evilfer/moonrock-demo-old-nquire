@@ -247,7 +247,7 @@ function moonrock_sample_utils_create_sample_table($main_samples, $link_vm, $sam
             . '<option value="2">' . t('any position') . '</option>'
             . '</select>'
             . '</p></div>'
-            . '<div><button type="button" id="moonrock-sample-search-snapshots-view-clear">' . t('Clear view filter') . '</button></div>'
+            . '<div><button type="button" id="moonrock-sample-search-snapshots-view-clear">' . t('Remove view filter') . '</button></div>'
             . '</div>';
     $cells[] = $cell;
     $hidden .= '<input type="hidden" id="moonrock-sample-search-snapshots-useviewsample" name="useviewsample" />';
