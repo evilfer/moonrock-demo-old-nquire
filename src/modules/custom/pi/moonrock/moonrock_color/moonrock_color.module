@@ -214,13 +214,13 @@ function theme_moonrock_color($node, $teaser) {
   return $output;
 }
 
-function moonrock_color_nquire_data_form_prefix() {
-
-  $output .= "<div style='padding-top:20px;'><b>Colour:</b>"
-          . moonrock_sample_utils_add_info_tooltip('Colour', '<p>This is relevant a colour that you identify in a sample.</p>'
-                  . '<p>Geologists use a set of names of colors useful to describe features of samples; you can select a color from this list.</p>'
-                  . '<p>To quickly open and close the colour list, press key \'<b>c</b>\'.</p><p>You can move and zoom the list with the mouse. To select a colour, just click on it.</p>')
+function moonrock_color_nquire_data_form_prefix($measure) {
+  $measure_text = check_plain($measure->title) . moonrock_sample_utils_add_info_tooltip($measure->title, $measure->body);
+  $output = "<div class='moonrock-measure'>"
+          . "<div class='moonrock-measure-title'>$measure_text</div>"
+          . "<div class='moonrock-measure-fixedvalue' id='moonrock-measure-fixedvalue-sample'></div>"
           . "</div>";
+
   $output .= "<div id='moonrockColorPickerSelection'>";
   $output .= "<div id='moonrockColorPickerSelectionColor' class='moonrockColorPickerSelectionNoColor'> </div>";
   $output .= "<div id='moonrockColorPickerSelectionName'> </div>";

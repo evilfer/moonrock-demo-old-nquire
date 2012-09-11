@@ -133,30 +133,20 @@ function pi_data_form(&$node) {
             $custom_forms[$measure_info->content_options] = array(
                 'function' => $custom_form_function,
                 'prefix' => TRUE,
-                'delegators' => array(),
+                'measure' => $measure_info,
             );
+            $form_prefix .= $custom_form_function($measure_info);
           }
         }
       }
     }
-    foreach ($custom_forms as $content_type => $custom_form) {
-      $delegate_function = "{$content_type}_nquire_delegate_data_form";
-      if (function_exists($delegate_function)) {
-        $delegate = $delegate_function();
-        if (isset($custom_forms[$delegate])) {
-          $custom_forms[$content_type]['prefix'] = FALSE;
-          $custom_forms[$delegate]['delegators'][] = $content_type;
-        }
-      }
-    }
-    foreach ($custom_forms as $content_type => $custom_form) {
-      if ($custom_form['prefix']) {
-        $function = $custom_form['function'];
-        $form_prefix .= $function($custom_form['delegators']);
-      }
-    }
-
-    $form['#prefix'] = $form_prefix;
+    
+    $wrapper = moonrock_data_form_wrap_form($form_prefix);
+    
+    $form['#prefix'] = $wrapper['prefix'];
+    $form['#suffix'] = $wrapper['suffix'];
+    
+      
     /**
      * We know all about custom forms now...
      */
@@ -658,9 +648,6 @@ function pi_data_view($node, $teaser = FALSE, $page = FALSE, $link = FALSE) {
  */
 function pi_data_theme() {
   return array(
-      'pi_data_node_form' => array(
-          'arguments' => array('form'),
-      ),
       'pi_data' => array(
           'arguments' => array('node', 'teaser'),
       ),
@@ -670,24 +657,6 @@ function pi_data_theme() {
   );
 }
 
-function theme_pi_data_node_form($form) {
-  $details = get_inquiry_details_from_current_path();
-  $activity = load_activity($details->activity_id);
-  if ($activity->description) {
-    $output .= '<p>' . check_plain($activity->description) . '</p>';
-  } /* else {
-    $output .= '<p>' . t('Collect data.') . '</p>';
-    } */
-
-  global $user;
-  $measures_param = find_selected_measures_nid_for_uid_and_inquiry($user->uid, $details->inquiry_id);
-  if ($measures_param) {
-    $output .= drupal_render($form);
-  } else {
-    $output .= "<p>No measures are available.</p>";
-  }
-  return $output;
-}
 
 function theme_pi_data($node, $teaser) {
   $output = '';

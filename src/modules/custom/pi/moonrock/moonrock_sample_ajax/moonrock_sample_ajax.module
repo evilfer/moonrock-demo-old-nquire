@@ -106,7 +106,7 @@ function moonrock_sample_ajax_samplesearch() {
 
   $samples = array();
   foreach ($nids as $nid) {
-    $samples[] = moonrock_sample_utils_prepare_sample_object($nid);
+    $samples[] = moonrock_sample_utils_prepare_object($nid);
   }
 
   $result = array(
@@ -126,12 +126,10 @@ function moonrock_sample_ajax_snapshotsearch() {
       $usesamplerefs = TRUE;
       $samplerefs = array($useviewsample);
     } else {
-      $usesamplerefs = _moonrock_sample_ajax_search_getparam('usesamplerefs', 'int');
-      if ($usesamplerefs) {
-        $samplerefs = _moonrock_sample_ajax_search_getparam('samplerefs', 'array', ' ');
-      }
+      $usesamplerefs = TRUE;
+      $samplerefs = _moonrock_sample_ajax_search_getparam('mainsamples', 'array', ' ');
     }
-    $author = _moonrock_sample_ajax_search_getparam('author');
+    $owner = _moonrock_sample_ajax_search_getparam('owner');
     $keyword = _moonrock_sample_ajax_search_getparam('keyword');
   }
 
@@ -154,9 +152,12 @@ function moonrock_sample_ajax_snapshotsearch() {
       }
     }
 
-    if ($author === "me") {
-      global $user;
+    global $user;
+    if ($owner === 'me') {
       $condition .= "AND {node}.uid=%d ";
+      $parameters[] = $user->uid;
+    } else if ($owner === 'others') {
+      $condition .= "AND NOT {node}.uid=%d ";
       $parameters[] = $user->uid;
     }
 
@@ -174,7 +175,7 @@ function moonrock_sample_ajax_snapshotsearch() {
 
   $snapshots = array();
   foreach ($nids as $nid) {
-    $snapshots[] = moonrock_sample_utils_prepare_snapshot_object($nid);
+    $snapshots[] = moonrock_sample_utils_prepare_object($nid);
   }
 
   $result = array(

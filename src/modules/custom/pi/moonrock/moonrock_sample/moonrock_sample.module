@@ -101,12 +101,12 @@ function moonrock_sample_form(&$node) {
 
   $form['body_filter']['location'] = array(
       '#type' => 'textfield',
-      '#title' => t('Sample origin'), 
+      '#title' => t('Sample origin'),
       '#required' => TRUE,
       '#default_value' => $node->location,
       '#description' => t('Specify the location where this sample was found'),
       '#weight' => -2
-  );  
+  );
   $form['body_filter']['map_url'] = array(
       '#type' => 'textfield',
       '#title' => t('Sample origin map URL'),
@@ -114,7 +114,7 @@ function moonrock_sample_form(&$node) {
       '#default_value' => $node->map_url,
       '#description' => t('Specify the URL to a map where the location can be seen'),
       '#weight' => -2
-  );  
+  );
   $form['body_filter']['source'] = array(
       '#type' => 'textfield',
       '#title' => t('How the sample was obtained'),
@@ -221,16 +221,14 @@ function theme_moonrock_sample($node, $teaser) {
   return $output;
 }
 
-function moonrock_sample_nquire_data_form_prefix($delegators) {
-  $select_mode = MOONROCK_SEARCH_SAMPLE;
-  if (in_array("moonrock_snapshot", $delegators)) {
-    $select_mode |= MOONROCK_SEARCH_SNAPSHOT;
-  }
-  
-  return moonrock_sample_utils_create_table_for_current_inquiry(TRUE, $select_mode);
+function moonrock_sample_nquire_data_form_prefix($measure) {
+  $measure_text = check_plain($measure->title) . moonrock_sample_utils_add_info_tooltip($measure->title, $measure->body);
+  $output = "<div class='moonrock-measure'>"
+          . "<div class='moonrock-measure-title'>$measure_text</div>"
+          . "<div class='moonrock-measure-fixedvalue' id='moonrock-measure-fixedvalue-sample'></div>"
+          . "</div>";
+  return $output;
 }
-
-
 
 function moonrock_sample_nquire_data_get_text_value($nid) {
   $node = node_load($nid);
@@ -245,11 +243,9 @@ function moonrock_sample_nquire_data_get_html_value($nid) {
   return moonrock_sample_utils_format_html_data($nid);
 }
 
-
 function moonrock_sample_nquire_measure_choose_explanation() {
   return t("Choose one rock sample from the list");
 }
-
 
 function moonrock_sample_nquire_data_form_after_build($form_element, &$form_state) {
   moonrock_sample_utils_load_resources(TRUE, TRUE, TRUE, TRUE);

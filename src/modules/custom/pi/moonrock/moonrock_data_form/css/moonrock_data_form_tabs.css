@@ -1,0 +1,79 @@
+
+
+
+.moonrock-data-form-page {
+  position: relative;
+}
+
+.moonrock-data-form-search, .moonrock-data-form-vmform {
+  width: 100%;
+}
+
+.moonrock-data-form-vmform {
+  background: white;
+  
+  display: -moz-inline-box;
+  display: -webkit-inline-box;
+
+  -webkit-box-orient: horizontal;
+  -moz-box-orient: horizontal;
+}
+
+
+.moonrock-data-form-hidden {
+  display: none;
+}
+
+.moonrock-data-form-vm {
+  -webkit-box-flex: 1;
+  -moz-box-flex: 1;
+}
+
+.moonrock-data-form-form {
+  width: 200px;
+  border-left: 3px solid gray;
+  padding: 5px;
+}
+
+.moonrock-data-form-back {
+  width: 32px;
+  height: 32px;
+  background: url(icons/arrow_undo.png) no-repeat center;
+  cursor: pointer;
+}
+
+.moonrock-data-form-item {
+  text-align: center;
+}
+
+.moonrock-data-form-item div {
+  display: inline-block;
+}
+
+.moonrock-data-form-item-button {
+  width: 32px;
+  height: 32px;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.moonrock-data-form-item-button.moonrock-data-form-item-enabled {
+  cursor: pointer;
+}
+
+.moonrock-data-form-item-previous {
+  background-image: url(icons/left_grey.png);
+}
+.moonrock-data-form-item-next {
+  background-image: url(icons/right_grey.png);
+}
+.moonrock-data-form-item-previous.moonrock-data-form-item-enabled {
+  background-image: url(icons/left.png);
+}
+.moonrock-data-form-item-next.moonrock-data-form-item-enabled {
+  background-image: url(icons/right.png);
+}
+
+
+
+

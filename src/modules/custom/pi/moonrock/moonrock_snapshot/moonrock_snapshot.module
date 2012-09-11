@@ -78,7 +78,7 @@ function moonrock_snapshot_form(&$node) {
       '#description' => t('Select a sample'),
       '#weight' => 2
   );
-  
+
   $form['snapshot_id'] = array(
       '#type' => 'hidden',
       '#required' => FALSE,
@@ -231,17 +231,17 @@ function theme_moonrock_snapshot_form($form) {
   return $output;
 }
 
-
 function moonrock_snapshot_nquire_measure_choose_explanation() {
   return t("Choose one snapshot of a rock sample");
 }
 
-function moonrock_snapshot_nquire_delegate_data_form() {
-  return 'moonrock_sample';
-}
-
-function moonrock_snapshot_nquire_data_form_prefix() {
-  return moonrock_sample_utils_create_table_for_current_inquiry(TRUE, MOONROCK_SEARCH_SNAPSHOT);
+function moonrock_snapshot_nquire_data_form_prefix($measure) {
+  $measure_text = check_plain($measure->title) . moonrock_sample_utils_add_info_tooltip($measure->title, $measure->body);
+  $output = "<div class='moonrock-measure'>"
+          . "<div class='moonrock-measure-title'>$measure_text</div>"
+          . "<div class='moonrock-measure-fixedvalue' id='moonrock-measure-fixedvalue-snapshot'></div>"
+          . "</div>";
+  return $output;
 }
 
 function moonrock_snapshot_nquire_data_form_after_build($form_element, &$form_state) {
@@ -253,7 +253,7 @@ function moonrock_snapshot_nquire_data_get_text_value($nid) {
   $node = node_load($nid);
   $sample = node_load($node->sample_ref);
   if ($node && $node->type == 'moonrock_snapshot') {
-    return check_plain($node->title) . "\n". check_plain($sample->title);
+    return check_plain($node->title) . "\n" . check_plain($sample->title);
   }
 
   return $nid;

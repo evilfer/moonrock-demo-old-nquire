@@ -1,0 +1,72 @@
+
+.moonrock-snapshot-menu {
+  height: 27px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-align: center;
+}
+
+.moonrock-snapshot-menu-item {
+  font-size: 12px;
+  font-weight: bold;
+  color: gray;
+  display: inline-block;
+  border-radius: 3px;
+  padding-left: 4px;
+  padding-right: 5px;
+  padding-bottom: 3px;
+  padding-top: 1px;
+  border: 1px solid gray;
+  background: #f3f3f3;
+  margin-right: 5px;
+}
+
+.moonrock-snapshot-menu-item.enabled {
+  cursor: pointer;
+  color: black;
+}
+
+.moonrock-snapshot-menu-item.enabled:hover {
+  color: darkorange;
+  background: white;
+}
+
+.moonrock-snapshot-menu-item-buttom {
+  width: 20px;
+  height: 16px;
+  display: inline-block;
+  vertical-align: middle;
+  background-position: left;
+  background-repeat: no-repeat;
+}
+.moonrock-snapshot-menu-item-label {
+  vertical-align: middle;
+  display: inline-block;
+  height: 15px;
+  margin-top: 4px;
+  font-size: 12px;
+}  
+
+.moonrock-snapshot-menu-new .moonrock-snapshot-menu-item-buttom {
+  background-image: url(icons/sn_menu_plus.png);
+}
+.moonrock-snapshot-menu-edit .moonrock-snapshot-menu-item-buttom {
+  background-image: url(icons/sn_menu_pencil.png);
+}
+.moonrock-snapshot-menu-center .moonrock-snapshot-menu-item-buttom {
+  background-image: url(icons/sn_menu_target.png);
+}
+.moonrock-snapshot-menu-search .moonrock-snapshot-menu-item-buttom {
+  background-image: url(icons/sn_menu_search.png);
+}
+
+
+
+#moonrock-snapshot-newsnapshot-dlg {
+  font-size: 14px;
+  display: none;
+}
+
+.moonrock-snapshot-hidden-notes {
+  display: none;
+}

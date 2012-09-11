@@ -236,12 +236,12 @@ function moonrock_sample_utils_create_sample_table($main_samples, $link_vm, $sam
             . '    </div>'
             . '  </div>'
             . '<div><p>'
-            . t('With ') . '<select id="moonrock-sample-search-snapshots-view-position" name="viewzoom">'
+            . t('With ') . '<select id="moonrock-sample-search-snapshots-view-zoom" name="viewzoom">'
             . '<option value="0">' . t('same zoom') . '</option>'
             . '<option value="1">' . t('similar zoom') . '</option>'
             . '<option value="2">' . t('any zoom') . '</option>'
             . '</select>'
-            . t(' and ') . '<select id="moonrock-sample-search-snapshots-view-position" name="viewzoom">'
+            . t(' and ') . '<select id="moonrock-sample-search-snapshots-view-position" name="viewposition">'
             . '<option value="0">' . t('same position') . '</option>'
             . '<option value="1">' . t('similar positions') . '</option>'
             . '<option value="2">' . t('any position') . '</option>'
@@ -305,21 +305,21 @@ function moonrock_sample_utils_create_sample_table($main_samples, $link_vm, $sam
  * @param type $select_mode
  */
 function moonrock_sample_utils_load_resources($link_vm, $sample_search, $snapshot_search, $select_mode) {
-  drupal_add_js(drupal_get_path('module', 'moonrock_sample_utils') . '/js/itemBrowser.js');
-  drupal_add_js(drupal_get_path('module', 'moonrock_sample_utils') . '/js/MoonrockSampleView.js');
-  drupal_add_js(drupal_get_path('module', 'moonrock_sample_utils') . '/js/MoonrockSampleDialog.js');
-  drupal_add_js(drupal_get_path('module', 'moonrock_sample_utils') . '/js/MoonrockSampleSearch.js');
-  drupal_add_js(drupal_get_path('module', 'moonrock_sample_utils') . '/js/MoonrockSampleSelection.js');
+  /* drupal_add_js(drupal_get_path('module', 'moonrock_sample_utils') . '/js/itemBrowser.js');
+    drupal_add_js(drupal_get_path('module', 'moonrock_sample_utils') . '/js/MoonrockSampleView.js');
+    drupal_add_js(drupal_get_path('module', 'moonrock_sample_utils') . '/js/MoonrockSampleDialog.js');
+    drupal_add_js(drupal_get_path('module', 'moonrock_sample_utils') . '/js/MoonrockSampleSearch.js');
+    drupal_add_js(drupal_get_path('module', 'moonrock_sample_utils') . '/js/MoonrockSampleSelection.js');
 
-  drupal_add_js(drupal_get_path('module', 'moonrock_sample_utils') . '/js/vmManager.js');
+    drupal_add_js(drupal_get_path('module', 'moonrock_sample_utils') . '/js/vmManager.js');
 
-  drupal_add_js(drupal_get_path('module', 'moonrock_sample_utils') . '/dlg/vm-dlg.js');
-  drupal_add_css(drupal_get_path('module', 'moonrock_sample_utils') . '/dlg/vm-dlg.css');
+    drupal_add_js(drupal_get_path('module', 'moonrock_sample_utils') . '/dlg/vm-dlg.js');
+    drupal_add_css(drupal_get_path('module', 'moonrock_sample_utils') . '/dlg/vm-dlg.css');
 
-  drupal_add_js(drupal_get_path('module', 'moonrock_sample_utils') . '/js/init.js');
-  drupal_add_css(drupal_get_path('module', 'moonrock_sample_utils') . '/css/moonrock_sample_view.css');
-  drupal_add_css(drupal_get_path('module', 'moonrock_sample_utils') . '/css/moonrock_sample_dialog.css');
-  drupal_add_css(drupal_get_path('module', 'moonrock_sample_utils') . '/css/moonrock_sample_metadata.css');
+    drupal_add_js(drupal_get_path('module', 'moonrock_sample_utils') . '/js/init.js');
+    drupal_add_css(drupal_get_path('module', 'moonrock_sample_utils') . '/css/moonrock_sample_view.css');
+    drupal_add_css(drupal_get_path('module', 'moonrock_sample_utils') . '/css/moonrock_sample_dialog.css');
+    drupal_add_css(drupal_get_path('module', 'moonrock_sample_utils') . '/css/moonrock_sample_metadata.css'); */
 
   //drupal_add_js(drupal_get_path('module', 'moonrock_sample_utils') . '/lib/qtip/jquery.qtip-1.0.0-rc3.js');
 
@@ -333,27 +333,60 @@ function moonrock_sample_utils_load_resources($link_vm, $sample_search, $snapsho
   return;
 }
 
-function moonrock_sample_utils_prepare_sample_object($nid) {
-  $sample = node_load($nid);
-  return array(
-      "id" => $sample->nid,
+function moonrock_sample_utils_prepare_object($nid) {
+  global $user;
+
+  $object = node_load($nid);
+  if ($object->type == 'moonrock_sample') {
+    $sample = $object;
+    $snapshot = FALSE;
+  } else {
+    $snapshot = $object;
+    $sample = node_load($snapshot->sample_ref);
+  }
+
+  $output = array(
+      "id" => $snapshot ? $snapshot->nid : $sample->nid,
+      "sample" => $sample->nid,
+      "sample_title" => $sample->title,
+      "snapshot" => $snapshot ? $snapshot->nid : 0,
+      "snapshot_title" => $snapshot ? $snapshot->title : 0,
       "img" => $sample->snapshot,
-      "title" => $sample->title,
-      "params" => array(
-          "type" => "sample",
-          "sample" => $sample->nid,
-      ),
-      "metadata" => array(
-          "location" => array(
-              "title" => t("Location: "),
-              "value" => $sample->location . ' <a href="' . $sample->map_url . '" target="_blank" class="external_link"><div></div></a>',
-          ),
-          "source" => array(
-              "title" => t("Sample source: "),
-              "value" => $sample->source,
-          )
-      ),
+      "type" => $object->type,
+      "metadata" => array(),
   );
+
+  if ($snapshot) {
+    if ($user->uid == $snapshot->uid) {
+      $author = t("Me");
+    } else {
+      $author_user = user_load($snapshot->uid);
+      $author = check_plain($author_user->name);
+    }
+    $output['metadata']['author'] = array(
+        "title" => t("Created by: "),
+        "value" => $author,
+    );
+    $output['metadata']['notes'] = array(
+        "title" => t("Notes: "),
+        "value" => $snapshot->notes,
+    );
+    $output['metadata']['date'] = array(
+        "title" => t("Creation date: "),
+        "value" => format_date($snapshot->created, 'small'),
+    );
+  }
+
+  $output['metadata']['location'] = array(
+      "title" => t("Location: "),
+      "value" => $sample->location . ' <a href="' . $sample->map_url . '" target="_blank" class="external_link"><div></div></a>',
+  );
+  $output['metadata']['source'] = array(
+      "title" => t("Sample source: "),
+      "value" => $sample->source,
+  );
+  
+  return $output;
 }
 
 function moonrock_sample_utils_format_html_data($nid) {
@@ -370,48 +403,3 @@ function moonrock_sample_utils_format_html_data($nid) {
   return "<img style='width: 50px' src='$img'></img><span style='padding-left: 10px;'>$title</span>";
 }
 
-function moonrock_sample_utils_prepare_snapshot_object($nid) {
-  global $user;
-
-
-
-  $snapshot = node_load($nid);
-  $sample = node_load($snapshot->sample_ref);
-
-  if ($user->uid == $snapshot->uid) {
-    $author = t("Me");
-  } else {
-    $author_user = user_load($snapshot->uid);
-    $author = check_plain($author_user->name);
-  }
-
-  return array(
-      "id" => $snapshot->nid,
-      "img" => $sample->snapshot,
-      "title" => $snapshot->title,
-      "params" => array(
-          "type" => "snapshot",
-          "snapshot" => $snapshot->nid,
-          "sampleref" => $snapshot->sample_ref,
-          "unselectable" => $user->uid != $snapshot->uid,
-      ),
-      "metadata" => array(
-          "sampleref" => array(
-              "title" => t("Rock sample: "),
-              "value" => $sample->title,
-          ),
-          "author" => array(
-              "title" => t("Created by: "),
-              "value" => $author,
-          ),
-          "notes" => array(
-              "title" => t("Notes: "),
-              "value" => $snapshot->notes,
-          ),
-          "date" => array(
-              "title" => t("Creation date: "),
-              "value" => format_date($snapshot->created, 'small'),
-          ),
-      ),
-  );
-}

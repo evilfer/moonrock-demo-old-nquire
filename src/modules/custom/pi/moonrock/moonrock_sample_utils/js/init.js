@@ -1,7 +1,7 @@
 
 
 $(function() {
-  if (typeof(MoonrockSampleSelection) !== "undefined") {
+ /* if (typeof(MoonrockSampleSelection) !== "undefined") {
     MoonrockSampleSelection.init();
   }
 
@@ -11,5 +11,5 @@ $(function() {
 
   if (typeof(MoonrockSampleDialog) !== "undefined") {
     MoonrockSampleDialog.init();
-  }
+  }*/
 });
