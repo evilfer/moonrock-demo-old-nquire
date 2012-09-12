@@ -351,6 +351,8 @@ function moonrock_sample_utils_prepare_object($nid) {
       "sample_title" => $sample->title,
       "snapshot" => $snapshot ? $snapshot->nid : 0,
       "snapshot_title" => $snapshot ? $snapshot->title : 0,
+      "own_snapshot" => $snapshot->uid === $user->uid,
+      "vm" => $sample->vm,
       "img" => $sample->snapshot,
       "type" => $object->type,
       "metadata" => array(),
@@ -402,4 +404,3 @@ function moonrock_sample_utils_format_html_data($nid) {
 
   return "<img style='width: 50px' src='$img'></img><span style='padding-left: 10px;'>$title</span>";
 }
-

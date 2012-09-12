@@ -231,9 +231,7 @@ function moonrock_color_nquire_data_form_prefix($measure) {
   $output .= "<button type='button' id='moonrockColorPickerClose' style='display: none;'>" . t("Close") . "</button>";
   $output .= "<button type='button' id='moonrockColorPickerClear'>" . t("Clear") . "</button>";
   $output .= "</div>";
-  $output .= "<div id='moonrockColorPickerExplanation'><small>"
-          . t("Click the 'Open' buttons to open the color chart and click on a color to select it.<br/>You can also open and close it at any time by pressing the 'c' key")
-          . "</small></div>";
+
   $output .= _moonrock_color_create_color_picker_image();
 
   _moonrock_color_load_form_resources();

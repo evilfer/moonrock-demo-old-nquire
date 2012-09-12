@@ -4,11 +4,11 @@
 var MoonrockDataFormSamples = {
   searchManagers : null,
   currentItem : null,
-
+  
   init : function() {
     var items = [];
     $("#moonrock-sample-main-list").find("div").each(function() {
-      var itemdef = unescape($(this).attr('item-def')).replace(/\\x26/g, "&").replace(/\\x3c/g, "<").replace(/\\x3e/g, ">");
+      var itemdef = unescape($(this).html()).replace(/\\x26/g, "&").replace(/\\x3c/g, "<").replace(/\\x3e/g, ">");
       var item = JSON.parse(itemdef);
       items.push(item);
     });
@@ -19,6 +19,13 @@ var MoonrockDataFormSamples = {
     var eventCallback = function(event, item, containerId) {
       MoonrockDataFormSamples.itemEvent(event, item, containerId);
     };
+    
+    $('.moonrock-snapshot-menu-item.moonrock-snapshot-menu-new').click(function() {
+      var canvas = $(frames[0].document).find('#mic1canvas')[0];
+      //      var data = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height);
+      var data = canvas.getContext('2d').getImageData(0, 0, 10, 10);
+      return;
+    });
     
     $("#moonrock-sample-main-list").html("");
     
@@ -53,8 +60,13 @@ var MoonrockDataFormSamples = {
       })
     };
     
-    $('#moonrock-data-form-back').click(function() {
+    $('#moonrock-data-form-backtosearch').click(function() {
       MoonrockDataFormSamples._closeVM();
+    });
+    $('#moonrock-data-form-backtovm').click(function() {
+      if ($(this).hasClass('moonrock-data-form-backtovm-enabled')) {
+        MoonrockDataFormSamples._reopenVM();
+      }
     });
     
     
@@ -73,7 +85,7 @@ var MoonrockDataFormSamples = {
   },
   
   _nextPrevItem: function(type, delta) {
-    var item = type === 'sample' ? this._getSampleAround(delta) : this._getSampleAround(delta);
+    var item = type === 'sample' ? this._getSampleAround(delta) : this._getSnapshotAround(delta);
     if (item) {
       this._openVM(item);
     }
@@ -111,25 +123,49 @@ var MoonrockDataFormSamples = {
   },
   _itemImageClicked: function(item) {
     this._openVM(item);
+    MoonrockDataFormData.itemAdded(item);
   },
   _itemRemoved: function() {
+    this._checkNextPrevButtons();
   },
   _itemAdded: function() {
+    this._checkNextPrevButtons();
+  },
+  
+  openVM: function(item) {
+    this._openVM(item);
   },
   
   _openVM: function(item) {
     this.currentItem = item;
     $('#moonrock-data-form-sample-title').html(item.sample_title);
-    $('#moonrock-data-form-snapshot-title').html(item.snapshot ? item.snapshot_title : '');
+    if (item.snapshot) {
+      $('#moonrock-data-form-snapshot-title').html(item.snapshot_title).removeClass('moonrock-snapshot-no-value');
+    } else {
+      $('#moonrock-data-form-snapshot-title').html('&lt;no snapshot&gt;').addClass('moonrock-snapshot-no-value');
+    }
     
+    
+    this._reopenVM();
+    $('#moonrock-data-form-form').css('top', $('#moonrock-data-form-vm-container').position().top);
+    
+    $('#moonrock-data-form-vm-iframe').attr('src', item.vm);
+
+    this._checkNextPrevButtons();
+    
+    MoonrockDataFormData.vmOpened(item);
+  },
+  
+  _checkNextPrevButtons: function() {
+    this._enableButton('#moonrock-data-form-sample-previous', this._getSampleAround(-1));
+    this._enableButton('#moonrock-data-form-sample-next', this._getSampleAround(1));
+    this._enableButton('#moonrock-data-form-snapshot-previous', this._getSnapshotAround(-1));
+    this._enableButton('#moonrock-data-form-snapshot-next', this._getSnapshotAround(1));
+  },
+  
+  _reopenVM: function() {
     $('#moonrock-data-form-search').addClass('moonrock-data-form-hidden');
     $('#moonrock-data-form-vmform').removeClass('moonrock-data-form-hidden');
-    
-    
-    this._enableButton('#moonrock-data-form-sample-previous', this._hasSampleAround(-1));
-    this._enableButton('#moonrock-data-form-sample-next', this._hasSampleAround(1));
-    this._enableButton('#moonrock-data-form-snapshot-previous', this._hasSampleAround(-1));
-    this._enableButton('#moonrock-data-form-snapshot-next', this._hasSampleAround(1));
   },
   
   _enableButton : function(id, enabled) {
@@ -143,15 +179,51 @@ var MoonrockDataFormSamples = {
   _closeVM: function() {
     $('#moonrock-data-form-vmform').addClass('moonrock-data-form-hidden');
     $('#moonrock-data-form-search').removeClass('moonrock-data-form-hidden');
+    $('#moonrock-sample-main-list').itemBrowser('update');
+    $('#moonrock-sample-mysnapshots-list').itemBrowser('update');
+    $('#moonrock-sample-snapshotsbyothers-list').itemBrowser('update');
+    
+    $('#moonrock-data-form-backtovm').addClass('moonrock-data-form-backtovm-enabled');
   },
   
-  _hasSampleAround: function(delta) {
-    var pos = $('#moonrock-sample-main-list').itemBrowser('position', this.currentItem.sample) + delta;
-    return pos >= 0 && pos < $('#moonrock-sample-main-list').itemBrowser('countItems');
-  },
   _getSampleAround: function(delta) {
-    var pos = $('#moonrock-sample-main-list').itemBrowser('position', this.currentItem.sample) + delta;
-    return $('#moonrock-sample-main-list').itemBrowser('itemAt', pos);
+    if (this.currentItem) {
+      var pos = $('#moonrock-sample-main-list').itemBrowser('position', this.currentItem.sample) + delta;
+      if (pos >= 0 && pos < $('#moonrock-sample-main-list').itemBrowser('countItems')) {
+        return $('#moonrock-sample-main-list').itemBrowser('itemAt', pos);      
+      }
+    }
+    return false;
+  },
+  _getSnapshotAround: function(delta) {
+    if (this.currentItem) {
+      var pos = 0;
+      var containers = [$('#moonrock-sample-mysnapshots-list'), $('#moonrock-sample-snapshotsbyothers-list')];
+      var container = 0;
+    
+      for (var i = 0; i < containers.length; i++) {
+        var p = containers[i].itemBrowser('position', this.currentItem.snapshot);
+        if (p >= 0) {
+          container = i;
+          pos = p;
+          break;
+        }
+      }
+    
+      var first = true;
+      for (i = container; i >= 0 && i < containers.length; i += delta) {
+        var n = containers[i].itemBrowser('countItems');
+        for (var j = first ? pos + delta : (delta > 0 ? 0 : n-1); j >=0 && j < n; j += delta) {
+          var item = containers[i].itemBrowser('itemAt', j);
+          if (item.sample === this.currentItem.sample) {
+            return item;
+          }
+        }
+        first = false; 
+      }
+    }
+    
+    return false;
   },
   
   
@@ -179,7 +251,3 @@ var MoonrockDataFormSamples = {
     return metadata;
   }
 };
-
-$(function() {
-  MoonrockDataFormSamples.init();
-})

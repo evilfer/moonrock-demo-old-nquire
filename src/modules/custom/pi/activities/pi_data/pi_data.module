@@ -69,7 +69,7 @@ function pi_data_access($op, $node, $account) {
 function pi_data_form(&$node) {
   global $user;
   $node_details = get_inquiry_details_from_current_path();
-  
+
   $form_prefix = t('Add data to answer your key questions:</p><ul>');
   $query = "SELECT {node}.title FROM {node} WHERE {node}.type='pi_key_questions' and {node}.uid=%d";
   $result = db_query($query, $user->uid);
@@ -77,7 +77,7 @@ function pi_data_form(&$node) {
     $form_prefix .= "<li><b>{$obj->title}</b></li>";
   }
   $form_prefix .= '</ul><br/>';
-  
+
   if (is_numeric($node_details->activity_id)) {
     $current_activity = load_activity($node_details->activity_id);
   }
@@ -140,13 +140,13 @@ function pi_data_form(&$node) {
         }
       }
     }
-    
+
     $wrapper = moonrock_data_form_wrap_form($form_prefix);
-    
+
     $form['#prefix'] = $wrapper['prefix'];
     $form['#suffix'] = $wrapper['suffix'];
-    
-      
+
+
     /**
      * We know all about custom forms now...
      */
@@ -171,8 +171,10 @@ function pi_data_form(&$node) {
         } else {
           $required_value = FALSE;
         }
-        
-        $measure_text = check_plain($measure_info->title . $units) . moonrock_sample_utils_add_info_tooltip($measure_info->title, $measure_info->body);
+
+        $measure_text = '<div class="moonrock-measure-title">'
+                . check_plain($measure_info->title . $units) . moonrock_sample_utils_add_info_tooltip($measure_info->title, $measure_info->body)
+                . '</div>';
 
         switch ($measure_info->field_type) {
           // field_type = textfield
@@ -654,9 +656,16 @@ function pi_data_theme() {
       'pi_data_measure' => array(
           'arguments' => array('measure', 'measure_type', 'measure_value', 'teaser'),
       ),
+      'pi_data_node_form' => array(
+          'arguments' => array('form'),
+      ),
   );
 }
 
+function theme_pi_data_node_form($form) {
+  moonrock_data_form_load_resources();
+  drupal_render($form);
+}
 
 function theme_pi_data($node, $teaser) {
   $output = '';

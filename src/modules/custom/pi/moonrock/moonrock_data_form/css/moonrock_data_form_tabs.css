@@ -29,13 +29,17 @@
   -moz-box-flex: 1;
 }
 
-.moonrock-data-form-form {
-  width: 200px;
-  border-left: 3px solid gray;
-  padding: 5px;
+
+.moonrock-data-form-backtovm {
+  width: 32px;
+  height: 32px;
+}
+.moonrock-data-form-backtovm.moonrock-data-form-backtovm-enabled {
+  background: url(icons/arrow_redo.png) no-repeat center;
+  cursor: pointer;
 }
 
-.moonrock-data-form-back {
+.moonrock-data-form-backtosearch {
   width: 32px;
   height: 32px;
   background: url(icons/arrow_undo.png) no-repeat center;
@@ -50,9 +54,15 @@
   display: inline-block;
 }
 
+.moonrock-data-form-item-title {
+  font-weight: bold;
+  font-size: 16px;
+}
+
 .moonrock-data-form-item-button {
-  width: 32px;
-  height: 32px;
+  width: 16px;
+  height: 16px;
+  background-size: 16px 16px;
   background-repeat: no-repeat;
   background-position: center;
 }
@@ -74,6 +84,69 @@
   background-image: url(icons/right.png);
 }
 
+.moonrock-data-form-vm-container {
+  width: 100%;
+  height: 100%;
+}
+
+.moonrock-data-form-vm-container iframe {
+  border: none;
+  width: 100%;
+  height: 100%;  
+}
+
+.qtip-link {
+  border: none !important;
+}
 
 
+
+.moonrock-data-form-form {
+  position: absolute;
+  width: 200px;
+  padding-left: 10px;
+  position: relative;
+}
+
+.moonrock-data-form-form h2.title {
+	color: #fff;
+	padding: 4px 10px;
+	-moz-border-radius-topleft: 7px;
+	-moz-border-radius-topright: 7px;
+	-webkit-border-top-left-radius: 7px;
+	-webkit-border-top-right-radius: 7px;
+	border: 1px solid #888;
+	background-color: #1348A1;
+}
+
+.moonrock-data-form-form .content {
+	margin: 0;
+	-moz-border-radius-bottomleft: 7px;
+	-moz-border-radius-bottomright: 7px;
+	-webkit-border-bottom-left-radius: 7px;
+	-webkit-border-bottom-right-radius: 7px;
+	border-top: none;
+	background-color: #EDEDED;
+	border: 1px solid #E3E3E3;
+	padding: 10px;
+}
+
+.moonrock-measure-title {
+  display: inline-block;
+  font-weight: bold;
+  padding-top: 15px;
+}
+
+.moonrock-measure-fixedvalue {
+  padding-left: 10px;
+}
+
+.moonrock-snapshot-no-value {
+  font-weight: normal;
+  font-style: italic;
+}
+
+.moonrock-measure-fixedvalue.moonrock-snapshot-no-value {
+  color: red;
+}
 

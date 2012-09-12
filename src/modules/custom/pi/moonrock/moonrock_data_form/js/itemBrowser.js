@@ -83,9 +83,7 @@
           if (!currentIds[items[i].id]) {
             self.itemBrowser("_addItem", items[i]);
             added.push(items[i].id);
-          } else {
-            self.find('.item-browser-item[item-id="' + items[i].id + '"]').itemBrowserItem('stay');
-          }
+          } 
         }
         self.itemBrowser('_updatePositionsAnimate');
         /*        for (var i in added) {
@@ -151,6 +149,10 @@
     },
     countItems: function() {
       return this.find('.item-browser-item').length;
+    },
+    update: function() {
+      this.itemBrowser('_updatePositions');
+      return this;
     },
     _calculatePositions: function() {
       var positions = [];

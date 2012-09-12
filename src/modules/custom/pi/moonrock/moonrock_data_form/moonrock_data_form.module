@@ -6,24 +6,21 @@ function moonrock_data_form_load_resources() {
   drupal_add_js(drupal_get_path('module', 'moonrock_data_form') . '/js/itemBrowserThrobber.js');
   drupal_add_js(drupal_get_path('module', 'moonrock_data_form') . '/js/MoonrockDataFormSamples.js');
   drupal_add_js(drupal_get_path('module', 'moonrock_data_form') . '/js/MoonrockDataFormSearch.js');
+  drupal_add_js(drupal_get_path('module', 'moonrock_data_form') . '/js/MoonrockDataFormData.js');
+  drupal_add_js(drupal_get_path('module', 'moonrock_data_form') . '/js/init.js');
 
   drupal_add_css(drupal_get_path('module', 'moonrock_data_form') . '/css/itemBrowser.css');
   drupal_add_css(drupal_get_path('module', 'moonrock_data_form') . '/css/moonrock_data_form_tabs.css');
   drupal_add_css(drupal_get_path('module', 'moonrock_data_form') . '/css/moonrock_data_form_snapshot_menu.css');
 }
 
-function moonrock_data_form_create_sample_snapshots_table() {
-
-  $output = _moonrock_data_form_create_mainsamples_table($main_samples);
-  return $output;
-}
 
 function _moonrock_data_form_create_mainsamples_table($main_samples) {
   $output = "<div class='moonrock-sample-list-header'>" . t('Rock samples') . "</div>";
   $output .= "<div id='moonrock-sample-main-list'>";
   foreach ($main_samples as $sample) {
     $object = moonrock_sample_utils_prepare_object($sample->nid);
-    $output .= "<div item-def='" . drupal_to_js($object) . "' item-id='{$sample->nid}' title='{$sample->title}' img='{$sample->snapshot}'></div>";
+    $output .= "<div style='display:none;'>" . drupal_to_js($object) . "</div>";
   }
   $output .= '</div>';
   return $output;
@@ -46,7 +43,6 @@ function _moonrock_data_form_snapshot_menu_button($buttonClassSufix, $label) {
 }
 
 function moonrock_data_form_wrap_form($form_prefix) {
-  moonrock_data_form_load_resources();
   $details = get_inquiry_details_from_current_path();
   $activity = load_activity($details->activity_id);
 
@@ -67,13 +63,14 @@ function moonrock_data_form_wrap_form($form_prefix) {
 
   $prefix .= '<div id="moonrock-data-form-page" class="moonrock-data-form-page">'
           . ' <div id="moonrock-data-form-search" class="moonrock-data-form-search">'
+          . '  <div id="moonrock-data-form-backtovm" class="moonrock-data-form-backtovm"></div>'
           . _moonrock_data_form_create_mainsamples_table($main_samples)
           . _moonrock_data_form_snapshot_search($main_samples)
           . _moonrock_data_form_create_snapshot_tables()
           . ' </div>'
           . ' <div id="moonrock-data-form-vmform" class="moonrock-data-form-vmform moonrock-data-form-hidden">'
           . '  <div id="moonrock-data-form-vm" class="moonrock-data-form-vm">'
-          . '   <div id="moonrock-data-form-back" class="moonrock-data-form-back"></div>'
+          . '   <div id="moonrock-data-form-backtosearch" class="moonrock-data-form-backtosearch"></div>'
           . '   <div id="moonrock-data-form-sample" class="moonrock-data-form-item">'
           . '    <div id="moonrock-data-form-sample-previous" class="moonrock-data-form-item-button moonrock-data-form-item-previous"></div>'
           . '    <div id="moonrock-data-form-sample-title" class="moonrock-data-form-item-title"></div>'
@@ -90,12 +87,20 @@ function moonrock_data_form_wrap_form($form_prefix) {
           . _moonrock_data_form_snapshot_menu_button('center', t('Center view'))
           . _moonrock_data_form_snapshot_menu_button('search', t('Search snapshots of this view'))
           . '    </div>'
+          . '    <div id="moonrock-data-form-vm-container" class="moonrock-data-form-vm-container">'
+          . '    <iframe id="moonrock-data-form-vm-iframe"></iframe>'
+          . '    </div>'
           . '  </div>'
           . '  <div id="moonrock-data-form-form" class="moonrock-data-form-form">'
+          . '   <div id="moonrock-data-form-block" class="block-inner">'
+          . '    <h2 class="title">' . t('Data') . '</h2>'
+          . '    <div class="content">'
           . $form_prefix;
 
 
-  $suffix = '  </div>'
+  $suffix = '    </div>'
+          . '   </div>'
+          . '  </div>'// end of moonrock-data-form-form
           . ' </div>'
           . '</div>';
 
@@ -203,3 +208,4 @@ function _moonrock_data_form_snapshot_search($main_samples) {
 
   return $search;
 }
+
