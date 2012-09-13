@@ -36,7 +36,7 @@ function moonrock_sample_ajax_menu() {
       'type' => MENU_CALLBACK,
   );
 
-  $items['moonrock_sample_ajax/newsnapshot/submit'] = array(
+  $items['activity/%/submitsnapshot'] = array(
       'page callback' => 'moonrock_sample_ajax_newsnapshot_submit',
       'access callback' => 'moonrock_sample_ajax_access',
       'type' => MENU_CALLBACK,
@@ -194,8 +194,11 @@ function moonrock_sample_ajax_newsnapshot_submit() {
   $form_state['values']['notes'] = $_POST['notes'];
   $form_state['values']['vm_parameters'] = $_POST['vm_parameters'];
   $form_state['values']['sample_ref'] = $_POST['sample_ref'];
-
-  drupal_execute('story_node_form', $form_state, $node);
+  $form_state['values']['image_data'] = $_POST['image_data'];
+  
+  $test_node = new stdClass();
+  $test_node->type = 'moonrock_snapshot';
+  drupal_execute('story_node_form', $form_state, $test_node);
   $errors = form_get_errors();
 
   if ($errors) {
@@ -217,15 +220,13 @@ function moonrock_sample_ajax_newsnapshot_submit() {
     $node->notes = $_POST['notes'];
     $node->vm_parameters = $_POST['vm_parameters'];
     $node->sample_ref = $_POST['sample_ref'];
+    
     node_save($node);
-
+    moonrock_snapshot_images_savesnapshot($_POST['image_data'], $node->nid);
+    
     $result = array(
         "status" => TRUE,
-        "snapshot" => array(
-            "nid" => $node->nid,
-            "title" => $node->title,
-            "notes" => $node->notes,
-        ),
+        "item" => moonrock_sample_utils_prepare_object($node->nid),
     );
   }
   unset($_SESSION['messages']); // same as above

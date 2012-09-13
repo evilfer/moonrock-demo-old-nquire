@@ -78,6 +78,21 @@ MoonrockDataFormSearch.prototype.repeatSearch = function() {
   this._queryLastSearch();
 };
 
+MoonrockDataFormSearch.prototype.update = function(item) {
+  var self = this;
+  
+  if ($(self.settings.results).itemBrowser('hasItem', item.id)) {
+    $(self.settings.results).itemBrowser('updateItem', item);
+  } else {
+    this._querySearch({
+      nid: item.id
+    }, function(items) {
+      $(self.settings.results).itemBrowser('appendItems', items);
+    });
+  }
+}
+
+
 
 
 MoonrockDataFormSearch.prototype.fetch = function(id) {

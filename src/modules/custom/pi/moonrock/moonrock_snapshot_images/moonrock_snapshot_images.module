@@ -1,0 +1,54 @@
+<?php
+
+function moonrock_snapshot_images_menu() {
+  $items = array();
+
+  $items['moonrock_snapshot_images'] = array(
+      'page callback' => 'moonrock_snapshot_images_newsnapshot_transfer',
+      'access callback' => 'moonrock_snapshot_images_access',
+      'type' => MENU_CALLBACK,
+  );
+  return $items;
+}
+
+function moonrock_snapshot_images_access() {
+  return true;
+}
+
+function moonrock_snapshot_images_newsnapshot_transfer($type, $nid) {
+  $file = _moonrock_snapshot_images_filename($type, $nid);
+//  $im = imagecreatefrompng();
+  header('Content-Type: image/png');
+  header('Content-Length: ' . filesize($file));
+  echo file_get_contents($file);
+//imagepng($im);
+  //imagedestroy($im);
+}
+
+function moonrock_snapshot_images_savesnapshot($uri, $nid) {
+  $data = substr($uri, strpos($uri, ",")+1);
+  file_put_contents(_moonrock_snapshot_images_filename('snapshot', $nid), base64_decode($data));
+}
+
+function moonrock_snapshot_images_get_snapshot_url($nid) {
+  return _moonrock_snapshot_images_path('snapshot', $nid);
+}
+
+function moonrock_snapshot_images_get_sample_url($nid) {
+  return _moonrock_snapshot_images_path('sample', $nid);
+}
+
+function _moonrock_snapshot_images_path($type, $nid) {
+  return "moonrock_snapshots/{$type}_{$nid}.png";
+//  return "?q=moonrock_snapshot_images/{$type}/{$nid}";
+}
+
+function _moonrock_snapshot_images_filename($type, $nid) {
+  return _moonrock_snapshot_images_systempath() . "{$type}_{$nid}.png";
+}
+
+function _moonrock_snapshot_images_systempath() {
+  $p = strrpos($_SERVER['SCRIPT_FILENAME'], '/', -1);
+//  return substr($_SERVER['SCRIPT_FILENAME'], 0, $p) . '/' . file_directory_path() . '/moonrock_snapshots/';
+  return substr($_SERVER['SCRIPT_FILENAME'], 0, $p) . '/moonrock_snapshots/';
+}

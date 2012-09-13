@@ -8,6 +8,13 @@ Moonrock demonstators.
 Changes:
 
 -----------------
+13-09-2012
+
+- Add data interface working.
+- Creation of snapshot images working.
+- See samples activity NOT working.
+
+-----------------
 12-09-2012
 
 - Improved new add data interface (not working).

@@ -336,7 +336,7 @@ function moonrock_sample_utils_load_resources($link_vm, $sample_search, $snapsho
 function moonrock_sample_utils_prepare_object($nid) {
   global $user;
 
-  $object = node_load($nid);
+  $object = node_load($nid, NULL, TRUE);
   if ($object->type == 'moonrock_sample') {
     $sample = $object;
     $snapshot = FALSE;
@@ -347,13 +347,16 @@ function moonrock_sample_utils_prepare_object($nid) {
 
   $output = array(
       "id" => $snapshot ? $snapshot->nid : $sample->nid,
+      "title" => $snapshot ? $snapshot->title : $sample->title,
       "sample" => $sample->nid,
       "sample_title" => $sample->title,
+      "sample_img" => moonrock_snapshot_images_get_sample_url($sample->nid),
       "snapshot" => $snapshot ? $snapshot->nid : 0,
       "snapshot_title" => $snapshot ? $snapshot->title : 0,
+      "snapshot_img" => $snapshot ? moonrock_snapshot_images_get_snapshot_url($snapshot->nid) : 0,
       "own_snapshot" => $snapshot->uid === $user->uid,
+      "img" => $snapshot ? moonrock_snapshot_images_get_snapshot_url($snapshot->nid) : moonrock_snapshot_images_get_sample_url($sample->nid),
       "vm" => $sample->vm,
-      "img" => $sample->snapshot,
       "type" => $object->type,
       "metadata" => array(),
   );
@@ -387,17 +390,16 @@ function moonrock_sample_utils_prepare_object($nid) {
       "title" => t("Sample source: "),
       "value" => $sample->source,
   );
-  
+
   return $output;
 }
 
 function moonrock_sample_utils_format_html_data($nid) {
   $node = node_load($nid);
   if ($node->type === 'moonrock_snapshot') {
-    $sample = node_load($node->sample_ref);
-    $img = $sample->snapshot;
+    $img = moonrock_snapshot_images_get_snapshot_url($nid);
   } else {
-    $img = $node->snapshot;
+    $img = moonrock_snapshot_images_get_sample_url($nid);
   }
 
   $title = check_plain($node->title);

@@ -107,6 +107,12 @@
           callback();
         }
       });
+    },
+    update: function(item) {
+      this.data('item', item)
+      .attr("item-id", item.id)
+      .find('.item-browser-item-title').html(item.title).end()
+      .find('.item-browser-item-img').attr('src', item.img);
     }
   };
 

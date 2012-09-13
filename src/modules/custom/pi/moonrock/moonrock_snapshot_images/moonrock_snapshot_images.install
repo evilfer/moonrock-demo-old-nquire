@@ -1,0 +1,15 @@
+<?php
+
+
+function moonrock_snapshot_images_install() {
+  $p = strrpos($_SERVER['SCRIPT_FILENAME'], '/', -1);
+  $path = substr($_SERVER['SCRIPT_FILENAME'], 0, $p) . '/' . file_directory_path() . '/moonrock_snapshots/';
+  mkdir($path);
+  return;
+}
+
+function moonrock_snapshot_images_uninstall() {
+
+}
+
+

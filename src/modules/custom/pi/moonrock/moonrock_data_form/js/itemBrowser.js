@@ -15,11 +15,11 @@
       });
 
       this.html("")
-              .addClass("item-browser-container")
-              .data('settings', settings)
-              .data('scroll', 0)
-              .data('scrolling', false)
-              .data('scrollingPageX', 0);
+      .addClass("item-browser-container")
+      .data('settings', settings)
+      .data('scroll', 0)
+      .data('scrolling', false)
+      .data('scrollingPageX', 0);
 
       var scrollContainer = $('<div/>').addClass("item-browser-scroll-container").appendTo(this);
       $('<div/>').addClass('item-browser-scroll-bar').appendTo(scrollContainer);
@@ -58,7 +58,14 @@
     clear : function() {
       this.itemBrowser('setItems', []);
     },
+    appendItems: function(items) {
+      this.itemBrowser('_setItems', items, false);
+    },
     setItems : function(items) {
+      this.itemBrowser('_setItems', items, true);
+    },
+    _setItems: function(items, deleteOld) {
+            
       var itemsToKeep = {};
       for (var i in items) {
         itemsToKeep[items[i].id] = true;
@@ -70,11 +77,12 @@
         var id = $(this).attr('item-id');
         if (itemsToKeep[id]) {
           currentIds[id] = true;
-        } else {
+        } else if (deleteOld) {
           itemsToRemove.push(this);
         }
       });
       var count = itemsToRemove.length;
+      
       var self = this;
 
       var afterRemove = function() {
@@ -86,7 +94,7 @@
           } 
         }
         self.itemBrowser('_updatePositionsAnimate');
-        /*        for (var i in added) {
+      /*        for (var i in added) {
           self.find('.item-browser-item[item-id="' + added[i] + '"]').itemBrowserItem('playAppearAnimation');
         }*/
       };
@@ -115,13 +123,14 @@
       });
       return ids;
     },
-    addItem :  function(item) {
+
+    /*addItem :  function(item) {
       if ($(this).find('.item-browser-item[item-id="' + item.id + '"]').length === 0) {
         this.itemBrowser('_addItem', item);
         this.itemBrowser('_updatePositionsAnimate');
       }
       return this;
-    },
+    },*/
     _addItem: function(item) {
       $("<div />").appendTo(this).itemBrowserItem(item, this.data('settings'));
       return this;
@@ -153,6 +162,9 @@
     update: function() {
       this.itemBrowser('_updatePositions');
       return this;
+    },
+    updateItem: function(item) {
+      this.find('.item-browser-item[item-id="' + item.id + '"]').itemBrowserItem('update', item);
     },
     _calculatePositions: function() {
       var positions = [];
