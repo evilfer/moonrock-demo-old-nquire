@@ -1,10 +1,5 @@
 <?php
 
-function moonrock_seesamples_create_sample_table($node) {
-  $main_samples = moonrock_seesamples_get_main_samples($node);
-  $search = moonrock_seesamples_search_enabled($node);
-  return moonrock_sample_utils_create_sample_table($main_samples, TRUE, $search, FALSE, MOONROCK_SEARCH_NONE);
-}
 
 function moonrock_seesamples_get_alternative_sample_title($node, $title) {
   $sample_list = explode("\n", $node->samples);

@@ -157,7 +157,7 @@ function moonrock_seesamples_view($node, $teaser = FALSE, $page = FALSE) {
   );
   
   if (!$teaser) {
-    $node->content['body']['#value'] = $original_body;
+    $node->content['body']['#value'] = '<div id="moonrock-activity-description">' . $original_body. '</div>';
   }
   
   return $node;
@@ -186,7 +186,7 @@ function theme_moonrock_seesamples($node, $teaser) {
   //$output = $node->body;
   if (!$teaser) {
     module_load_include('inc', 'moonrock_seesamples', 'moonrock_seesamples.table');
-    $output .= moonrock_seesamples_create_sample_table($node);
+    $output .= moonrock_data_form_seesamples_activity();
   }
   return $output;
 }

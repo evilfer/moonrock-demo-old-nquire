@@ -144,9 +144,13 @@ var MoonrockDataFormSamples = {
     
     
     this._reopenVM();
+    $('#moonrock-activity-description').hide();
     $('#moonrock-data-form-form').css('padding-top', $('#moonrock-data-form-vm-container').position().top);
-    $('#moonrock-data-form-vm-container').css('height', $('#moonrock-data-form-block').height());
-    
+    if ($('#moonrock-data-form-block').length > 0) {
+      $('#moonrock-data-form-vm-container').css('height', $('#moonrock-data-form-block').height());
+    } else {
+      $('#moonrock-data-form-vm-container').css('height', 680);
+    }
     $('#moonrock-data-form-vm-iframe').attr('src', item.vm);
       
     this._checkNextPrevButtons();
@@ -167,6 +171,12 @@ var MoonrockDataFormSamples = {
     
     MoonrockDataFormData.vmOpened(item);
     MoonrockDataFormSnapshooting.vmOpened(item);
+  },
+  
+  snapshotViewFilterModified: function() {
+    this._closeVM();
+    this.searchManagers.mySnapshots.newSearch();
+    this.searchManagers.otherSnapshots.newSearch();    
   },
   
   _checkNextPrevButtons: function() {
@@ -191,6 +201,8 @@ var MoonrockDataFormSamples = {
   
   _closeVM: function() {
     $('#moonrock-data-form-vm-iframe').attr('src', 'about:blank');
+
+    $('#moonrock-activity-description').show();
 
     $('#moonrock-data-form-vmform').addClass('moonrock-data-form-hidden');
     $('#moonrock-data-form-search').removeClass('moonrock-data-form-hidden');

@@ -10,6 +10,12 @@ Changes:
 -----------------
 13-09-2012
 
+- See samples activity working.
+- moonrock_sample_utils code cleaned.
+
+-----------------
+13-09-2012
+
 - Add data interface working.
 - Creation of snapshot images working.
 - See samples activity NOT working.

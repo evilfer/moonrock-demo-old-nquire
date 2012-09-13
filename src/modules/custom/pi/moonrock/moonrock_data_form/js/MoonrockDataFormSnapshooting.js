@@ -34,6 +34,12 @@ var MoonrockDataFormSnapshooting = {
       autoOpen: false,
       modal: true
     });
+    
+    $('#moonrock-sample-search-snapshots-view-clear').click(function() {
+      MoonrockDataFormSnapshooting._clearSnapshotViewFilter();
+    });
+    $('#moonrock-sample-search-snapshots-view-view').hide();
+    $('#moonrock-sample-search-snapshots-view-noview').show();
   },
   
   _openNewSnapshot: function() {
@@ -46,7 +52,29 @@ var MoonrockDataFormSnapshooting = {
     
   },
   _searchView: function() {
+    $('input[name="useanysampleref"], input[name="usemainsample"], select[name="usesamplerefs"]').attr('disabled', 'disabled');
+    $('#moonrock-sample-search-snapshots-view-noview').hide();
+    $('#moonrock-sample-search-snapshots-view-view').show();
+    MoonrockDataFormImage.getVMImageDataURL(150, function(uri) {
+      $('#moonrock-sample-search-snapshots-view-img').attr('src', uri);
+    });
+    $('#moonrock-sample-search-snapshots-view-sample').html(this.currentItem.sample_title);
+    $('input[name="useviewsample"]').attr('value', this.currentItem.sample);
+    $('input[name="useviewparameters"]').attr('value', 'vmParameters');
     
+    MoonrockDataFormSamples.snapshotViewFilterModified();
+  },
+  
+  _clearSnapshotViewFilter: function() {
+    $('input[name="useanysampleref"], input[name="usemainsample"], select[name="usesamplerefs"]').removeAttr('disabled');
+
+    $('#moonrock-sample-search-snapshots-view-view').hide();
+    $('#moonrock-sample-search-snapshots-view-noview').show();
+
+    $('input[name="useviewsample"]').attr('value', '');
+    $('input[name="useviewparameters"]').attr('value', '');
+    
+    MoonrockDataFormSamples.snapshotViewFilterModified();
   },
   
   vmOpened: function(item) {
@@ -57,7 +85,7 @@ var MoonrockDataFormSnapshooting = {
     this.enableButton('new', this.currentItem != null);
     this.enableButton('edit', this.currentItem && this.currentItem.own_snapshot);
     this.enableButton('center', false);
-    this.enableButton('search', false);
+    this.enableButton('search', true);
   },
   enableButton: function(button, enabled) {
     if (enabled) {

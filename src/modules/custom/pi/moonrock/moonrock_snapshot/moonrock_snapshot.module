@@ -250,10 +250,6 @@ function moonrock_snapshot_nquire_data_form_prefix($measure) {
   return $output;
 }
 
-function moonrock_snapshot_nquire_data_form_after_build($form_element, &$form_state) {
-  moonrock_sample_utils_load_resources(TRUE, TRUE, TRUE, TRUE);
-  return $form_element;
-}
 
 function moonrock_snapshot_nquire_data_get_text_value($nid) {
   $node = node_load($nid);
