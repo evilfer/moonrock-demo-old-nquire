@@ -112,7 +112,8 @@ var MoonrockDataFormSnapshooting = {
       $("#edit-snapshot-id").attr("value", this.currentItem.snapshot);
       $("#edit-title").attr("value", this.currentItem.snapshot_title);
       $("#edit-notes").attr("value", this.currentItem.metadata.notes.value);
-      $('#edit-snapshot-delete').show();
+//      $('#edit-snapshot-delete').show();
+      $('#edit-snapshot-delete').hide();
     } else {
       $('#moonrock-sample-newsnapshot-dlg').find('.ui-dialog-title').html('New snapshot');
       $("#edit-snapshot-id").attr("value", "");

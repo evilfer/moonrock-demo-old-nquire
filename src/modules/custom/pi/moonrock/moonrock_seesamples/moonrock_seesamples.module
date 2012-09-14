@@ -147,19 +147,13 @@ function moonrock_seesamples_link_alter(&$links, $node) {
  * Implementation of hook_view().
  */
 function moonrock_seesamples_view($node, $teaser = FALSE, $page = FALSE) {
-  // Use Drupal's default node view.
-  $original_body = $node->body;
-  $node = node_prepare($node, $teaser);
+  $node->content['body']['#value'] = $teaser ? $node->teaser : ('<div id="moonrock-activity-description">' . $node->body . '</div>');
 
   $node->content['moonrock_seesamples'] = array(
       '#value' => theme('moonrock_seesamples', $node, $teaser),
       '#weight' => 2
   );
-  
-  if (!$teaser) {
-    $node->content['body']['#value'] = '<div id="moonrock-activity-description">' . $original_body. '</div>';
-  }
-  
+
   return $node;
 }
 
@@ -183,9 +177,17 @@ function moonrock_seesamples_theme() {
  * @return string
  */
 function theme_moonrock_seesamples($node, $teaser) {
-  //$output = $node->body;
-  if (!$teaser) {
-    module_load_include('inc', 'moonrock_seesamples', 'moonrock_seesamples.table');
+  module_load_include('inc', 'moonrock_seesamples', 'moonrock_seesamples.table');
+  $output = '';
+
+  if ($teaser) {
+    $samples = moonrock_seesamples_get_main_samples($node);
+    $output .= '<div style="width: 100%; text-align: center:">';
+    foreach($samples as $sample) {
+      $output .= '<img style="padding:10px; width: 200px;" src="' . moonrock_snapshot_images_get_sample_url($sample->nid) . '"></img>';
+    }
+    $output .= '</div>';
+  } else {
     $output .= moonrock_data_form_seesamples_activity();
   }
   return $output;

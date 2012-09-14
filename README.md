@@ -8,6 +8,18 @@ Moonrock demonstators.
 Changes:
 
 -----------------
+14-09-2012
+
+Demo 6 ready.
+
+- Added Login Destination and Front Page modules.
+- Prevented caching of search results and snapshot images.
+- Texts fixed.
+- Fixed See samples activity teaser.
+- Removed phase/activity stars when there is only one stage.
+
+ 
+-----------------
 13-09-2012
 
 - See samples activity working.

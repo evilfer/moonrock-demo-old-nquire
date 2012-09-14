@@ -43,7 +43,7 @@ MoonrockDataFormSearch.prototype.newSearch = function() {
 MoonrockDataFormSearch.prototype._queryLastSearch = function() {
   var self = this;
 
-  self._querySearch(self.lastQuery, function(items) {
+  self._querySearch(self.lastQuery + '&time=' + new Date().getTime(), function(items) {
     $(self.settings.results).itemBrowser("setItems", items);
   });
 };
@@ -85,7 +85,8 @@ MoonrockDataFormSearch.prototype.update = function(item) {
     $(self.settings.results).itemBrowser('updateItem', item);
   } else {
     this._querySearch({
-      nid: item.id
+      nid: item.id,
+      time: new Date().getTime()
     }, function(items) {
       $(self.settings.results).itemBrowser('appendItems', items);
     });
@@ -100,7 +101,8 @@ MoonrockDataFormSearch.prototype.fetch = function(id) {
 
   if (!$(self.settings.results).itemBrowser("hasItem", id)) {
     self._querySearch({
-      nid: id
+      nid: id,
+      time: new Date().getTime()
     }, function(items) {
       $(self.settings.results).itemBrowser("setItems", items);
     });

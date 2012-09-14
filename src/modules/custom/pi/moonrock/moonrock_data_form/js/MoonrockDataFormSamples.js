@@ -55,10 +55,19 @@ var MoonrockDataFormSamples = {
     
     $('#moonrock-data-form-backtosearch').click(function() {
       MoonrockDataFormSamples._closeVM();
+      /*
+      console.log('before -1: ' + window.history.length);
+      window.history.go(-1);
+      console.log('after -1: ' + window.history.length);
+      */
     });
     $('#moonrock-data-form-backtovm').click(function() {
       if ($(this).hasClass('moonrock-data-form-backtovm-enabled')) {
         MoonrockDataFormSamples.reopenVM();
+        /*console.log('before 1: ' + window.history.length);        
+        lowindow.history.go(1);
+        console.log('after 1: ' + window.history.length);
+        */
       }
     });
     
@@ -116,7 +125,9 @@ var MoonrockDataFormSamples = {
   },
   _itemImageClicked: function(item) {
     this._openVM(item);
-    MoonrockDataFormData.itemAdded(item);
+    /*console.log('before assign: ' + window.history.length);
+    window.location.assign('#');
+    console.log('after assign: ' + window.history.length);*/
   },
   _itemRemoved: function() {
     this._checkNextPrevButtons();

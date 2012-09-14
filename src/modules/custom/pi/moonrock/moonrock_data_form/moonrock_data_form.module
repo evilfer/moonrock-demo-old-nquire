@@ -66,11 +66,19 @@ function moonrock_data_form_prepare_activity() {
 
 function _moonrock_data_form_create_search_tab($main_samples, $snapshooting) {
   $output = ' <div id="moonrock-data-form-search" class="moonrock-data-form-search">'
-          . '  <div id="moonrock-data-form-search-items" class="moonrock-data-form-search-items">'
-          . '   <div id="moonrock-data-form-backtovm" class="moonrock-data-form-backtovm"></div>'
-          . _moonrock_data_form_create_mainsamples_table($main_samples)
-          . _moonrock_data_form_create_snapshot_tables()
-          . '  </div>';
+          . '  <div id="moonrock-data-form-search-items" class="moonrock-data-form-search-items">';
+  if ($snapshooting) {
+    $output.= '   <div id="moonrock-data-form-backtovm" class="moonrock-data-form-backtovm"></div>';
+  }
+  
+  $output.= _moonrock_data_form_create_mainsamples_table($main_samples);
+  
+  if ($snapshooting) {
+    $output.= _moonrock_data_form_create_snapshot_tables();
+  }
+  
+  $output.= '  </div>';
+  
   if ($snapshooting) {
     $output .= '  <div id="moonrock-data-form-search-filter-container" class="moonrock-data-form-search-filter moonrock-data-form-false-block">'
             . '   <div id="moonrock-data-form-search-filter" class="block-inner">'
@@ -138,8 +146,8 @@ function _moonrock_data_form_create_vm_tab($wrappedForm, $snapshooting) {
 function _moonrock_data_form_create_page($form_prefix, $snapshooting) {
   moonrock_data_form_load_resources();
 
-  $details = get_inquiry_details_from_current_path();
-  $activity = load_activity($details->activity_id);
+  //$details = get_inquiry_details_from_current_path();
+  //$activity = load_activity($details->activity_id);
 
   $sample_view = moonrock_sample_utils_find_unique_seesamples_activity();
   if ($sample_view) {

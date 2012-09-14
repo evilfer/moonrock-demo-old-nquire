@@ -18,7 +18,7 @@
       }
 
       var imgcontainer = $("<div/>").addClass("item-browser-item-img-container").appendTo(this);
-      $("<img/>").attr("src", item.img).addClass("item-browser-item-img").appendTo(imgcontainer);
+      $("<img/>").attr("src", item.img + '?' + new Date().getTime()).addClass("item-browser-item-img").appendTo(imgcontainer);
       $("<div/>").addClass("item-browser-item-img-open").appendTo(imgcontainer);
       
       var title = $("<div/>").addClass("item-browser-item-title");
@@ -112,7 +112,7 @@
       this.data('item', item)
       .attr("item-id", item.id)
       .find('.item-browser-item-title').html(item.title).end()
-      .find('.item-browser-item-img').attr('src', item.img);
+      .find('.item-browser-item-img').attr('src', item.img + '?' + new Date().getTime());
     }
   };
 
