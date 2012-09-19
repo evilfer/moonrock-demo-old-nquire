@@ -11,14 +11,11 @@ If A's hook_nquire_get_data_form is used, then B's own hook won't be called.
 
 
 
-- hook_nquire_data_form_prefix($delegators array)
+- hook_nquire_data_form_prefix()
 
 Called to create the form to select an existing item of this type in an add data
 activity. The form will be of type 'hidden', and rendered by Drupal. However,
 the module is allowed the chance to create the prefix to manage user input.
-
-The parameter will indicate the list of content types, also to be added
-as data, for which forms should be created.
 
 
 - hook_nquire_data_form_after_build()
@@ -30,3 +27,4 @@ as data, for which forms should be created.
 - hook_nquire_data_get_text_value($nid)
 
 - hook_nquire_data_get_html_value($nid)
+

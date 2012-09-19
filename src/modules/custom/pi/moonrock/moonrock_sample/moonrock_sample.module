@@ -247,7 +247,3 @@ function moonrock_sample_nquire_measure_choose_explanation() {
   return t("Choose one rock sample from the list");
 }
 
-/*function moonrock_sample_nquire_data_form_after_build($form_element, &$form_state) {
-  moonrock_sample_utils_load_resources(TRUE, TRUE, TRUE, TRUE);
-  return $form_element;
-}*/

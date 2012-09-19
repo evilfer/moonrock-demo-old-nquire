@@ -9,7 +9,8 @@
         metadataCallback: null,
         itemWidth: 200,
         itemMargin: 20,
-        taperingPortion: .2
+        taperingPortion: .2,
+        useVM: false
       }, options, {
         id: this.attr('id')
       });
@@ -153,14 +154,22 @@
     position: function(itemId) {
       return this.find('.item-browser-item').index($('.item-browser-item[item-id="' + itemId + '"]'));
     },
+    getItem: function(itemId) {
+      return this.find('.item-browser-item[item-id="' + itemId + '"]').itemBrowserItem('getItem');
+    },
     itemAt: function(index) {
       return $(this.find('.item-browser-item')[index]).itemBrowserItem('getItem');
     },
     countItems: function() {
       return this.find('.item-browser-item').length;
     },
+    itemWidget:function(itemId) {
+      return this.find('.item-browser-item[item-id="' + itemId + '"]');
+    },
     update: function() {
-      this.itemBrowser('_updatePositions');
+      if (this.length > 0) {
+        this.itemBrowser('_updatePositionsAnimate');
+      }
       return this;
     },
     updateItem: function(item) {
@@ -226,7 +235,7 @@
           });
         });
       } else {
-        var x0 = .5 * (width - neededWidth);
+        var x0 = 0; //.5 * (width - neededWidth);
         
         items.each(function() {
           positions.push({
@@ -295,6 +304,7 @@
       return methods.init.apply(this, arguments);
     } else {
       console.log('Method ' + method + ' does not exist on jQuery.itemBrowser');
+      return FALSE;
     }
   };
 })(jQuery);

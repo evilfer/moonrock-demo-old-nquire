@@ -141,7 +141,7 @@ function pi_data_form(&$node) {
       }
     }
 
-    $wrapper = moonrock_data_form_wrap_form($form_prefix);
+    $wrapper = moonrock_data_form_wrap_form($form_prefix, !$node->nid);
 
     $form['#prefix'] = $wrapper['prefix'];
     $form['#suffix'] = $wrapper['suffix'];
@@ -229,6 +229,14 @@ function pi_data_form(&$node) {
             };
 
             if ($custom_form) {
+              $input_function = "{$measure_info->content_options}_nquire_data_form_elements";
+              if (function_exists($input_function)) {
+                $elements = $input_function($node->measures[$key]['#value']);
+                foreach ($elements as $subkey => $value) {
+                  $tree[$subkey]['value'] = $value;
+                }
+              }
+
               $tree[$key]['value'] = array(
                   '#type' => 'hidden',
                   '#title' => $measure_text,
@@ -237,6 +245,8 @@ function pi_data_form(&$node) {
                   '#weight' => $measure_selection['#weight'],
                   '#attributes' => array("measure_content_type" => $measure_info->content_options),
               );
+
+
               $after_build_function = "{$measure_info->content_options}_nquire_data_form_after_build";
               if (function_exists($after_build_function)) {
                 $tree[$key]['value']['#after_build'][] = $after_build_function;
@@ -320,6 +330,13 @@ function pi_data_form(&$node) {
       };
     };
   }
+
+  /* $form['submit_data'] = array(
+    '#type' => 'button',
+    '#value' => t('Save'),
+    '#weight' => 5,
+    '#attributes' => array('onClick' => 'MoonrockDataFormData.submit();return false;'),
+    ); */
 
   return $form;
 }
@@ -569,7 +586,7 @@ function pi_data_return_results($node) {
  * FIX (eloy)
  * to show data table instead of activity list.
  */
-function pi_data_table_row_values($node) {
+function pi_data_table_row_values($node, $node_details, $data_item_activity_id) {
   global $user;
   $values = array();
 
@@ -593,7 +610,11 @@ function pi_data_table_row_values($node) {
           } else {
             $measure_value = NULL;
           }
-          $values[] = pi_chart_get_html_value($measure_value, $measure_type);
+          $formatted_value = pi_chart_get_html_value($measure_value, $measure_type);
+          if ($measure['#status'] === 'key') {
+            $formatted_value = build_activity_link_alternative_text($node_details->inquiry_id, $node_details->stage_id, $node_details->phase_id, $data_item_activity_id, $user->uid, $formatted_value, 'heading', 'edit');
+          }
+          $values[] = $formatted_value;
         }
       }
     }

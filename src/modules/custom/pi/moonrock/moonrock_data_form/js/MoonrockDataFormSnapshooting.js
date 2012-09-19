@@ -55,8 +55,8 @@ var MoonrockDataFormSnapshooting = {
     $('input[name="useanysampleref"], input[name="usemainsample"], select[name="usesamplerefs"]').attr('disabled', 'disabled');
     $('#moonrock-sample-search-snapshots-view-noview').hide();
     $('#moonrock-sample-search-snapshots-view-view').show();
-    MoonrockDataFormImage.getVMImageDataURL(150, function(uri) {
-      $('#moonrock-sample-search-snapshots-view-img').attr('src', uri);
+    MoonrockDataFormImage.getVMData(150, function(data) {
+      $('#moonrock-sample-search-snapshots-view-img').attr('src', data.image);
     });
     $('#moonrock-sample-search-snapshots-view-sample').html(this.currentItem.sample_title);
     $('input[name="useviewsample"]').attr('value', this.currentItem.sample);

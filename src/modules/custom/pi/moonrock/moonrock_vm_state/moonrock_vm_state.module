@@ -1,0 +1,60 @@
+<?php
+
+function moonrock_vm_state_menu() {
+  $items = array();
+
+  $items['moonrock_vm_state/get'] = array(
+      'page callback' => 'moonrock_vm_state_get',
+      'access callback' => 'moonrock_vm_state_access',
+      'type' => MENU_CALLBACK,
+  );
+
+  $items['moonrock_vm_state/set'] = array(
+      'page callback' => 'moonrock_vm_state_set',
+      'access callback' => 'moonrock_vm_state_access',
+      'type' => MENU_CALLBACK,
+  );
+  return $items;
+}
+
+function moonrock_vm_state_access() {
+  return TRUE;
+}
+
+function moonrock_vm_state_set() {
+  global $user;
+  $sample_nid = $_REQUEST['sample_nid'];
+  $image = $_REQUEST['image'];
+  $vm_parameters = $_REQUEST['vm_parameters'];
+
+  $update_query = "UPDATE {moonrock_vm_state} SET vm_parameters='%s', image='%s' WHERE uid='%d' AND sample_nid='%d'";
+
+  $result = db_query($update_query, $vm_parameters, $image, $user->uid, $sample_nid);
+  if (db_affected_rows() == 0) {
+    $insert_query = "INSERT INTO {moonrock_vm_state} (uid, sample_nid, vm_parameters, image) values ('%d', '%d', '%s', '%s')";
+    $result = db_query($insert_query, $user->uid, $sample_nid, $vm_parameters, $image);
+  }
+}
+
+function moonrock_vm_state_get() {
+  global $user;
+  $query = "SELECT sample_nid, vm_parameters, image FROM {moonrock_vm_state} WHERE uid='%d'";
+  $result = db_query($query, $user->uid);
+  $data = array();
+  while ($obj = db_fetch_object($result)) {
+    $data[$obj->sample_nid] = array(
+        'vm_parameters' => $obj->vm_parameters,
+        'image' => $obj->image,
+    );
+  }
+
+  $ouptut = array(
+      "status" => TRUE,
+      "data" => $data,
+  );
+  drupal_json($ouptut);
+}
+
+function moonrock_vm_state_load_resources() {
+   drupal_add_js(drupal_get_path('module', 'moonrock_vm_state') . '/js/MoonrockVmState.js');
+}

@@ -1,12 +1,9 @@
 <?php
 
-
-
 function _moonrock_sample_utils_sample_dialog_button($buttonClassSufix, $label) {
   return "<div class='moonrock-sample-dlg-menu-item moonrock-sample-dlg-menu-$buttonClassSufix'>"
           . "<div class='moonrock-sample-dlg-menu-item-buttom'></div><div class='moonrock-sample-dlg-menu-item-label'>$label</div></div>";
 }
-
 
 function moonrock_sample_utils_find_unique_seesamples_activity() {
   global $user;
@@ -19,7 +16,6 @@ function moonrock_sample_utils_find_unique_seesamples_activity() {
     return FALSE;
   }
 }
-
 
 function moonrock_sample_utils_add_info_tooltip($title, $content) {
   $output = "<span class='qtip-link'>"
@@ -45,17 +41,16 @@ function moonrock_sample_utils_prepare_object($nid) {
 
   $output = array(
       "id" => $snapshot ? $snapshot->nid : $sample->nid,
-      "title" => $snapshot ? $snapshot->title : $sample->title,
-      "sample" => $sample->nid,
-      "sample_title" => $sample->title,
-      "sample_img" => moonrock_snapshot_images_get_sample_url($sample->nid),
-      "snapshot" => $snapshot ? $snapshot->nid : 0,
-      "snapshot_title" => $snapshot ? $snapshot->title : 0,
-      "snapshot_img" => $snapshot ? moonrock_snapshot_images_get_snapshot_url($snapshot->nid) : 0,
-      "own_snapshot" => $snapshot->uid === $user->uid,
-      "img" => $snapshot ? moonrock_snapshot_images_get_snapshot_url($snapshot->nid) : moonrock_snapshot_images_get_sample_url($sample->nid),
+      "title" => $sample->title,
+      "sample" => array(
+          "nid" => $sample->nid,
+          "image" => moonrock_snapshot_images_get_sample_url($sample->nid),
+      ),
+      "snapshot" => $snapshot ? array(
+          "image" => moonrock_snapshot_images_get_snapshot_url($snapshot->nid),
+          "vm_parameters" => $snapshot->vm_parameters,
+              ) : FALSE,
       "vm" => $sample->vm,
-      "type" => $object->type,
       "metadata" => array(),
   );
 

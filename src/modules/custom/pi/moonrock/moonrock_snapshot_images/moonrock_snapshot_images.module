@@ -26,7 +26,7 @@ function moonrock_snapshot_images_newsnapshot_transfer($type, $nid) {
 }
 
 function moonrock_snapshot_images_savesnapshot($uri, $nid) {
-  $data = substr($uri, strpos($uri, ",")+1);
+  $data = substr($uri, strpos($uri, ",") + 1);
   file_put_contents(_moonrock_snapshot_images_filename('snapshot', $nid), base64_decode($data));
 }
 
@@ -39,8 +39,12 @@ function moonrock_snapshot_images_get_sample_url($nid) {
 }
 
 function _moonrock_snapshot_images_path($type, $nid) {
-  return "moonrock_snapshots/{$type}_{$nid}.png";
-//  return "?q=moonrock_snapshot_images/{$type}/{$nid}";
+  if ($type === 'sample') {
+    $node = node_load($nid);
+    return "moonrock_snapshots/{$node->snapshot}";
+  } else if ($type === 'snapshot') {
+    return "moonrock_snapshots/snapshot_{$nid}.png";
+  }
 }
 
 function _moonrock_snapshot_images_filename($type, $nid) {

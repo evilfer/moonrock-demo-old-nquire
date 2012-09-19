@@ -2,24 +2,24 @@
 
 var MoonrockDataFormImage = {
   
-  getVMImageDataURL: function(width, callback) {
-      
+  getVMData: function(width, callback) {
     var image = new Image();
-
     image.onload = function() {
       var ratio = parseFloat(this.height) / this.width;
       var height = ratio * width;
       
-      $('#moonrock-data-form-vm-resizecanvas').append('<canvas/>');
-      var canvas = $('#moonrock-data-form-vm-resizecanvas').find('canvas')[0];
-      canvas.width = width;
-      canvas.height = height;
+      var resizeCanvas = $('#moonrock-data-form-vm-resize-canvas')[0];
+      resizeCanvas.width = width;
+      resizeCanvas.height = height;
 
-      canvas.getContext("2d").drawImage(this, 0, 0, width, height);
-      var resizedData = canvas.toDataURL();
-      $(canvas).remove();
-      callback(resizedData);
-    }
+      resizeCanvas.getContext("2d").drawImage(this, 0, 0, width, height);
+      var resizedData = resizeCanvas.toDataURL();
+      
+      callback({
+        vm_parameters: 'param',
+        image: resizedData
+      });
+    };
 
     var vmcanvas = $(frames[0].document).find('#mic1canvas')[0];
     var data = vmcanvas.toDataURL();

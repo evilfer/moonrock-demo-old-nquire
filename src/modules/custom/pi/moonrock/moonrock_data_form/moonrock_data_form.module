@@ -16,11 +16,12 @@ function moonrock_data_form_load_resources() {
   drupal_add_css(drupal_get_path('module', 'moonrock_data_form') . '/css/moonrock_data_form_snapshot_menu.css');
 
   jquery_ui_add("ui.dialog");
-//  jquery_ui_add("ui.resizable");
-//  jquery_ui_add("ui.draggable");
+  jquery_ui_add("ui.resizable");
+  jquery_ui_add("ui.draggable");
   drupal_add_css(drupal_get_path('module', 'jquery_ui') . '/jquery.ui/themes/base/jquery-ui.css');
   drupal_add_css(drupal_get_path('module', 'jquery_ui') . '/jquery.ui/themes/base/ui.dialog.css');
-//  drupal_add_js(drupal_get_path('module', 'moonrock_sample_utils') . '/lib/extend-dialog/jquery.dialogextend.js');
+
+  moonrock_vm_state_load_resources();
 }
 
 function _moonrock_data_form_create_mainsamples_table($main_samples) {
@@ -64,21 +65,21 @@ function moonrock_data_form_prepare_activity() {
   }
 }
 
-function _moonrock_data_form_create_search_tab($main_samples, $snapshooting) {
-  $output = ' <div id="moonrock-data-form-search" class="moonrock-data-form-search">'
+function _moonrock_data_form_create_search_tab($main_samples, $snapshooting, $vm) {
+  $output = ' <div id="moonrock-data-form-search" class="moonrock-data-form-search moonrock-data-form-hidden" vm="' . $vm . '">'
           . '  <div id="moonrock-data-form-search-items" class="moonrock-data-form-search-items">';
   if ($snapshooting) {
     $output.= '   <div id="moonrock-data-form-backtovm" class="moonrock-data-form-backtovm"></div>';
   }
-  
+
   $output.= _moonrock_data_form_create_mainsamples_table($main_samples);
-  
+
   if ($snapshooting) {
     $output.= _moonrock_data_form_create_snapshot_tables();
   }
-  
+
   $output.= '  </div>';
-  
+
   if ($snapshooting) {
     $output .= '  <div id="moonrock-data-form-search-filter-container" class="moonrock-data-form-search-filter moonrock-data-form-false-block">'
             . '   <div id="moonrock-data-form-search-filter" class="block-inner">'
@@ -93,33 +94,36 @@ function _moonrock_data_form_create_search_tab($main_samples, $snapshooting) {
   return $output;
 }
 
-function _moonrock_data_form_create_vm_tab($wrappedForm, $snapshooting) {
+function _moonrock_data_form_create_vm_tab($wrappedForm, $snapshooting, $selectionEnabled) {
   $prefix = ' <div id="moonrock-data-form-vmform" class="moonrock-data-form-vmform moonrock-data-form-hidden">'
-          . '  <div id="moonrock-data-form-vm" class="moonrock-data-form-vm">'
-          . '   <div id="moonrock-data-form-backtosearch" class="moonrock-data-form-backtosearch"></div>'
-          . '   <div id="moonrock-data-form-sample" class="moonrock-data-form-item">'
-          . '    <div id="moonrock-data-form-sample-previous" class="moonrock-data-form-item-button moonrock-data-form-item-previous"></div>'
-          . '    <div id="moonrock-data-form-sample-title" class="moonrock-data-form-item-title"></div>'
-          . '    <div id="moonrock-data-form-sample-next" class="moonrock-data-form-item-button moonrock-data-form-item-next"></div>'
-          . '   </div>';
-  if ($snapshooting) {
+          . '  <div id="moonrock-data-form-vm" class="moonrock-data-form-vm">';
+  if ($selectionEnabled) {
+    $prefix .= '   <div id="moonrock-data-form-backtosearch" class="moonrock-data-form-backtosearch"></div>'
+            . '   <div id="moonrock-data-form-sample" class="moonrock-data-form-item">'
+            . '    <div id="moonrock-data-form-sample-previous" class="moonrock-data-form-item-button moonrock-data-form-item-previous"></div>'
+            . '    <div class="moonrock-data-form-item-title">' . t('Browsing ') . '</div>'
+            . '    <div id="moonrock-data-form-sample-title" class="moonrock-data-form-item-title"></div>'
+            . '    <div id="moonrock-data-form-sample-next" class="moonrock-data-form-item-button moonrock-data-form-item-next"></div>'
+            . '   </div>';
+  }
+  if ($snapshooting && $selectionEnabled) {
 
-    $prefix .= '   <div id="moonrock-data-form-snapshot" class="moonrock-data-form-item">'
-            . '    <div id="moonrock-data-form-snapshot-previous" class="moonrock-data-form-item-button moonrock-data-form-item-previous"></div>'
-            . '    <div id="moonrock-data-form-snapshot-title" class="moonrock-data-form-item-title"></div>'
-            . '    <div id="moonrock-data-form-snapshot-next" class="moonrock-data-form-item-button moonrock-data-form-item-next"></div>'
-            . '   </div>'
-            . '   <div class="moonrock-snapshot-menu">'
-            . _moonrock_data_form_snapshot_menu_button('new', t('New snapshot'))
-            . _moonrock_data_form_snapshot_menu_button('edit', t('Update this snapshot'))
-            . _moonrock_data_form_snapshot_menu_button('center', t('Center view'))
+    $prefix .= /* '   <div id="moonrock-data-form-snapshot" class="moonrock-data-form-item">'
+              . '     <div id="moonrock-data-form-snapshot-previous" class="moonrock-data-form-item-button moonrock-data-form-item-previous"></div>'
+              . '     <div id="moonrock-data-form-snapshot-title" class="moonrock-data-form-item-title"></div>'
+              . '     <div id="moonrock-data-form-snapshot-next" class="moonrock-data-form-item-button moonrock-data-form-item-next"></div>'
+              . '    </div>'
+              . */ '   <div class="moonrock-snapshot-menu">'
+//            . _moonrock_data_form_snapshot_menu_button('new', t('New snapshot'))
+            //          . _moonrock_data_form_snapshot_menu_button('edit', t('Update this snapshot'))
+            //        . _moonrock_data_form_snapshot_menu_button('center', t('Center view'))
             . _moonrock_data_form_snapshot_menu_button('search', t('Search snapshots of this view'))
             . '    </div>';
   }
   $prefix .= '    <div id="moonrock-data-form-vm-container" class="moonrock-data-form-vm-container">'
           . '     <iframe id="moonrock-data-form-vm-iframe"></iframe>'
           . '    </div>'
-          . '    <div id="moonrock-data-form-vm-resizecanvas"></div>'
+          . '    <div id="moonrock-data-form-vm-resize"><canvas id="moonrock-data-form-vm-resize-canvas"></canvas></div>'
           . '  </div>';
   if ($wrappedForm) {
     $prefix.= '  <div id="moonrock-data-form-form" class="moonrock-data-form-form moonrock-data-form-false-block">'
@@ -143,7 +147,7 @@ function _moonrock_data_form_create_vm_tab($wrappedForm, $snapshooting) {
   }
 }
 
-function _moonrock_data_form_create_page($form_prefix, $snapshooting) {
+function _moonrock_data_form_create_page($form_prefix, $snapshooting, $vm, $selectionEnabled) {
   moonrock_data_form_load_resources();
 
   //$details = get_inquiry_details_from_current_path();
@@ -158,17 +162,20 @@ function _moonrock_data_form_create_page($form_prefix, $snapshooting) {
     //$search = TRUE;
   }
 
+  $prefix = '<div id="moonrock-data-form-page" class="moonrock-data-form-page">'
+          . _moonrock_data_form_create_search_tab($main_samples, $snapshooting, $vm);
 
-  $prefix = '';
-
-
-  $prefix .= '<div id="moonrock-data-form-page" class="moonrock-data-form-page">'
-          . _moonrock_data_form_create_search_tab($main_samples, $snapshooting);
-  $innerwrap = _moonrock_data_form_create_vm_tab($form_prefix, $snapshooting);
-  $suffix = '</div>';
-  if ($snapshooting) {
-    $suffix .= '<div id="moonrock-sample-newsnapshot-dlg">' . drupal_get_form('moonrock_snapshot_form') . '</div>';
+  if ($form_prefix || $vm) {
+    $innerwrap = _moonrock_data_form_create_vm_tab($form_prefix, $snapshooting, $selectionEnabled);
+  } else {
+    $innerwrap = '';
   }
+
+  $suffix = '</div>';
+
+  /* if ($snapshooting) {
+    $suffix .= '<div id="moonrock-sample-newsnapshot-dlg">' . drupal_get_form('moonrock_snapshot_form') . '</div>';
+    } */
 
   if ($form_prefix) {
     return array('prefix' => $prefix . $innerwrap['prefix'], 'suffix' => $innerwrap['suffix'] . $suffix);
@@ -177,12 +184,21 @@ function _moonrock_data_form_create_page($form_prefix, $snapshooting) {
   }
 }
 
-function moonrock_data_form_wrap_form($form_prefix) {
-  return _moonrock_data_form_create_page($form_prefix, TRUE);
+function moonrock_data_form_form_pi_data_node_form_alter(&$form, &$form_state) {
+  $form['buttons']['submit']['#attributes'] = array('onClick' => 'MoonrockDataFormData.submitData();return false;');
+  return;
+}
+
+function moonrock_data_form_wrap_form($form_prefix, $selectionEnabled) {
+  return _moonrock_data_form_create_page($form_prefix, TRUE, TRUE, $selectionEnabled);
 }
 
 function moonrock_data_form_seesamples_activity() {
-  return _moonrock_data_form_create_page(FALSE, FALSE);
+  return _moonrock_data_form_create_page(FALSE, FALSE, TRUE, TRUE);
+}
+
+function moonrock_data_form_add_question_info() {
+  return _moonrock_data_form_create_page(FALSE, FALSE, FALSE, FALSE);
 }
 
 function _moonrock_data_form_snapshot_search($main_samples, $sample_search = FALSE) {
@@ -273,3 +289,46 @@ function _moonrock_data_form_snapshot_search($main_samples, $sample_search = FAL
   return $search;
 }
 
+function moonrock_data_form_nodeapi(&$node, $op, $a3, $a4) {
+  if ($op === 'presave' && $node->form_id === 'pi_data_node_form') {
+    global $user;
+    $node_details = get_inquiry_details_from_current_path();
+    $measures_param = find_selected_measures_nid_for_uid_and_inquiry($user->uid, $node_details->inquiry_id);
+    if ($measures_param) {
+      $measures_node = node_load($measures_param);
+      $measure_rows = $measures_node->measures_list;
+
+
+      $sample_key = '';
+      $snapshot_key = '';
+
+      foreach ($measure_rows as $measure_info_nid => $measure_selection) {
+        if ($measure_selection['#status'] == 'key' || $measure_selection['#status'] == 'selected') {
+          $measure_info = node_load($measure_info_nid);
+          if ($measure_info->content_options === 'moonrock_sample') {
+            $sample_key = "$measures_param-$measure_info_nid";
+          } else if ($measure_info->content_options === 'moonrock_snapshot') {
+            $snapshot_key = "$measures_param-$measure_info_nid";
+          }
+        }
+      }
+
+      $sample_nid = $node->onepageprofile_categories[$sample_key]['value'];
+      $snapshot_nid = $node->onepageprofile_categories[$snapshot_key]['value'];
+
+      $snapshot = node_load($snapshot_nid);
+      if (!$snapshot) {
+        $snapshot = new stdClass();
+        $snapshot->uid = $user->uid;
+        $snapshot->type = 'moonrock_snapshot';
+      }
+      $snapshot->notes = $node->onepageprofile_categories['moonrock_snapshot_notes']['value'];
+      $snapshot->vm_parameters = $node->onepageprofile_categories['moonrock_snapshot_notes']['value'];
+      $snapshot->sample_ref = $sample_nid;
+      node_save($snapshot);
+      $node->onepageprofile_categories[$snapshot_key]['value'] = $snapshot->nid;
+      moonrock_snapshot_images_savesnapshot($node->onepageprofile_categories['moonrock_snapshot_image']['value'], $snapshot->nid);
+      return;
+    }
+  }
+}

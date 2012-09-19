@@ -8,6 +8,22 @@ Moonrock demonstators.
 Changes:
 
 -----------------
+19-09-2012
+
+- Moved snapshot search form down, by "My snapshots".
+- Plus icon removed.
+- Samples/snapshots left justified.
+- Samples keep state.
+- Toggle sample image vs. last snapshot.
+- Added last snapshots to add key question.
+- Snapshots have no title (use only sample title).
+- Snapshot creation/update linked to data creatin/update (automatic management of snapshots).
+- Data table modified: edit link is on key measure text.
+- 200px wide thumbs in data table.
+- Improved texts.
+- Changed "back to VM" and "back to search" icons.
+
+-----------------
 14-09-2012
 
 Demo 6 ready.

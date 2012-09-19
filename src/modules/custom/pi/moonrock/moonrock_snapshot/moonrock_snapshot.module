@@ -77,14 +77,14 @@ function moonrock_snapshot_form(&$node) {
       '#default_value' => $node->samples_ref,
       '#weight' => 2
   );
-  
+
   $form['image_data'] = array(
       '#type' => 'hidden',
       '#title' => t('Image'),
       '#required' => TRUE,
       '#weight' => 2
   );
-  
+
   $form['snapshot_id'] = array(
       '#type' => 'hidden',
       '#required' => FALSE,
@@ -203,6 +203,10 @@ function moonrock_snapshot_view($node, $teaser = FALSE, $page = FALSE) {
   return $node;
 }
 
+function moonrock_snapshot_create() {
+  
+}
+
 /**
  * MISSING
  *
@@ -242,14 +246,8 @@ function moonrock_snapshot_nquire_measure_choose_explanation() {
 }
 
 function moonrock_snapshot_nquire_data_form_prefix($measure) {
-  $measure_text = check_plain($measure->title) . moonrock_sample_utils_add_info_tooltip($measure->title, $measure->body);
-  $output = "<div class='moonrock-measure'>"
-          . "<div class='moonrock-measure-title'>$measure_text</div>"
-          . "<div class='moonrock-measure-fixedvalue' id='moonrock-measure-fixedvalue-snapshot'></div>"
-          . "</div>";
-  return $output;
+  return '';
 }
-
 
 function moonrock_snapshot_nquire_data_get_text_value($nid) {
   $node = node_load($nid);
@@ -262,5 +260,43 @@ function moonrock_snapshot_nquire_data_get_text_value($nid) {
 }
 
 function moonrock_snapshot_nquire_data_get_html_value($nid) {
-  return moonrock_sample_utils_format_html_data($nid);
+  $node = node_load($nid);
+  if ($node->type === 'moonrock_snapshot') {
+    $img = moonrock_snapshot_images_get_snapshot_url($nid);
+    return "<img style='width: 200px' src='$img'></img>";
+  } else {
+    return $nid;
+  }
+}
+
+function moonrock_snapshot_nquire_data_form_elements($value) {
+
+  $snapshot = node_load($value);
+  if ($snapshot) {
+    $default_params = $snapshot->vm_parameters;
+  } else {
+    $default_params = '';
+  }
+
+  return array(
+      'moonrock_snapshot_image' => array(
+          '#type' => 'hidden',
+          '#title' => t('Snapshot image'),
+          '#required' => FALSE,
+          '#attributes' => array("measure_content_type" => 'moonrock_snapshot_image'),
+      ),
+      'moonrock_snapshot_parameters' => array(
+          '#type' => 'hidden',
+          '#title' => t('Snapshot parameters'),
+          '#required' => FALSE,
+          '#attributes' => array("measure_content_type" => 'moonrock_snapshot_parameters'),
+          '#default_value' => $default_params,
+      ),
+      'moonrock_snapshot_notes' => array(
+          '#type' => 'hidden',
+          '#title' => t('Snapshot notes'),
+          '#required' => FALSE,
+          '#attributes' => array("measure_content_type" => 'moonrock_snapshot_notes'),
+      ),
+  );
 }

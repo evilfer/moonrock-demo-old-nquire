@@ -1,0 +1,71 @@
+<?php
+
+// $Id: moonrock_vm_state.install,v 1.2 2009/06/11 09:55:10 ou_mbg Exp $
+
+/**
+ * @file
+ * Install....
+ */
+
+/**
+ * Implementation of moonrock_vm_state_install().
+ *
+ * @return unknown_type
+ */
+function moonrock_vm_state_install() {
+  drupal_install_schema('moonrock_vm_state');
+}
+
+/**
+ * Implementation of moonrock_sample_uninstall().
+ */
+function moonrock_vm_state_uninstall() {
+  // Remove tables.
+  drupal_uninstall_schema('moonrock_vm_state');
+}
+
+/**
+ * Implementation of moonrock_sample_schema().
+ */
+function moonrock_vm_state_schema() {
+
+  $schema['moonrock_vm_state'] = array(
+      'description' => t('Moonrock VM state'),
+      'fields' => array(
+          'uid' => array(
+              'description' => t('User uid'),
+              'type' => 'int',
+              'unsigned' => TRUE,
+              'not null' => TRUE,
+              'size' => 'normal',
+              'default' => 0,
+          ),
+          'sample_nid' => array(
+              'description' => t('Sample nid'),
+              'type' => 'int',
+              'unsigned' => TRUE,
+              'not null' => TRUE,
+              'size' => 'normal',
+              'default' => 0,
+          ),
+          'vm_parameters' => array(
+              'description' => t('VM state'),
+              'type' => 'text',
+              'size' => 'normal',
+              'not null' => TRUE,
+          ),
+          'image' => array(
+              'description' => t('Image URL'),
+              'type' => 'text',
+              'size' => 'medium',
+              'not null' => TRUE,
+          ),
+      ),
+      'primary key' => array('uid', 'sample_nid'),
+      'indexes' => array(
+          'uid' => array('uid'),
+      ),
+  );
+
+  return $schema;
+}

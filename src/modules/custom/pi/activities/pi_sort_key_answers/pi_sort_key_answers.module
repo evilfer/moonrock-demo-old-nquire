@@ -358,7 +358,7 @@ function theme_pi_sort_key_answers($node, $teaser, $key_questions_to_show, $key_
 	else {
 		if($teaser)
 		{
-			$output .= '<p>' . t('These are my key answers.  Click the activity to sort them or add a new one.') . '</p>';
+			$output .= '<p>' . t('These are my key answers. Click on <b>Add key answer</b> add a new one.') . '</p>';
 		}
 		
 	}
