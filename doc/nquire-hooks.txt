@@ -28,3 +28,4 @@ the module is allowed the chance to create the prefix to manage user input.
 
 - hook_nquire_data_get_html_value($nid)
 
+- hook_nquire_data_suitable_for_graph_variable()

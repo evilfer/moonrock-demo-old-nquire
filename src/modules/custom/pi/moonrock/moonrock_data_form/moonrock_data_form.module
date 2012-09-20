@@ -14,6 +14,7 @@ function moonrock_data_form_load_resources() {
   drupal_add_css(drupal_get_path('module', 'moonrock_data_form') . '/css/itemBrowser.css');
   drupal_add_css(drupal_get_path('module', 'moonrock_data_form') . '/css/moonrock_data_form_tabs.css');
   drupal_add_css(drupal_get_path('module', 'moonrock_data_form') . '/css/moonrock_data_form_snapshot_menu.css');
+  drupal_add_css(drupal_get_path('module', 'moonrock_data_form') . '/css/moonrock_data_form_metadata.css');
 
   jquery_ui_add("ui.dialog");
   jquery_ui_add("ui.resizable");
@@ -69,7 +70,7 @@ function _moonrock_data_form_create_search_tab($main_samples, $snapshooting, $vm
   $output = ' <div id="moonrock-data-form-search" class="moonrock-data-form-search moonrock-data-form-hidden" vm="' . $vm . '">'
           . '  <div id="moonrock-data-form-search-items" class="moonrock-data-form-search-items">';
   if ($snapshooting) {
-    $output.= '   <div id="moonrock-data-form-backtovm" class="moonrock-data-form-backtovm"></div>';
+    $output.= '   <div id="moonrock-data-form-backtovm" class="moonrock-data-form-backtovm" title="' . t('Back to Virtual Microscope') . '"></div>';
   }
 
   $output.= _moonrock_data_form_create_mainsamples_table($main_samples);
@@ -98,7 +99,7 @@ function _moonrock_data_form_create_vm_tab($wrappedForm, $snapshooting, $selecti
   $prefix = ' <div id="moonrock-data-form-vmform" class="moonrock-data-form-vmform moonrock-data-form-hidden">'
           . '  <div id="moonrock-data-form-vm" class="moonrock-data-form-vm">';
   if ($selectionEnabled) {
-    $prefix .= '   <div id="moonrock-data-form-backtosearch" class="moonrock-data-form-backtosearch"></div>'
+    $prefix .= '   <div id="moonrock-data-form-backtosearch" class="moonrock-data-form-backtosearch" title="' . t('Back to sample selection') . '"></div>'
             . '   <div id="moonrock-data-form-sample" class="moonrock-data-form-item">'
             . '    <div id="moonrock-data-form-sample-previous" class="moonrock-data-form-item-button moonrock-data-form-item-previous"></div>'
             . '    <div class="moonrock-data-form-item-title">' . t('Browsing ') . '</div>'

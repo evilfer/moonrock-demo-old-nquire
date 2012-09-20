@@ -451,3 +451,7 @@ function _moonrock_color_displayTree($array) {
   }
   return $output;
 }
+
+function moonrock_color_nquire_data_suitable_for_graph_variable() {
+  return FALSE;
+}

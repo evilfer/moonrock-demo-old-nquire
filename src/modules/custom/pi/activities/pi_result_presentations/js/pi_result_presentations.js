@@ -6,47 +6,22 @@ var PiResultPresentations = {
   init : function() {
     $('#pi-result-presentations-preview-loading, #pi-result-presentations-preview').hide();
     
-    
-    var color = $('#edit-color').val();
-    $("input[name^='bar_color'][value='" + color + "']").attr('checked', 'checked');
-    
-    var ordinate = $('#edit-ordinate').val();
-    var type = this._getChartType();
-    if (type === 'histogram') {
-      $("select[name='histogram_ordinate']").val(ordinate);
-    } else {
-      var ordinates = ordinate.split(',');
-      for (var i in ordinates) {
-        $("input[name^='bar_ordinate'][value='" + ordinates[i] + "']").attr('checked', 'checked');
-      }
-    }
-    
-    
-    
     $('input[name="chart_type"]').change(function() {
-      PiResultPresentations._updateOrdinate(false);
       PiResultPresentations._upateGrahDef();
     });
-
-    $('input[name^="bar_ordinate"]').change(function() {
-      PiResultPresentations._upateGrahDef();
-    });
-    $('input[name^="bar_color"]').change(function() {
-      PiResultPresentations._upateGrahDef();
-    });
-    $('select[name="histogram_ordinate"]').change(function() {
-      PiResultPresentations._upateGrahDef();
-    });
-
-
-
-    $("select[name='abscissa']").change(function() {
+    $('#edit-abscissa').change(function() {
       PiResultPresentations._updateAvailableValues(false);
+      PiResultPresentations._updateGraphType();
+      PiResultPresentations._upateGrahDef();
+    });  
+    
+    $('#edit-ordinate').change(function() {
+      PiResultPresentations._updateGraphType();
       PiResultPresentations._upateGrahDef();
     });
 
-    this._updateOrdinate(true);
     this._updateAvailableValues(true);
+    this._updateGraphType();
     this._upateGrahDef();
   },
 
@@ -61,32 +36,20 @@ var PiResultPresentations = {
     }
   },
 
-  _updateAvailableValues : function(init) {
-    var abscissa = $("select[name='abscissa']").attr('value');
+  _updateAvailableValues : function() {
+    var abscissa = $('#edit-abscissa').attr('value');
     console.log("abscissa: " + abscissa);
 
-    var barOrdinateCount = 0;
-    $("input[name^='bar_ordinate']").each(function() {
-      if ($(this).attr('value') === abscissa) {
-        $(this).attr('checked', '');
-        $(this).parent().parent().addClass('pi-result-presentations-measures-block-hidden');
-      } else {
-        $(this).parent().parent().removeClass('pi-result-presentations-measures-block-hidden');
-        barOrdinateCount++;
-      }
-    });
+    var needNewSelection = $('#edit-ordinate').val() == abscissa;
 
-
-    var needNewSelection = $("select[name='histogram_ordinate']").val() == abscissa;
-
-    $("select[name='histogram_ordinate'] option").each(function() {
+    $('#edit-ordinate > option').each(function() {
       if ($(this).attr('value') === abscissa) {
         $(this).removeAttr('selected');
         $(this).addClass('pi-result-presentations-measures-block-hidden');
       } else {
         $(this).removeClass('pi-result-presentations-measures-block-hidden');
         if (needNewSelection) {
-          $("select[name='histogram_ordinate']").val($(this).attr('value'));
+          $('#edit-ordinate').val($(this).attr('value'));
           needNewSelection = false;
         }
       }
@@ -97,25 +60,7 @@ var PiResultPresentations = {
   _getChartType:function() {
     return $("input[value='line-bar']")[0].checked ? 'line-bar' : 'histogram';//attr('value');
   },
-  _updateOrdinate: function(init) {
-    var type = this._getChartType();
-    
-    console.log("type: " + type);
-
-    if (type === 'line-bar') {
-      this._hideHistogramOrdinage();
-      if (!init) {
-        this._showBarOrdinate();
-      }
-    } else {
-      this._hideBarOrdinate();
-      if (!init) {
-        this._showHistogramOrdinage();
-      }
-    }
-  },
-
-  _hideHistogramOrdinage: function() {
+  /* _hideHistogramOrdinage: function() {
     $('#pi-result-presentations-select-ordinates-histogram').addClass('pi-result-presentations-measures-block-hidden');
   },
   _showHistogramOrdinage: function() {
@@ -132,54 +77,71 @@ var PiResultPresentations = {
     $("input[name^='bar_ordinate']").attr('checked', '');
     $('#pi-result-presentations-select-ordinates-bar').removeClass('pi-result-presentations-measures-block-hidden');
     $('#pi-result-presentations-select-color').removeClass('pi-result-presentations-measures-block-hidden');
+  },*/
+  
+  _ordinateIsNumeric: function() {
+    var ordinate = $('#edit-ordinate').attr('value');
+    var numeric = $('#edit-numeric').attr('value').split(' ');
+    return numeric.indexOf(ordinate) >= 0;
+  },
+  
+  _updateGraphType: function() {
+    if (this._ordinateIsNumeric()) {
+      $('#pi-result-presentations-select-type').removeClass('pi-result-presentations-measures-block-hidden');
+    } else {
+      $('#pi-result-presentations-select-type').addClass('pi-result-presentations-measures-block-hidden');
+    }
+  },
+  _updateExplanation: function(type) {
+    var variableName = function(id) {
+      var value = $(id).children().filter(':selected').html();
+      var a = value.indexOf('(');
+      if (a >= 0) {
+        value = value.substr(0, a).trim();
+      }
+      return value;
+    }
+    var abscissa = variableName('#edit-abscissa');
+    var ordinate = variableName('#edit-ordinate');
+    
+    var text;
+    if (type === 'histogram') {
+      text = 'This graph shows <b>the number of data items</b> that have a specific <i>' + ordinate + '</i> value for each <i>' + abscissa + 
+      '</i>.<br />It may reveal patterns in the frequency of value pairs, and thus indicate a relationship between variables <i>' + ordinate + '</i> and <i>' + abscissa + '</i>.';
+    }else {
+      text = 'This graph shows <b>the numeric values</b> of <i>' + ordinate + '</i> for each <i>' + abscissa + 
+      '</i>.<br />It may reveal patterns in the distribution of <i>' + ordinate + '</i> values, and thus indicate a relationship between variables <i>' + ordinate + '</i> and <i>' + abscissa + '</i>.';
+    }
+    
+    $('#pi-result-presentations-explanation').html(text);      
   },
 
   _upateGrahDef: function() {
     var title = $('#edit-title').attr('value');
 
-    var type = $("input[value='line-bar']")[0].checked ? 'line-bar' : 'histogram';
-    var abscissa = $("select[name='abscissa']").attr('value');
-    var ordinate = null;
-    var color = null;
-    if (type === 'line-bar') {
-      ordinate = [];
-      $("input[name^='bar_ordinate']").each(function() {
-        if ($(this).attr('checked')) {
-          ordinate.push($(this).attr('value'));
-        }
-      });
-      color = '';
-      $("input[name^='bar_color']").each(function() {
-        if ($(this).attr('checked')) {
-          color = $(this).attr('value');
-        }
-      });
+     
+    var type;
+    if (this._ordinateIsNumeric()) {
+      type = $("input[value='line-bar']")[0].checked ? 'line-bar' : 'histogram';
     } else {
-      ordinate = [$("select[name='histogram_ordinate']").val()];
-      color = '';
+      type = 'histogram';
     }
-
-    if (abscissa.length > 0) {
-      $('#edit-abscissa').attr('value', abscissa);
-    } else {
-      $('#edit-abscissa').removeAttr('value');
-    }
-    if (ordinate.length > 0) {
-      $('#edit-ordinate').attr('value', ordinate.join(','));
-    } else {
-      $('#edit-ordinate').removeAttr('value');
-    }
-    $('#edit-color').attr('value', color);
+    
+    this._updateExplanation(type);
+    
+    var abscissa = $('#edit-abscissa').attr('value');
+    var ordinate = $('#edit-ordinate').attr('value');
+    var color = $('#edit-color').attr('value');
+    
 
     if (abscissa.length > 0 && ordinate.length > 0) {
-        $('#pi-result-presentations-preview').show();
-      //$('#pi-result-presentations-preview').hide();
+      $('#pi-result-presentations-preview').show();
       $('#pi-result-presentations-preview-no').hide();
       $('#pi-result-presentations-preview-loading').show();
       var url = this.getBaseURL() + "&title=" + title +
-              "&count=" + (this.count++) + "&type=" + type +
-              "&abscissa=" + abscissa + "&ordinate=" + ordinate.join(',') +
-              "&color=" + color;
+      "&count=" + (this.count++) + "&type=" + type +
+      "&abscissa=" + abscissa + "&ordinate=" + ordinate +
+      "&color=" + color;
       $('#pi-result-presentations-preview').attr('src', url).load(function() {
         $('#pi-result-presentations-preview-loading').hide();
       });

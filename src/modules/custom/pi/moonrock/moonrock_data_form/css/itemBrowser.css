@@ -4,16 +4,16 @@
 .item-browser-container {
   position: relative;
   margin-left: 25px;
-  height: 190px;
+  height: 215px;
   margin-bottom: 20px;
 }
 
 .item-browser-scroll-container {
   position: absolute;
   overflow: hidden;
-  top: 175px;
+  top: 200px;
   left: 0px;
-  height: 16px;
+  height: 15px;
   width: 0px;
   background: #fafafa;
 }

@@ -181,12 +181,19 @@ function theme_moonrock_seesamples($node, $teaser) {
   $output = '';
 
   if ($teaser) {
+    global $user;
+
+    $details = get_inquiry_details_from_current_path();
+    $sample_view_activity_id = get_activity_id_for_nid($node->nid);
+    
+
     $samples = moonrock_seesamples_get_main_samples($node);
     $output .= '<div style="width: 100%; text-align: center:">';
     foreach($samples as $sample) {
-      $output .= '<img style="padding:10px; width: 200px;" src="' . moonrock_snapshot_images_get_sample_url($sample->nid) . '"></img>';
+      $img = '<img style="padding:10px; width: 200px;" src="' . moonrock_snapshot_images_get_sample_url($sample->nid) . '"></img>';
+      $output .= build_activity_link_alternative_text($details->inquiry_id, $details->stage_id, $details->phase_id, $sample_view_activity_id, $user->uid, $img, '', 'view');
     }
-    $output .= '</div>';
+    $output  .= '</div>';
   } else {
     $output .= moonrock_data_form_seesamples_activity();
   }

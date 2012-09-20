@@ -79,7 +79,7 @@ function pi_result_presentations_form(&$node) {
         '#title' => t('Key question to investigate'),
         '#required' => TRUE,
         '#default_value' => $node->key_question_id,
-        '#description' => t('Your graph will display evidence about Moon rocks that can be used to answer your key questions.'),
+        '#description' => t('Select the question that you are trying to answer with this graph.'),
         '#options' => $key_question_options,
         '#weight' => 0
     );
@@ -105,7 +105,7 @@ function pi_result_presentations_form(&$node) {
   );
 
   $chart_types = array(
-      'line-bar' => t('Bar chart'),
+      'line-bar' => t('Bar/point chart'),
       'histogram' => t('Histogram'),
   );
 
@@ -115,69 +115,39 @@ function pi_result_presentations_form(&$node) {
       '#options' => $chart_types,
       '#required' => TRUE,
       '#default_value' => strlen($node->chart_type) > 0 ? $node->chart_type : 'line-bar',
-      '#description' => t('Histograms are useful to plot any type of measures.</br>In contrast, bar graphs can plot several numeric measurements'),
+      '#description' => t('Select the type of chart for numeric variables.'),
   );
 
   $measures = pi_result_presentations_get_options();
-  $all_measures = _pi_result_presentations_format_measure_options($measures, 'all');
+  $variable_measures = _pi_result_presentations_format_measure_options($measures, 'variable');
   $form['abscissa'] = array(
       '#type' => 'select',
-      '#options' => $all_measures,
-      '#title' => t('Abscissa variable'),
+      '#options' => $variable_measures,
+      '#title' => t('X axis variable'),
       '#required' => TRUE,
-      '#description' => t('Select the variable that will be used in the x asis of the graph'),
+      '#description' => t('Select the variable that will be used in the X asis of the graph'),
       '#default_value' => $node->abscissa,
   );
 
   $form['ordinate'] = array(
-      '#type' => 'hidden',
+      '#type' => 'select',
+      '#options' => $variable_measures,
       '#required' => TRUE,
-      '#title' => 'Ordinate variables',
+      '#title' => 'Y axis variable variable',
       '#default_value' => $node->ordinate,
+      '#description' => t('Select the variable that will be used in the Y asis of the graph'),
   );
   $form['color'] = array(
       '#type' => 'hidden',
       '#required' => FALSE,
-      '#default_value' => $node->color,
+      '#default_value' => count($measures['color']) == 1 ? $measures['color'][0] : '',
   );
 
-
-
-  $numeric_measures = _pi_result_presentations_format_measure_options($measures, 'numeric');
-  $form['measures']['bar_ordinate'] = array(
-      '#type' => 'checkboxes',
-      '#options' => $numeric_measures,
-      '#title' => t('Graph ordinate variables'),
-      '#required' => TRUE,
-      '#description' => t('Select the variables that will be used in the y asis of the graph')
+  $form['numeric'] = array(
+      '#type' => 'hidden',
+      '#required' => FALSE,
+      '#default_value' => implode(' ', $measures['numeric']),
   );
-
-  $form['measures']['histogram_ordinate'] = array(
-      '#type' => 'select',
-      '#options' => $all_measures,
-      '#title' => t('Histogram ordinate variable'),
-      '#required' => TRUE,
-      '#description' => t('Select the variable that will be used in the y asis of the graph'),
-      '#default_value' => '',
-  );
-
-  if (count($measures['color']) == 1) {
-    $color_measure = $measures['measures'][$measures['color'][0]];
-    $value = array(
-        $color_measure->nid => $color_measure->nid == $node->color, // ? $color_measure->nid : '';
-    );
-
-    $form['measures']['bar_color'] = array(
-        '#type' => 'checkboxes',
-        '#title' => t('Graph color'),
-        '#options' => array(
-            $color_measure->nid => t('Use measure ') . check_plain($color_measure->title) . t(' to paint the graph'),
-        ),
-        '#description' => t("Decide whether you want to use a measure to select the graph colors"),
-        '#default_value' => $value,
-    );
-  }
-
 
 
   $prefix = '';
@@ -614,38 +584,34 @@ function theme_pi_result_presentations_node_form($form) {
   drupal_add_css(drupal_get_path('module', 'pi_result_presentations') . '/css/pi_result_presentations.css');
   drupal_add_js(drupal_get_path('module', 'pi_result_presentations') . '/js/pi_result_presentations.js');
 
-  $output = '';
+  $output = '<p>' . t('Create a graph with your collected data.'). '</p>';
   $output .= drupal_render($form['title']);
   $output .= drupal_render($form['key_question_id']);
 
   $output .= "<div><b>" . t("Graph configuration:") . "</b></div>";
+  $output .= t('Select the X and Y axes variables of the graph:');
   $output .= '<div id="pi-result-presentations-measures">';
-
-  $output .= '<div id="pi-result-presentations-select-type" class="pi-result-presentations-measures-block">';
+  
+/*  $output .= '<div id="pi-result-presentations-select-type" class="pi-result-presentations-measures-block">';
   $output .= drupal_render($form['chart_type']);
   $output .= '</div>';
-
+*/
   $output .= '<div id="pi-result-presentations-select-abscissa" class="pi-result-presentations-measures-block">';
   $output .= drupal_render($form['abscissa']);
   $output .= '</div>';
 
   $output .= '<div id="pi-result-presentations-select-ordinates" class="pi-result-presentations-measures-block">';
-  $output .= '<div id="pi-result-presentations-select-ordinates-bar" class="pi-result-presentations-measures-sub-block">';
-  $output .= drupal_render($form['measures']['bar_ordinate']);
+  $output .= drupal_render($form['ordinate']);
   $output .= '</div>';
-  $output .= '<div id="pi-result-presentations-select-ordinates-histogram" class="pi-result-presentations-measures-sub-block">';
-  $output .= drupal_render($form['measures']['histogram_ordinate']);
+  
+  $output .= '<div id="pi-result-presentations-select-type" class="pi-result-presentations-measures-block">';
+  $output .= drupal_render($form['chart_type']);
   $output .= '</div>';
-  $output .= '</div>';
-
-  if (isset($form['measures']['bar_color'])) {
-    $output .= '<div id="pi-result-presentations-select-color" class="pi-result-presentations-measures-block">';
-    $output .= drupal_render($form['measures']['bar_color']);
-    $output .= '</div>';
-  }
   $output .= "</div>";
 
-  $output .= "<div style='padding-top: 20px'><b>" . t('Preview') . "</b></div>";
+  $output .= "<div id='pi-result-presentations-explanation' style='padding-top: 20px'></div>";
+
+  $output .= "<div style='padding-top: 20px'><b>" . t('Preview:') . "</b></div>";
   $output .= "<div id='pi-result-presentations-preview-container'>";
   $output .= "<div id='pi-result-presentations-preview-no' class='messages error'><ul><li>"
           . t("No ordinate variable has been selected.")
@@ -704,6 +670,7 @@ function pi_result_presentations_get_options() {
   $measures = array(
       'measures' => array(),
       'all' => array(),
+      'variable' => array(),
       'numeric' => array(),
       'color' => array(),
   );
@@ -713,9 +680,21 @@ function pi_result_presentations_get_options() {
       if ($measure->data_type != 'text') {
         $measures['measures'][$measure->nid] = $measure;
         $measures['all'][] = $measure->nid;
+
+        if ($measure->content_options) {
+          $as_variable_function = "{$measure->content_options}_nquire_data_suitable_for_graph_variable";
+          if (!function_exists($as_variable_function) || $as_variable_function()) {
+            $measures['variable'][] = $measure->nid;
+          }
+        } else {
+          $measures['variable'][] = $measure->nid;
+        }
+
         if ($measure->data_type == 'numeric') {
           $measures['numeric'][] = $measure->nid;
         } else if ($measure->content_options) {
+
+
           if (function_exists("{$measure->content_options}_nquire_data_get_numeric_value")) {
             $measures['numeric'][] = $measure->nid;
           } else if (function_exists("{$measure->content_options}_nquire_data_get_color_value")) {

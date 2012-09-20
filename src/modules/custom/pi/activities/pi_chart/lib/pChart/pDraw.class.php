@@ -2473,10 +2473,10 @@ class pDraw {
 
         /* FIX (eloy)
          * to prevent division by 0 error with no data
-         
-        if ($Points == 1)
+
+          if ($Points == 1)
           $Data["Axis"][$AxisID]["Margin"] = $Height / 2;
-        else
+          else
           $Data["Axis"][$AxisID]["Margin"] = ($Height / $Points) / 2;
 
          */
@@ -2607,7 +2607,14 @@ class pDraw {
               $Skipped = TRUE;
               if ($this->isValidLabel($Value, $LastValue, $LabelingMethod, $ID, $LabelSkip) && !$RemoveXAxis) {
                 $Bounds = $this->drawText($XPos, $YPos + $OuterTickWidth + $YLabelOffset, $Value, array("Angle" => $LabelRotation, "Align" => $LabelAlign));
-                $TxtBottom = $YPos + $OuterTickWidth + 2 + ($Bounds[0]["Y"] - $Bounds[2]["Y"]);
+                $TxtBottom = $YPos + $OuterTickWidth + 4 + ($Bounds[0]["Y"] - $Bounds[2]["Y"]);
+
+                $x0 = $XPos - .5 * $Step;
+                $x1 = $x0 + $Step;
+                $y0 = $YPos;
+                $y1 = $TxtBottom;
+                $this->drawRectangle($x0, $y0, $x1, $y1, array("R" => 100, "G" => 100, "B" => 100));
+
                 $MaxBottom = max($MaxBottom, $TxtBottom);
                 $LastValue = $Value;
                 $Skipped = FALSE;
@@ -6016,7 +6023,7 @@ class pDraw {
                   $this->Shadow = TRUE;
                 }
                 $Caption = $DisplaySeriesName ? $SerieName : $this->scaleFormat($Serie["Data"][$Key], $Mode, $Format, $Unit);
-                $textSize = $DisplaySeriesName ? .5 * $DisplaySize : $DisplaySize; 
+                $textSize = $DisplaySeriesName ? .5 * $DisplaySize : $DisplaySize;
                 $TxtPos = $this->getTextBox(0, 0, $DisplayFont, $DisplaySize, 90, $Caption);
                 $TxtHeight = $TxtPos[0]["Y"] - $TxtPos[1]["Y"] + $TxtMargin;
 

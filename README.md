@@ -8,6 +8,15 @@ Moonrock demonstators.
 Changes:
 
 -----------------
+20-09-2012
+
+- Added link to See samples activity images in teaser.
+- Simplified Graph creation interface.
+- Histogram bars all with same color.
+- Fixed bug with review samples: graphs always with current user data.
+- Fixed metadata format.
+
+-----------------
 19-09-2012
 
 - Moved snapshot search form down, by "My snapshots".
