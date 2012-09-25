@@ -107,6 +107,14 @@ function moonrock_sample_form(&$node) {
       '#description' => t('Specify the location where this sample was found'),
       '#weight' => -2
   );
+  $form['body_filter']['info_url'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Sample information website'),
+      '#required' => TRUE,
+      '#default_value' => $node->info_url,
+      '#description' => t('Specify the URL to a website where further information about the sample can be found'),
+      '#weight' => -2
+  );  
   $form['body_filter']['map_url'] = array(
       '#type' => 'textfield',
       '#title' => t('Sample origin map URL'),
@@ -138,7 +146,7 @@ function moonrock_sample_form(&$node) {
  * Implementation of hook_insert().
  */
 function moonrock_sample_insert($node) {
-  db_query("INSERT INTO {moonrock_sample} (nid, vid, vm, snapshot, location, map_url, source) VALUES ('%d', '%d', '%s', '%s', '%s', '%s', '%s')", $node->nid, $node->vid, $node->vm, $node->snapshot, $node->location, $node->map_url, $node->source);
+  db_query("INSERT INTO {moonrock_sample} (nid, vid, vm, snapshot, location, info_url, map_url, source) VALUES ('%d', '%d', '%s', '%s', '%s', '%s', '%s', '%s')", $node->nid, $node->vid, $node->vm, $node->snapshot, $node->location, $node->info_url, $node->map_url, $node->source);
 }
 
 /**
@@ -148,7 +156,7 @@ function moonrock_sample_update($node) {
   if ($node->revision) {
     moonrock_sample_insert($node);
   } else {
-    db_query("UPDATE {moonrock_sample} SET vm='%s', snapshot='%s', location='%s', source='%s', map_url='%s' WHERE vid = %d", $node->vm, $node->snapshot, $node->location, $node->source, $node->map_url, $node->vid);
+    db_query("UPDATE {moonrock_sample} SET vm='%s', snapshot='%s', location='%s', source='%s', info_url='%s', map_url='%s' WHERE vid = %d", $node->vm, $node->snapshot, $node->location, $node->source, $node->info_url, $node->map_url, $node->vid);
   }
 }
 
@@ -224,7 +232,7 @@ function theme_moonrock_sample($node, $teaser) {
 function moonrock_sample_nquire_data_form_prefix($measure) {
   $measure_text = check_plain($measure->title) . moonrock_sample_utils_add_info_tooltip($measure->title, $measure->body);
   $output = "<div class='moonrock-measure'>"
-          . "<div class='moonrock-measure-title'>$measure_text</div>"
+          . "<div class='moonrock-measure-title'>$measure_text:</div>"
           . "<div class='moonrock-measure-fixedvalue' id='moonrock-measure-fixedvalue-sample'></div>"
           . "</div>";
   return $output;

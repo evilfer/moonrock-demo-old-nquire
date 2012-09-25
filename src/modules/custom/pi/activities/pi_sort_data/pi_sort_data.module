@@ -335,7 +335,10 @@ function theme_pi_sort_data($node, $teaser, $measure_headers, $data_values) {
 
   if (count($data_values) > 0) {
     $output .= '<p>';
-    $output .= t('You have collected the following data. Click on <b>Add data</b> to add new data.'); // ' . $measures_text . '.');
+    $output .= t('Collect data to answer your questions. You can collect any number of data items for each sample, for instance to record variations in features within each sample.') . '<br/>'
+            . t('Later you can analyze your collected data by creating graphs in activity ') . moonrock_sample_utils_activity_link('pi_sort_result_presentations') . '.'
+            . '</p>';
+
     $output .= '</p>';
 //		$output .= theme('item_list', $rows, NULL, 'ul', array('class' => 'activity'));
     $output .= theme('table', $measure_headers, $data_values, array(

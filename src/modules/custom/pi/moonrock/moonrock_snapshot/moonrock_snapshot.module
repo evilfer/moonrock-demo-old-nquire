@@ -273,6 +273,10 @@ function moonrock_snapshot_nquire_data_suitable_for_graph_variable() {
   return FALSE;
 }
 
+function moonrock_snapshot_nquire_data_suitable_for_method_planning() {
+  return FALSE;
+}
+
 function moonrock_snapshot_nquire_data_form_elements($value) {
 
   $snapshot = node_load($value);

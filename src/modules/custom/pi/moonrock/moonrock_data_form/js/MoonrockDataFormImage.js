@@ -20,10 +20,12 @@ var MoonrockDataFormImage = {
         image: resizedData
       });
     };
-
-    var vmcanvas = $(frames[0].document).find('#mic1canvas')[0];
-    var data = vmcanvas.toDataURL();
-    image.src = data;
+    
+    if (frames[0]) {
+      var vmcanvas = $(frames[0].document).find('#mic1canvas')[0];
+      var data = vmcanvas.toDataURL();
+      image.src = data;
+    }
   }
 };
 

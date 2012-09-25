@@ -17,11 +17,24 @@ function moonrock_sample_utils_find_unique_seesamples_activity() {
   }
 }
 
+function moonrock_sample_utils_format_measure_info($measure_info) {
+  if (isset($measure_info->units_short) AND ($measure_info->units_short != '')) {
+    $units = " (" . $measure_info->units_short . ")";
+  } elseif (isset($measure_info->units) AND ($measure_info->units != '')) {
+    $units = " (" . $measure_info->units . ")";
+  } else {
+    $units = "";
+  };
+  return '<div class="moonrock-measure-title">'
+          . check_plain($measure_info->title . $units) . moonrock_sample_utils_add_info_tooltip($measure_info->title, $measure_info->body)
+          . '</div>';
+}
+
 function moonrock_sample_utils_add_info_tooltip($title, $content) {
   $output = "<span class='qtip-link'>"
           . "<div class='qtip-header'>$title</div>"
           . "<div class='qtip-tooltip'>$content</div>"
-          . "<div class='item-browser-item-title-cluetip'></div>"
+          . "<div class='moonrock-measure-info'></div>"
           . "</span>";
 
   return $output;
@@ -83,7 +96,10 @@ function moonrock_sample_utils_prepare_object($nid) {
       "title" => t("Sample source: "),
       "value" => $sample->source,
   );
-
+  $output['metadata']['info'] = array(
+      "title" => t("Further information:"),
+      "value" => '<a href="' . $sample->info_url . '" target="_blank" class="external_link"><span>' . t('read more ') . '</span><div></div></a>',
+  );
   return $output;
 }
 
@@ -98,4 +114,16 @@ function moonrock_sample_utils_format_html_data($nid) {
   $title = check_plain($node->title);
 
   return "<img style='width: 50px' src='$img'></img><span style='padding-left: 10px;'>$title</span>";
+}
+
+function moonrock_sample_utils_activity_link($type) {
+  global $user;
+  $details = get_inquiry_details_from_current_path();
+  $activity_id = get_activity_ids_for_activity_type($details->inquiry_id, $type, $user->uid);
+  $phase_id = get_phase_id_for_activity_id($activity_id);
+  return build_activity_link($details->inquiry_id, $details->stage_id, $phase_id, $activity_id, $user->uid);
+}
+
+function moonrock_sample_utils_load_measure_format() {
+  drupal_add_css(drupal_get_path('module', 'moonrock_sample_utils') . '/css/measures.css');
 }

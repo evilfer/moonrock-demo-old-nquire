@@ -186,6 +186,11 @@ function get_inquiry_details_from_current_path() {
   $result->stage_id = NULL;
 
   if (arg(0) == 'home') {
+    $inquiry_ids = get_inquiry_ids_of_user($user->uid);
+    if (count($inquiry_ids) == 1) {
+      drupal_goto("inquiry/{$inquiry_ids[0]}");
+    }
+    //return;
     //inquiry, stage, phase an activity are not set
   } elseif (arg(0) == 'inquiry' || arg(0) == 'set_stage') {
     //get inquiry from the arg
@@ -231,7 +236,17 @@ function get_inquiry_details_from_current_path() {
     //get the current stage for the inquiry and user
     $stage = get_current_stage_of_inquiry_and_user($result->inquiry_id, $uid);
     $result->stage_id = $stage->stage_id;
+  } else if (arg(0) == 'node') {
+    /*
+     * FIX (eloy)
+     * If there's only one inquiry, then use it anyway.
+     */
+    $activity_id = (int) get_activity_id_for_nid(arg(1));
+    if ($activity_id) {
+      drupal_goto('activity/' . $activity_id . '/view');
+    }
   }
+
   /*
     if (arg(0) == 'node' && (arg(1) == 'add' || arg(2) == 'edit' || arg(2) == 'view')) {
     $result->inquiry_id = arg(3);
@@ -642,6 +657,19 @@ function get_unique_activities($activities) {
  * Returns array of inquiry nodes for user or user's groups
  */
 function get_inquiries_of_user($uid = 0) {
+  $ids = get_inquiry_ids_of_user($uid);
+  
+  $inquiries = array();
+  foreach($ids as $id) {
+    $inquiries[] = node_load($id);
+  }
+  return $inquiries;
+}
+
+/**
+ * Returns array of inquiry nodes for user or user's groups
+ */
+function get_inquiry_ids_of_user($uid = 0) {
   $query = "SELECT DISTINCT {pi_inquiry_actor}.inquiry_id AS nid FROM {pi_inquiry_actor} "
           . "LEFT JOIN {og_uid} ON {og_uid}.nid = {pi_inquiry_actor}.gid "
           . "LEFT JOIN {pi_inquiry} ON {pi_inquiry_actor}.inquiry_id = {pi_inquiry}.nid ";
@@ -657,12 +685,14 @@ function get_inquiries_of_user($uid = 0) {
   }
 
 
-  $inquiries = array();
+  $inquiry_ids = array();
   while ($row = db_fetch_array($result)) {
-    $inquiries[] = node_load($row['nid']);
+    $inquiry_ids[] = $row['nid'];
   }
-  return $inquiries;
+  return $inquiry_ids;
 }
+
+
 
 /**
  * Deprecated function

@@ -62,11 +62,13 @@ var MoonrockDataFormSamples = {
     };
     
     $('#moonrock-data-form-backtosearch').click(function() {
-      MoonrockDataFormSamples._closeVM();
+      MoonrockDataFormHistory.back();
+    //      MoonrockDataFormSamples._closeVM();
     });
     $('#moonrock-data-form-backtovm').click(function() {
       if ($(this).hasClass('moonrock-data-form-backtovm-enabled')) {
-        MoonrockDataFormSamples.reopenVM();
+        MoonrockDataFormHistory.forward();
+      //MoonrockDataFormSamples.reopenVM();
       }
     });
     
@@ -85,10 +87,24 @@ var MoonrockDataFormSamples = {
     });
     */
     
+    MoonrockDataFormHistory.enable(function(state) {
+      MoonrockDataFormSamples.browserHistoryChange(state);
+    });
+    
     if (MoonrockDataFormData.sampleData()) {
+      this.state = 'vm';
       this.openVM(MoonrockDataFormData.sampleData());
     } else {    
+      this.state = 'search';
       this._openSearch();
+    }
+  },
+  
+  browserHistoryChange: function(vm) {
+    if (vm) {
+      this._openVM();
+    } else {
+      this._closeVM();
     }
   },
   
@@ -102,7 +118,7 @@ var MoonrockDataFormSamples = {
     //    var item = type === 'sample' ? this._getSampleAround(delta) : this._getSnapshotAround(delta);
     var item = this._getSampleAround(delta);
     if (item) {
-      this._openVM(item);
+      this.openVM(item);
     }
   },
   
@@ -137,7 +153,7 @@ var MoonrockDataFormSamples = {
     }
   },
   _itemImageClicked: function(item) {
-    this._openVM(item);
+    this.openVM(item);
   /*console.log('before assign: ' + window.history.length);
     window.location.assign('#');
     console.log('after assign: ' + window.history.length);*/
@@ -150,20 +166,23 @@ var MoonrockDataFormSamples = {
   },
   
   reopenVM: function() {
-    this._openVM(this.currentItem);
+    this.openVM();
   },
+  
   openVM: function(item) {
     if (typeof(item) !== 'object') {
       item = $("#moonrock-sample-main-list").itemBrowser('getItem', item);
     }
-    this._openVM(item);
+    this.currentItem = item;
+    MoonrockDataFormHistory.forward();
   },
   
-  _openVM: function(item) {
-    this.currentItem = item;
-    $('#moonrock-data-form-sample-title').html(item.title);
+  _openVM: function() {
+    $('#moonrock-data-form-sample-title').html(this.currentItem.title);
     
-    this._reopenVM();
+    $('#moonrock-data-form-search').addClass('moonrock-data-form-hidden');
+    $('#moonrock-data-form-vmform').removeClass('moonrock-data-form-hidden');
+
     $('#moonrock-activity-description').hide();
     $('#moonrock-data-form-form').css('padding-top', $('#moonrock-data-form-vm-container').position().top);
     if ($('#moonrock-data-form-block').length > 0) {
@@ -171,12 +190,14 @@ var MoonrockDataFormSamples = {
     } else {
       $('#moonrock-data-form-vm-container').css('height', 680);
     }
-    $('#moonrock-data-form-vm-iframe').attr('src', item.vm);
+    $('#moonrock-data-form-vm-iframe').remove();
+    $('#moonrock-data-form-vm-container').append('<iframe id="moonrock-data-form-vm-iframe" src="' + this.currentItem.vm + '"></iframe>');
+    //attr('src', this.currentItem.vm);
       
     this._checkNextPrevButtons();
     
-    MoonrockDataFormData.vmOpened(item);
-    MoonrockDataFormSnapshooting.vmOpened(item);
+    MoonrockDataFormData.vmOpened(this.currentItem);
+    MoonrockDataFormSnapshooting.vmOpened(this.currentItem);
   },
   
   snapshotSubmitted: function(item) {
@@ -199,11 +220,6 @@ var MoonrockDataFormSamples = {
     this._enableButton('#moonrock-data-form-sample-next', this._getSampleAround(1));
   //this._enableButton('#moonrock-data-form-snapshot-previous', this._getSnapshotAround(-1));
   //this._enableButton('#moonrock-data-form-snapshot-next', this._getSnapshotAround(1));
-  },
-  
-  _reopenVM: function() {
-    $('#moonrock-data-form-search').addClass('moonrock-data-form-hidden');
-    $('#moonrock-data-form-vmform').removeClass('moonrock-data-form-hidden');
   },
   
   _enableButton : function(id, enabled) {
@@ -231,7 +247,8 @@ var MoonrockDataFormSamples = {
     var self = this;
     
     MoonrockDataFormImage.getVMData(200, function(snapshot) {
-      $('#moonrock-data-form-vm-iframe').attr('src', 'about:blank');
+      $('#moonrock-data-form-vm-iframe').remove();
+      //$('#moonrock-data-form-vm-iframe').attr('src', 'about:blank');
 
       $('#moonrock-activity-description').show();
       self._openSearch();

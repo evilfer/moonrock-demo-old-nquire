@@ -27,19 +27,6 @@
         $(this).remove().appendTo(self);
       });
 
-      this.keyup(function(event) {
-        if (event.target.type !== 'textarea' && event.target.type !== 'text') {
-          console.log(event.keyCode);
-          switch (event.keyCode) {
-            case 67:
-              self.rockColorPicker('toggle');
-              break;
-            default:
-              break;
-          }
-        }
-      });
-
       picker.mousewheel(function(event, delta) {
         var k = delta > 0 ? 1.25 : .8;
 
@@ -92,6 +79,7 @@
       $('.rock-color-picker-chip').mouseup(function(event) {
         if (self.data('rock-color-picker-selection-mousedown') && !self.data('rock-color-picker-selection-dragging')) {
           self.rockColorPicker('_setValue', $(this).attr('color-value'), true);
+          self.rockColorPicker('close');
         }
       });
       self.mouseup(function(event) {

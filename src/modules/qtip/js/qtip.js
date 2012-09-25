@@ -19,7 +19,11 @@ Drupal.behaviors.qtip = function(context) {
     show_delay = 1;
   }
   else {
-    show_delay = 140; // This is the default qTip value, set for hover links
+    /* 
+     * FIX (eloy) set to 0.
+     */ 
+    //    show_delay = 140; // This is the default qTip value, set for hover links
+    show_delay = 0; // This is the default qTip value, set for hover links
   }
   
   if (Drupal.settings.qtip.show_speech_bubble_tip) {
@@ -72,6 +76,13 @@ Drupal.behaviors.qtip = function(context) {
         text: $(this).children('.qtip-tooltip')
       },
       position: {
+        /* 
+         * FIX (eloy) added adjust.
+         */ 
+        adjust: {
+          screen: true,
+          scroll: true
+        },
         corner: {
           target: Drupal.settings.qtip.target_position,
           tooltip: Drupal.settings.qtip.tooltip_position
@@ -93,9 +104,14 @@ Drupal.behaviors.qtip = function(context) {
         delay: show_delay
       },
       hide: {
-        when: {
+        /* 
+         * FIX (eloy) added fixed and delay.
+         */ 
+        fixed: true,
+        delay: 200
+        /*when: {
           event: Drupal.settings.qtip.hide_event_type
-        }
+        }*/
       }
     })
   })

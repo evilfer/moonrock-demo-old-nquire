@@ -4,12 +4,16 @@ function moonrock_data_form_load_resources() {
   drupal_add_js(drupal_get_path('module', 'moonrock_data_form') . '/js/itemBrowser.js');
   drupal_add_js(drupal_get_path('module', 'moonrock_data_form') . '/js/itemBrowserItem.js');
   drupal_add_js(drupal_get_path('module', 'moonrock_data_form') . '/js/itemBrowserThrobber.js');
+  drupal_add_js(drupal_get_path('module', 'moonrock_data_form') . '/js/MoonrockDataFormHistory.js');
   drupal_add_js(drupal_get_path('module', 'moonrock_data_form') . '/js/MoonrockDataFormSamples.js');
   drupal_add_js(drupal_get_path('module', 'moonrock_data_form') . '/js/MoonrockDataFormSearch.js');
   drupal_add_js(drupal_get_path('module', 'moonrock_data_form') . '/js/MoonrockDataFormData.js');
   drupal_add_js(drupal_get_path('module', 'moonrock_data_form') . '/js/MoonrockDataFormImage.js');
   drupal_add_js(drupal_get_path('module', 'moonrock_data_form') . '/js/MoonrockDataFormSnapshooting.js');
   drupal_add_js(drupal_get_path('module', 'moonrock_data_form') . '/js/init.js');
+
+  drupal_add_js(drupal_get_path('module', 'moonrock_data_form') . '/js/jquery.ba-bbq.js');
+
 
   drupal_add_css(drupal_get_path('module', 'moonrock_data_form') . '/css/itemBrowser.css');
   drupal_add_css(drupal_get_path('module', 'moonrock_data_form') . '/css/moonrock_data_form_tabs.css');
@@ -23,10 +27,11 @@ function moonrock_data_form_load_resources() {
   drupal_add_css(drupal_get_path('module', 'jquery_ui') . '/jquery.ui/themes/base/ui.dialog.css');
 
   moonrock_vm_state_load_resources();
+  moonrock_sample_utils_load_measure_format();
 }
 
 function _moonrock_data_form_create_mainsamples_table($main_samples) {
-  $output = "<div class='moonrock-sample-list-header'>" . t('Rock samples') . "</div>";
+  $output = "<div class='moonrock-sample-list-header'>" . t('Rock samples:') . "</div>";
   $output .= "<div id='moonrock-sample-main-list'>";
   foreach ($main_samples as $sample) {
     $object = moonrock_sample_utils_prepare_object($sample->nid);
@@ -37,11 +42,11 @@ function _moonrock_data_form_create_mainsamples_table($main_samples) {
 }
 
 function _moonrock_data_form_create_snapshot_tables() {
-  $output = "<div class='moonrock-sample-list-header'>" . t('My snapshots') . "</div>"
+  $output = "<div class='moonrock-sample-list-header'>" . t('My snapshots:') . "</div>"
           . "<div id='moonrock-sample-mysnapshots-list-throbber'></div>"
           . "<div id='moonrock-sample-mysnapshots-list'></div>";
 
-  $output .= "<div class='moonrock-sample-list-header'>" . t('Snapshots created by others') . "</div>"
+  $output .= "<div class='moonrock-sample-list-header'>" . t('Snapshots created by others:') . "</div>"
           . "<div id='moonrock-sample-snapshotsbyothers-list-throbber'></div>"
           . "<div id='moonrock-sample-snapshotsbyothers-list'></div>";
   return $output;

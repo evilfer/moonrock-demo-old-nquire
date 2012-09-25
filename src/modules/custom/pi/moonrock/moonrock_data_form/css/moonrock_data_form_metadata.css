@@ -38,3 +38,7 @@ a.external_link div {
   height: 12px;
   background: url(icons/external_link.png) center no-repeat;
 }
+a.external_link span {
+  font-size: small;
+}
+

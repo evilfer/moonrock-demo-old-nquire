@@ -45,7 +45,7 @@ function pi_wiki_notes_access($op, $node, $account) {
     }
 
     /* FIX (eloy)
-     * 
+     * removed delete option.
      */
     if ($op == 'update') {// || $op == 'delete') {
         return check_node_function_of_activity ($details->inquiry_id, $details->activity_id, $user->uid, 'edit');

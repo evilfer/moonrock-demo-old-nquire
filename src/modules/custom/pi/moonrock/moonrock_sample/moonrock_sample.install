@@ -82,6 +82,12 @@ function moonrock_sample_schema() {
               'size' => 'normal',
               'not null' => TRUE,
           ),
+          'info_url' => array(
+              'description' => t('Information site'),
+              'type' => 'text',
+              'size' => 'normal',
+              'not null' => TRUE,
+          ),
           'source' => array(
               'description' => t('Sample collection'),
               'type' => 'text',

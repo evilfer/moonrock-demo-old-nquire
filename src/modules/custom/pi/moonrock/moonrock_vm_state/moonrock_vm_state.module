@@ -26,13 +26,20 @@ function moonrock_vm_state_set() {
   $sample_nid = $_REQUEST['sample_nid'];
   $image = $_REQUEST['image'];
   $vm_parameters = $_REQUEST['vm_parameters'];
-
-  $update_query = "UPDATE {moonrock_vm_state} SET vm_parameters='%s', image='%s' WHERE uid='%d' AND sample_nid='%d'";
-
-  $result = db_query($update_query, $vm_parameters, $image, $user->uid, $sample_nid);
-  if (db_affected_rows() == 0) {
+  
+  $exists = FALSE;
+  $select_query = "SELECT sample_nid FROM {moonrock_vm_state} WHERE uid='%d' AND sample_nid='%d'";
+  $result = db_query($select_query, $user->uid, $sample_nid);
+  if (db_fetch_object($result)) {
+    $exists = TRUE;
+  }
+  
+  if ($exists) {
+    $update_query = "UPDATE {moonrock_vm_state} SET vm_parameters='%s', image='%s' WHERE uid='%d' AND sample_nid='%d'";
+    db_query($update_query, $vm_parameters, $image, $user->uid, $sample_nid);
+  } else {
     $insert_query = "INSERT INTO {moonrock_vm_state} (uid, sample_nid, vm_parameters, image) values ('%d', '%d', '%s', '%s')";
-    $result = db_query($insert_query, $user->uid, $sample_nid, $vm_parameters, $image);
+    db_query($insert_query, $user->uid, $sample_nid, $vm_parameters, $image);
   }
 }
 

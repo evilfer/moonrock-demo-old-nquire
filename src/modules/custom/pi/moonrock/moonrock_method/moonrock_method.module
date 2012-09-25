@@ -1,0 +1,392 @@
+<?php
+
+// $Id: pi_wiki_notes.module,v 1.2 2009/06/11 09:55:10 ou_mbg Exp $
+
+/**
+ * @file
+ * Module for creating "pi_wiki_notes" node type
+ */
+
+/**
+ * Implementation of hook_node_info().
+ */
+function moonrock_method_node_info() {
+
+  return array(
+      'moonrock_method' => array(
+          'name' => t('Moonrock Method'), // Required.
+          'module' => 'moonrock_method', // Required.
+          'description' => t('Plan your Moonrock investigation method'), // Required.
+          'has_title' => TRUE,
+          'title_label' => t('Title'),
+          'has_body' => FALSE,
+//          'body_label' => t('Body'),
+          'locked' => TRUE)
+  );
+}
+
+/**
+ * Implementation of hook_perm().
+ */
+function moonrock_method_perm() {
+  
+}
+
+/**
+ * Implementation of hook_access().
+ */
+function moonrock_method_access($op, $node, $account) {
+  global $user;
+  $details = get_inquiry_details_from_current_path();
+
+  if ($op == 'create') {
+    return check_node_function_of_activity($details->inquiry_id, $details->activity_id, $user->uid, 'add');
+  }
+
+  /* FIX (eloy)
+   * removed delete option.
+   */
+  if ($op == 'update') {// || $op == 'delete') {
+    return check_node_function_of_activity($details->inquiry_id, $details->activity_id, $user->uid, 'edit');
+  }
+}
+
+/**
+ * Implementation of hook_form().
+ */
+function moonrock_method_form(&$node) {
+
+  // Get metadata for this node type
+  // (we use it for labeling title and body fields).
+  // We defined this in pi_wiki_notes_node_info().
+  $type = node_get_types('type', $node);
+  global $user;
+
+  $node_details = get_inquiry_details_from_current_path();
+  if (is_numeric($node_details->activity_id)) {
+    $current_activity = load_activity($node_details->activity_id);
+  }
+
+  if ($current_activity->name) {
+    drupal_set_title(t($current_activity->name));
+  }
+
+  $form['title'] = array(
+      '#type' => 'hidden',
+      '#title' => t('Investigation method'),
+      '#required' => FALSE,
+      '#default_value' => strlen($node->title) > 0 ? $node->title : t('Investigation method'),
+      '#weight' => -5
+  );
+
+  _moonrock_method_prepare_key_question_slots($node);
+
+  $form['method'] = array('#tree' => TRUE);
+  $form['external'] = array('#tree' => TRUE);
+  $form['measures'] = array('#tree' => TRUE);
+  $measures = _moonrock_method_get_measure_options();
+
+  foreach ($node->question_methods as $question_id => $method) {
+    $form['method'][$question_id] = array(
+        '#type' => 'textarea',
+        '#title' => t('Method'),
+        '#required' => FALSE,
+        '#default_value' => $method->method,
+        '#description' => t('Describe how you plan to answer this question.'),
+        '#resizable' => TRUE,
+        '#rows' => 8,
+        '#cols' => 40,
+        '#weight' => 1
+    );
+
+    $form['measures'][$question_id] = array(
+        '#type' => 'checkboxes',
+        '#title' => t('Virtual Microscope measures'),
+        '#required' => FALSE,
+        '#default_value' => explode(',', $method->measures),
+        '#options' => $measures,
+        '#description' => t('Select the measures you can collect with the<br/>Virtual Microscope to help answer this questions.'),
+        '#weight' => 2,
+    );
+    $form['external'][$question_id] = array(
+        '#type' => 'textarea',
+        '#title' => t('External information'),
+        '#required' => FALSE,
+        '#default_value' => $method->external,
+        '#description' => t('Indicate external sources of information (e.g., web pages, that can help in answering this question.'),
+        '#resizable' => TRUE,
+        '#rows' => 8,
+        '#cols' => 40,
+        '#weight' => 3
+    );
+  }
+
+  $prefix = "";
+  if ($current_activity->description) {
+    $prefix .= "<p>" . check_plain($current_activity->description) . "</p>";
+  }
+
+  $form['#prefix'] = $prefix;
+
+  return $form;
+}
+
+function _moonrock_method_prepare_key_question_slots(&$node) {
+  $key_questions = pi_sort_key_questions_get_options();
+  if (!isset($node->question_methods)) {
+    $node->question_methods = array();
+  }
+  foreach ($key_questions as $nid => $question) {
+    if (!isset($node->question_methods[$nid])) {
+      $item = new stdClass();
+      $item->question_id = $nid;
+      $item->title = $question['#title'];
+      $item->method = '';
+      $item->external = '';
+      $item->measures = '';
+      $node->question_methods[$nid] = $item;
+    }
+  }
+}
+
+function _moonrock_method_get_measure_options() {
+  moonrock_sample_utils_load_measure_format();
+
+  global $user;
+  $details = get_inquiry_details_from_current_path();
+
+  $sort_measures_nid = find_selected_measures_nid_for_uid_and_inquiry($user->uid, $details->inquiry_id);
+  $sort_measures = node_load($sort_measures_nid);
+
+  $measures = array();
+  foreach ($sort_measures->categories as $key => $measure_status) {
+    if ($measure_status['#status'] == 'selected') {
+      $measure = node_load($key);
+      if ($measure->content_options) {
+        $for_planning_function = "{$measure->content_options}_nquire_data_suitable_for_method_planning";
+        if (!function_exists($for_planning_function) || $for_planning_function()) {
+          $measures[$measure->nid] = moonrock_sample_utils_format_measure_info($measure);
+        }
+      } else {
+        $measures[$measure->nid] = moonrock_sample_utils_format_measure_info($measure);
+      }
+    }
+  }
+
+  return $measures;
+}
+
+/**
+ * Implementation of hook_insert().
+ */
+function moonrock_method_insert($node) {
+  _moonrock_method_prepare_key_question_slots($node);
+  foreach ($node->question_methods as $question_id => $method) {
+    $method->method = $node->method[$question_id];
+    $method->external = $node->external[$question_id];
+    $method->measures = implode(',', array_filter($node->measures[$question_id]));
+    $node->question_methods[$question_id] = $method;
+  }
+
+  $insert_query = "INSERT INTO {moonrock_method} (nid, vid, question_id, method, measures, external) VALUES ('%d', '%d', '%d', '%s', '%s', '%s')";
+  foreach ($node->question_methods as $question_id => $method) {
+    db_query($insert_query, $node->nid, $node->vid, $question_id, $method->method, $method->measures, $method->external);
+  }
+}
+
+/**
+ * Implementation of hook_update().
+ */
+function moonrock_method_update($node) {
+  if ($node->revision) {
+    moonrock_method_insert($node);
+  } else {
+
+
+    $select_query = "SELECT nid FROM {moonrock_method} WHERE vid='%d' AND question_id='%d'";
+    $update_query = "UPDATE {moonrock_method} SET method='%s', measures='%s', external='%s' WHERE vid=%d AND question_id=%d";
+    $insert_query = "INSERT INTO {moonrock_method} (nid, vid, question_id, method, measures, external) VALUES ('%d', '%d', '%d', '%s', '%s', '%s')";
+    foreach ($node->question_methods as $question_id => $method) {
+
+      $exists = FALSE;
+      $result = db_query($select_query, $node->vid, $question_id);
+      if (db_fetch_object($result)) {
+        $exists = TRUE;
+      }
+
+      if ($exists) {
+        db_query($update_query, $method->method, $method->measures, $method->external, $node->vid, $question_id);
+      } else {
+        db_query($insert_query, $node->nid, $node->vid, $question_id, $method->method, $method->measures, $method->external);
+      }
+    }
+  }
+}
+
+/**
+ * Implementation of hook_delete().
+ */
+function moonrock_method_delete(&$node) {
+  // Delete the related information we were saving for this node.
+  db_query('DELETE FROM {moonrock_method} WHERE nid = %d', $node->nid);
+}
+
+/**
+ * Implementation of hook_load().
+ */
+function moonrock_method_load($node) {
+
+  _moonrock_method_prepare_key_question_slots($node);
+
+  foreach ($node->question_methods as $question_id => $method) {
+    $item = db_fetch_object(db_query('SELECT * FROM {moonrock_method} WHERE vid = %d AND question_id = %d', $node->vid, $question_id));
+    $method->method = $item->method;
+    $method->external = $item->external;
+    $method->measures = $item->measures;
+    $node->question_methods[$question_id] = $method;
+  }
+
+  return $node;
+}
+
+function moonrock_method_link_alter(&$links, $node) {
+  // remove attachment links from upload.module
+  unset($links['upload_attachments']);
+}
+
+/**
+ * Implementation of hook_view().
+ */
+function moonrock_method_view($node, $teaser = FALSE, $page = FALSE) {
+  //$node->content['body']['#value'] = $teaser ? $node->teaser : ('<div id="moonrock-activity-description">' . $node->body . '</div>');
+
+  $node->content['moonrock_method'] = array(
+      '#value' => theme('moonrock_method', $node, $teaser),
+      '#weight' => 1
+  );
+
+  return $node;
+}
+
+/**
+ * MISSING
+ *
+ * @return multitype:multitype:multitype:string
+ */
+function moonrock_method_theme() {
+  return array(
+      'moonrock_method' => array(
+          'arguments' => array('node', 'teaser'),
+      ),
+      'moonrock_method_node_form' => array(
+          'arguments' => array('form'),
+      ),
+  );
+}
+
+/**
+ * MISSING
+ *
+ * @param unknown_type $node
+ * @return string
+ */
+function theme_moonrock_method($node, $teaser) {
+  moonrock_method_load_resources();
+
+  $output = '';
+
+  $output .= '<div>'
+          . '<p>' . t('Plan how to answer your questions.') . '</p>'
+          . '<p>' . t('Here you can describe the method to investigate your questions. '
+                  . 'The objective of this inquiry is to proposse and answer questions using data collected with the Virtual Microscope. '
+                  . 'Therefore, you must select the measures that are relevant for each question. '
+                  . 'Additionally, you can indicate external sources of data that can help you answer them.') . '</p>'
+          . '<p>' . t('Take into account that some questions may not be answerable using the Virtual Microcope alone. '
+                  . 'Therefore, you may want to review your questions (in activity ')
+          . moonrock_sample_utils_activity_link('pi_sort_key_questions') . t(') as you define your investigation method.') . '</p>'
+          . '</div>';
+
+  if ($teaser) {
+    /*    global $user;
+
+      $details = get_inquiry_details_from_current_path();
+      $sample_view_activity_id = get_activity_id_for_nid($node->nid);
+
+
+      $samples = moonrock_method_get_main_samples($node);
+      $output .= '<div style="width: 100%; text-align: center:">';
+      foreach ($samples as $sample) {
+      $img = '<img style="padding:10px; width: 200px;" src="' . moonrock_snapshot_images_get_sample_url($sample->nid) . '"></img>';
+      $output .= build_activity_link_alternative_text($details->inquiry_id, $details->stage_id, $details->phase_id, $sample_view_activity_id, $user->uid, $img, '', 'view');
+      }
+      $output .= '</div>'; */
+  } //else {
+    $headers = array(
+        t('Key question'),
+        t('Method'),
+        t('Virtual Microscope measures'),
+        t('External information'),
+    );
+
+    $measures = _moonrock_method_get_measure_options();
+
+    $values = array();
+    foreach ($node->question_methods as $method) {
+      $measures_text = '<ul>';
+      if (strlen($method->measures > 0)) {
+        foreach (explode(',', $method->measures) as $measure_nid) {
+          $measures_text .= '<li>' . $measures[$measure_nid] . '</li>';
+        }
+      }
+      $measures_text .= '</ul>';
+
+      $values[] = array(
+          check_plain($method->title),
+          check_plain($method->method),
+          $measures_text,
+          check_plain($method->external),
+      );
+    }
+
+
+    $output .= theme('table', $headers, $values, array('class' => 'moonrock-method'));
+ // }
+  return $output;
+}
+
+function theme_moonrock_method_node_form($form) {
+  moonrock_method_load_resources();
+
+  $output = '';
+
+  $headers = array(
+      t('Key question'),
+      t('Method'),
+      t('Virtual Microscope measures'),
+      t('External information'),
+  );
+
+  $values = array();
+  foreach ($form['#node']->question_methods as $question_id => $method) {
+    $values[] = array(
+        check_plain($method->title),
+        drupal_render($form['method'][$question_id]),
+        drupal_render($form['measures'][$question_id]),
+        drupal_render($form['external'][$question_id]),
+    );
+  }
+
+  $output .= theme('table', $headers, $values, array('class' => 'moonrock-method'));
+
+  $output .= drupal_render($form);
+  return $output;
+}
+
+function moonrock_method_load_method($key_question_nid) {
+  return db_fetch_object(db_query('SELECT * FROM {moonrock_method} WHERE question_id = %d', $key_question_nid));
+}
+
+function moonrock_method_load_resources() {
+  moonrock_sample_utils_load_measure_format();
+  drupal_add_css(drupal_get_path('module', 'moonrock_method') . '/css/method.css');
+}

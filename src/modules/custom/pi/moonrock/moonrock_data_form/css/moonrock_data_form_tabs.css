@@ -142,24 +142,11 @@
   padding: 10px;
 }
 
-.moonrock-measure-title {
-  display: inline-block;
-  font-weight: bold;
-  padding-top: 15px;
-}
 
 .moonrock-measure-fixedvalue {
   padding-left: 10px;
 }
 
-.moonrock-snapshot-no-value {
-  font-weight: normal;
-  font-weight: bold;
-}
-
-.moonrock-measure-fixedvalue.moonrock-snapshot-no-value {
-  color: red;
-}
 
 #moonrock-data-form-vm-resize {
   display: none;

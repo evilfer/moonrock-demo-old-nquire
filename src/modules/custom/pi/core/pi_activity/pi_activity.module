@@ -632,7 +632,7 @@ function get_node_ids_for_activity_type($inquiry_id, $activity_type, $uid) {
           . "LEFT JOIN {pi_activity_actor} ON (( {pi_activity_node}.inquiry_id = {pi_activity_actor}.inquiry_id ) AND ( {pi_activity_actor}.activity_id = {pi_activity}.activity_id )) "
           . "LEFT JOIN {og_uid} ON {og_uid}.nid = {pi_activity_actor}.gid "
           . "WHERE {pi_activity_node}.inquiry_id = %d "
-          . "AND {pi_activity}.activity_type =  '%s' "
+          . "AND {pi_activity}.activity_type =  '%s'"
           . "AND ({pi_activity_actor}.uid = %d OR {og_uid}.uid = %d)";
 
   // print $query;

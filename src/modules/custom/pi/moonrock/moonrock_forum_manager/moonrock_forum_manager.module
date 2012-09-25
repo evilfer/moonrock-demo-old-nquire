@@ -1,0 +1,24 @@
+<?php
+
+function moonrock_forum_manager_form_alter(&$form, &$form_state, $form_id) {
+
+
+  if ($form_id === 'forum_node_form') {
+    if ($form['field_inquiry_item']['#default_value'][0]['nid']) {
+      $form['title']['#type'] = 'value';
+    }
+
+    //$form['field_inquiry_item']['#type'] = 'nodereference_hidden';
+    $form['shadow']['#type'] = 'value';
+    $form['taxonomy']['1']['#type'] = 'value';
+    $form['taxonomy']['1']['#value'] = $form['taxonomy']['1']['#default_value'][0];
+
+    unset($form['taxonomy']['1']['#theme']);
+    return;
+  }
+}
+
+function moonrock_forum_manager_find_forum_topic($nid) {
+  
+}
+

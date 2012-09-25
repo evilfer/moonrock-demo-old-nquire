@@ -157,13 +157,7 @@ function pi_data_form(&$node) {
         $measure_info = node_load($measure_info_nid);
 
         //format the measure units
-        if (isset($measure_info->units_short) AND ($measure_info->units_short != '')) {
-          $units = " (" . $measure_info->units_short . ")";
-        } elseif (isset($measure_info->units) AND ($measure_info->units != '')) {
-          $units = " (" . $measure_info->units . ")";
-        } else {
-          $units = "";
-        };
+
 
         //set as required field if a key measure
         if ($measure_selection['#status'] == 'key') {
@@ -172,9 +166,7 @@ function pi_data_form(&$node) {
           $required_value = FALSE;
         }
 
-        $measure_text = '<div class="moonrock-measure-title">'
-                . check_plain($measure_info->title . $units) . moonrock_sample_utils_add_info_tooltip($measure_info->title, $measure_info->body)
-                . '</div>';
+        $measure_text = moonrock_sample_utils_format_measure_info($measure_info);
 
         switch ($measure_info->field_type) {
           // field_type = textfield

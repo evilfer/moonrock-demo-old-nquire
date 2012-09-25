@@ -216,8 +216,9 @@ function theme_moonrock_color($node, $teaser) {
 
 function moonrock_color_nquire_data_form_prefix($measure) {
   $measure_text = check_plain($measure->title) . moonrock_sample_utils_add_info_tooltip($measure->title, $measure->body);
-  $output = "<div class='moonrock-measure'>"
-          . "<div class='moonrock-measure-title'>$measure_text</div>"
+  $output = '<div class="form-item">'
+          . "<div class='moonrock-measure'>"
+          . "<div class='moonrock-measure-title'>$measure_text:</div>"
           . "<div class='moonrock-measure-fixedvalue' id='moonrock-measure-fixedvalue-sample'></div>"
           . "</div>";
 
@@ -230,6 +231,8 @@ function moonrock_color_nquire_data_form_prefix($measure) {
   $output .= "<button type='button' id='moonrockColorPickerOpen'>" . t("Open") . "</button>";
   $output .= "<button type='button' id='moonrockColorPickerClose' style='display: none;'>" . t("Close") . "</button>";
   $output .= "<button type='button' id='moonrockColorPickerClear'>" . t("Clear") . "</button>";
+  $output .= "</div>";
+  $output .= '<small>' . t('Use the mouse to move and zoom the colour chart.') . '</small>';
   $output .= "</div>";
 
   $output .= _moonrock_color_create_color_picker_image();
@@ -455,3 +458,4 @@ function _moonrock_color_displayTree($array) {
 function moonrock_color_nquire_data_suitable_for_graph_variable() {
   return FALSE;
 }
+

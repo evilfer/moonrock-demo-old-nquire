@@ -98,6 +98,7 @@
   height: 12px;
   width: 18px;
   background: url(icons/info.png) no-repeat right;
+  background-size: 12px 12px;
 }
 .item-browser-item-title-open {
   font-weight: bold;

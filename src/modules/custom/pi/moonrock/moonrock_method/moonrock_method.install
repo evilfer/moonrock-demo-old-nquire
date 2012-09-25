@@ -1,0 +1,107 @@
+<?php
+
+// $Id: moonrock_method.install,v 1.2 2009/06/11 09:55:10 ou_mbg Exp $
+
+/**
+ * @file
+ * Install....
+ */
+
+/**
+ * Implementation of moonrock_method_install().
+ *
+ * @return unknown_type
+ */
+function moonrock_method_install() {
+  // Create tables.
+  drupal_install_schema('moonrock_method');
+
+  variable_set("og_content_type_usage_moonrock_method", 'group_post');
+  //Options are status, promote, sticky, revision
+  variable_set("node_options_moonrock_method", array('status', 'revision'));
+  variable_set("comment_moonrock_method", COMMENT_NODE_DISABLED);
+  variable_set("upload_moonrock_method", 0);
+
+  //$activities = variable_get('pi_activities', array() );
+  //$activities['moonrock_method'] = 'See Moon rock samples';
+  //variable_set('pi_activities', $activities);
+}
+
+/**
+ * Implementation of moonrock_method_uninstall().
+ */
+function moonrock_method_uninstall() {
+  // Remove tables.
+  drupal_uninstall_schema('moonrock_method');
+  variable_del('moonrock_method');
+
+  variable_del("og_content_type_usage_moonrock_method");
+  variable_del("node_options_moonrock_method");
+  variable_del("comment_moonrock_method");
+  variable_del("upload_moonrock_method");
+
+  //$activities = variable_get('pi_activities', array() );
+  //unset( $activities['moonrock_method'] );
+  //variable_set('pi_activities', $activities);
+}
+
+/**
+ * Implementation of moonrock_method_schema().
+ */
+function moonrock_method_schema() {
+
+  $schema['moonrock_method'] = array(
+      'description' => t('Moonrock method'),
+      'fields' => array(
+          'nid' => array(
+              'description' => t('node id'),
+              'type' => 'int',
+              'unsigned' => TRUE,
+              'not null' => TRUE,
+              'size' => 'small',
+              'default' => 0,
+          ),
+          'vid' => array(
+              'description' => t('The current vid version identifier'),
+              'type' => 'int',
+              'unsigned' => TRUE,
+              'not null' => TRUE,
+              'default' => 0,
+          ),
+          'question_id' => array(
+              'description' => t('Key question nid'),
+              'type' => 'int',
+              'unsigned' => TRUE,
+              'default' => 0,
+              'not null' => TRUE,
+          ),
+          'method' => array(
+              'description' => t('Method'),
+              'type' => 'text',
+              'size' => 'normal',
+              'not null' => TRUE,
+              'default' => '',
+          ),
+          'measures' => array(
+              'description' => t('Microscope measures'),
+              'type' => 'text',
+              'size' => 'normal',
+              'not null' => TRUE,
+              'default' => '',
+          ),
+          'external' => array(
+              'description' => t('External information'),
+              'type' => 'text',
+              'size' => 'normal',
+              'not null' => TRUE,
+              'default' => '',
+          ),
+      ),
+      'primary key' => array('vid', 'question_id'),
+      'indexes' => array(
+          'nid' => array('nid'),
+      ),
+  );
+
+  return $schema;
+}
