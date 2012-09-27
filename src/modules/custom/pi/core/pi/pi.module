@@ -239,33 +239,24 @@ function get_inquiry_details_from_current_path() {
   } else if (arg(0) == 'node') {
     /*
      * FIX (eloy)
-     * If there's only one inquiry, then use it anyway.
+     * If a node is linked with an activity, go to activity.
      */
-    $activity_id = (int) get_activity_id_for_nid(arg(1));
-    if ($activity_id) {
-      drupal_goto('activity/' . $activity_id . '/view');
+    if ($user->uid > 1) {
+      $activity_id = (int) get_activity_id_for_nid(arg(1));
+      if ($activity_id) {
+        drupal_goto('activity/' . $activity_id . '/view');
+      }
     }
+  } else {
+    $inquiry_ids = get_inquiry_ids_of_user($user->uid);
+    if (count($inquiry_ids) == 1) {
+      $result->inquiry_id = (int) $inquiry_ids[0];
+      $stage = get_current_stage_of_inquiry_and_user($result->inquiry_id, $uid);
+      $result->stage_id = $stage->stage_id;
+    }
+    
   }
 
-  /*
-    if (arg(0) == 'node' && (arg(1) == 'add' || arg(2) == 'edit' || arg(2) == 'view')) {
-    $result->inquiry_id = arg(3);
-    $result->stage_id = arg(4);
-    $result->phase_id = arg(5);
-    $result->activity_id = arg(6);
-    }
-    elseif (arg(0) == 'node' && is_numeric(arg(1)) && is_numeric(arg(2))) {
-    $result->inquiry_id = arg(2);
-    $result->stage_id = arg(3);
-    $result->phase_id = arg(4);
-    $result->activity_id = arg(5);
-    }
-    else {
-    $result->inquiry_id = arg(3);
-    $result->stage_id = arg(4);
-    $result->phase_id = arg(5);
-    $result->activity_id = arg(6);
-    } */
 
   return $result;
 }
@@ -658,9 +649,9 @@ function get_unique_activities($activities) {
  */
 function get_inquiries_of_user($uid = 0) {
   $ids = get_inquiry_ids_of_user($uid);
-  
+
   $inquiries = array();
-  foreach($ids as $id) {
+  foreach ($ids as $id) {
     $inquiries[] = node_load($id);
   }
   return $inquiries;
@@ -691,8 +682,6 @@ function get_inquiry_ids_of_user($uid = 0) {
   }
   return $inquiry_ids;
 }
-
-
 
 /**
  * Deprecated function

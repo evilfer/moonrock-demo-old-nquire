@@ -17,19 +17,6 @@ function moonrock_sample_utils_find_unique_seesamples_activity() {
   }
 }
 
-function moonrock_sample_utils_format_measure_info($measure_info) {
-  if (isset($measure_info->units_short) AND ($measure_info->units_short != '')) {
-    $units = " (" . $measure_info->units_short . ")";
-  } elseif (isset($measure_info->units) AND ($measure_info->units != '')) {
-    $units = " (" . $measure_info->units . ")";
-  } else {
-    $units = "";
-  };
-  return '<div class="moonrock-measure-title">'
-          . check_plain($measure_info->title . $units) . moonrock_sample_utils_add_info_tooltip($measure_info->title, $measure_info->body)
-          . '</div>';
-}
-
 function moonrock_sample_utils_add_info_tooltip($title, $content) {
   $output = "<span class='qtip-link'>"
           . "<div class='qtip-header'>$title</div>"
@@ -126,4 +113,62 @@ function moonrock_sample_utils_activity_link($type) {
 
 function moonrock_sample_utils_load_measure_format() {
   drupal_add_css(drupal_get_path('module', 'moonrock_sample_utils') . '/css/measures.css');
+}
+
+function moonrock_sample_utils_load_vmSample_format() {
+  drupal_add_css(drupal_get_path('module', 'moonrock_sample_utils') . '/css/external_link.css');
+  drupal_add_css(drupal_get_path('module', 'moonrock_sample_utils') . '/css/vmSample.css');
+  drupal_add_js(drupal_get_path('module', 'moonrock_sample_utils') . '/js/vmSample.js');
+}
+
+function moonrock_sample_utils_load_falseblock_format() {
+  drupal_add_css(drupal_get_path('module', 'moonrock_sample_utils') . '/css/falseblock.css');
+}
+
+function moonrock_sample_utils_theme() {
+  return array(
+      'moonrock_sample_utils_page_with_block' => array(
+          'arguments' => array('page', 'blocks'),
+      ),
+      'moonrock_sample_utils_measure_info' => array(
+          'arguments' => array('measure_info'),
+      ),
+  );
+}
+
+function theme_moonrock_sample_utils_page_with_block($page, $blocks) {
+
+  moonrock_sample_utils_load_falseblock_format();
+
+  $output = '<div class="moonrock-sample-utils-pageblock-container">'
+          . ' <div class="moonrock-sample-utils-pageblock-page">'
+          . $page
+          . ' </div>'
+          . ' <div class="moonrock-sample-utils-pageblock-blocks">';
+  foreach ($blocks as $block) {
+    $output .= '  <div class="moonrock-sample-utils-pageblock-falseblock" id="' . $block['id'] . '">'
+            . '   <h2 class="title">' . $block['title'] . '</h2>'
+            . '   <div class="content">' . $block['content'] . '</div>'
+            . '  </div>';
+  }
+  $output .= ' </div>'
+          . '</div>';
+
+  return $output;
+}
+
+function theme_moonrock_sample_utils_measure_info($measure_info) {
+  moonrock_sample_utils_load_measure_format();
+  
+  if (isset($measure_info->units_short) AND ($measure_info->units_short != '')) {
+    $units = " (" . $measure_info->units_short . ")";
+  } elseif (isset($measure_info->units) AND ($measure_info->units != '')) {
+    $units = " (" . $measure_info->units . ")";
+  } else {
+    $units = "";
+  };
+  
+  return '<div class="moonrock-measure-title">'
+          . check_plain($measure_info->title . $units) . moonrock_sample_utils_add_info_tooltip($measure_info->title, $measure_info->body)
+          . '</div>';
 }

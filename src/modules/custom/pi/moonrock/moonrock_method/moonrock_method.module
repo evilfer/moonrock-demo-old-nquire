@@ -165,10 +165,10 @@ function _moonrock_method_get_measure_options() {
       if ($measure->content_options) {
         $for_planning_function = "{$measure->content_options}_nquire_data_suitable_for_method_planning";
         if (!function_exists($for_planning_function) || $for_planning_function()) {
-          $measures[$measure->nid] = moonrock_sample_utils_format_measure_info($measure);
+          $measures[$measure->nid] = theme('moonrock_sample_utils_measure_info', $measure);
         }
       } else {
-        $measures[$measure->nid] = moonrock_sample_utils_format_measure_info($measure);
+        $measures[$measure->nid] = theme('moonrock_sample_utils_measure_info', $measure);
       }
     }
   }

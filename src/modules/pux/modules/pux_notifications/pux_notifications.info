@@ -1,0 +1,13 @@
+core = "6.x"
+name = "Profile UX Notifications"
+description = "Integrate with Notifications 6.x-2.x"
+package = "Profile UX"
+project = "pux_notifications"
+version = "6.x-1.0"
+
+; Information added by drupal.org packaging script on 2011-04-26
+version = "6.x-1.0-alpha2"
+core = "6.x"
+project = "pux"
+datestamp = "1303802516"
+

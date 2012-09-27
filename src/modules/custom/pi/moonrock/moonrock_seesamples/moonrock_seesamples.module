@@ -167,35 +167,67 @@ function moonrock_seesamples_theme() {
       'moonrock_seesamples' => array(
           'arguments' => array('node', 'teaser'),
       ),
+      'moonrock_seesamples_table' => array(
+          'arguments' => array('node', 'teaser', 'linkVM'),
+      ),
   );
 }
 
-/**
- * MISSING
- *
- * @param unknown_type $node
- * @return string
- */
 function theme_moonrock_seesamples($node, $teaser) {
-  module_load_include('inc', 'moonrock_seesamples', 'moonrock_seesamples.table');
+  if ($teaser) {
+    return theme('moonrock_seesamples_table', $node, $teaser, FALSE);
+  } else {
+    return theme('moonrock_vm_view_page', $node);
+  }
+}
+
+function theme_moonrock_seesamples_table($node, $teaser, $linkVM) {
+  module_load_include('inc', 'moonrock_seesamples_table', 'moonrock_seesamples.table');
+  moonrock_seesamples_load_resources();
+  moonrock_sample_utils_load_vmSample_format();
+
   $output = '';
 
+  global $user;
+
+  $details = get_inquiry_details_from_current_path();
+  $sample_view_activity_id = get_activity_id_for_nid($node->nid);
+
+
+  $samples = moonrock_seesamples_get_main_samples($node);
+
   if ($teaser) {
-    global $user;
-
-    $details = get_inquiry_details_from_current_path();
-    $sample_view_activity_id = get_activity_id_for_nid($node->nid);
-    
-
-    $samples = moonrock_seesamples_get_main_samples($node);
     $output .= '<div style="width: 100%; text-align: center:">';
-    foreach($samples as $sample) {
+    foreach ($samples as $sample) {
       $img = '<img style="padding:10px; width: 200px;" src="' . moonrock_snapshot_images_get_sample_url($sample->nid) . '"></img>';
       $output .= build_activity_link_alternative_text($details->inquiry_id, $details->stage_id, $details->phase_id, $sample_view_activity_id, $user->uid, $img, '', 'view');
     }
-    $output  .= '</div>';
+    $output .= '</div>';
   } else {
-    $output .= moonrock_data_form_seesamples_activity();
+    $output .= '<div class="moonrock-sample-list">';
+    foreach ($samples as $sample) {
+      $output .= '<div class="moonrock-sample-container">';
+
+      $output .= '<div class="vmSample" item-id="' . $sample['sample']['nid'] . '" '
+              . 'item-image="' . $sample['sample']['image'] . '" '
+              . 'item-title="' . check_plain($sample['title']) . '" ';
+      if ($linkVM) {
+        $output .= 'item-vm="' . $sample['vm'] . '"';
+      }
+      $output .= '></div>';
+      $output .= '<div class="moonrock-sample-title">' . check_plain($sample['title']) . '</div>';
+      $output .= '<div class="moonrock-sample-metadata">';
+      foreach ($sample['metadata'] as $key => $metadatum) {
+        $output .= '<div class="moonrock-sample-metadata-row">';
+        $output .= '<div class="moonrock-sample-metadata-cell moonrock-sample-metadata-key moonrock-sample-metadata-key-' . $key . '">' . $metadatum['title'] . '</div>';
+        $output .= '<div class="moonrock-sample-metadata-cell moonrock-sample-metadata-value moonrock-sample-metadata-value-' . $key . '">' . $metadatum['value'] . '</div>';
+        $output .= '</div>';
+      }
+      $output .= '</div>';
+
+      $output .= '</div>';
+    }
+    $output .= '</div>';
   }
   return $output;
 }
@@ -205,3 +237,66 @@ function moonrock_seesamples_form_pi_key_questions_node_form_alter(&$form, &$for
   return;
 }
 
+function moonrock_seesamples_load_resources() {
+  drupal_add_css(drupal_get_path('module', 'moonrock_seesamples') . '/css/seesamples.css');
+  drupal_add_js(drupal_get_path('module', 'moonrock_seesamples') . '/js/seesamples.js');
+}
+
+function moonrock_seesamples_get_alternative_sample_title($node, $title) {
+  $sample_list = explode("\n", $node->samples);
+
+  foreach ($sample_list as $sample) {
+    $parts = explode("|", trim($sample), 2);
+    if (count($parts) == 2) {
+      if (!strcmp($parts[0], $title)) {
+        return $parts[1];
+      }
+    }
+  }
+
+  return $title;
+}
+
+function moonrock_seesamples_get_main_samples($node) {
+  $result = array();
+  $sample_list = explode("\n", $node->samples);
+
+
+  $query = "SELECT {node}.nid FROM {node} "
+          . "LEFT JOIN {moonrock_sample} on {node}.nid={moonrock_sample}.nid "
+          . "WHERE {node}.type='moonrock_sample' "
+          . "AND {node}.title LIKE '%s' LIMIT 1";
+
+  foreach ($sample_list as $sample) {
+    $parts = explode("|", trim($sample), 2);
+    if (count($parts) == 2) {
+      $object = db_fetch_object(db_query($query, $parts[0]));
+      if ($object) {
+        $result[] = moonrock_sample_utils_prepare_object($object->nid);
+      }
+    }
+  }
+
+  return $result;
+}
+
+function moonrock_seesamples_search_enabled($node) {
+  $sample_view_activity_id = get_activity_id_for_nid($node->nid);
+  $sample_view_activity = pi_activity_load($sample_view_activity_id);
+
+  return $sample_view_activity && strpos($sample_view_activity->parameters, "moonrock_sample_search") !== FALSE;
+}
+
+function moonrock_seesamples_specific_sample_title($node, $sample_node) {
+  $sample_list = explode("\n", $node->samples);
+
+  $titles = array();
+  foreach ($sample_list as $sample) {
+    $parts = explode("|", trim($sample), 2);
+
+    if (count($parts) == 2 && !strcasecmp($parts[0], $sample_node->title)) {
+      return $parts[1];
+    }
+  }
+  return NULL;
+}

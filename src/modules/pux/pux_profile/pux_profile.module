@@ -1,0 +1,264 @@
+<?php
+
+/**
+ * Implements hook_permission()
+ */
+function pux_profile_perm() {
+	return array(
+    'administer profile ux profile settings',
+		'access own user profile'
+  );
+}
+
+/**
+ * Implements hook_menu()
+ */
+function pux_profile_menu() {
+	
+	$items['login'] = array(
+		'title' => "Log in",
+		'page callback' => 'pux_profile_user_login_page',
+		'access callback' => 'user_is_anonymous',
+		'type' => MENU_NORMAL_ITEM,
+		'menu_name' => 'user-menu',
+		'weight' => -1000,
+	);
+	
+	$items['profile'] = array(
+		'title' => "Profile",
+		'page callback' => 'pux_profile_profile_redirect',
+		'access callback' => 'pux_profile_profile_access',
+		'type' => MENU_NORMAL_ITEM,
+		'menu_name' => 'user-menu',
+		'weight' => -101,
+	);
+	
+  return $items;
+}
+
+/**
+ * Implements hook_menu_alter()
+ */
+function pux_profile_menu_alter(&$items) {
+	
+	$items['user']['type'] = MENU_SUGGESTED_ITEM;
+	$items['user/login']['page callback'] = "pux_profile_redirect_login";
+	$items['user/logout']['type'] = MENU_SUGGESTED_ITEM;
+	$items['user/register']['type'] = MENU_SUGGESTED_ITEM;
+	$items['user/password']['type'] = MENU_SUGGESTED_ITEM;
+	
+	$items['user']['page callback'] = "pux_profile_user_page";
+	
+  // Alter the menu item to use 'profile_page_user_view_page' instead of the
+	// default 'user_view_page'
+	$items['user/%user/view']['page callback'] = 'pux_profile_user_view_page';
+  $items['user/%user/view']['title'] = "Profile";
+	$items['user/%user_uid_optional']['page callback'] = 'pux_profile_user_view_page';
+	
+	// Change the tabs name
+	$items['user/%user/view']['title'] = 'Profile';
+}
+
+function pux_profile_user_page() {
+  global $user;
+  if ($user->uid) {
+    menu_set_active_item('user/' . $user->uid);
+    return menu_execute_active_handler();
+  }
+  else {
+		drupal_goto("login");
+  }
+}
+
+function pux_profile_user_login_page() {
+	drupal_set_title("Login");
+  return drupal_get_form('user_login');
+}
+
+function pux_profile_profile_redirect() {
+	drupal_goto("user");
+}
+
+function pux_profile_profile_access() {
+	if(user_is_logged_in()) {
+		return TRUE;
+	}
+}
+
+function pux_profile_redirect_login() {
+	drupal_goto("login");
+}
+
+/**
+ * Callback to replace the default user_view_page
+ *
+ * @see pux_profile_user_view
+ * @see pux_profile_menu_alter
+ */
+function pux_profile_user_view_page($account) {
+	drupal_set_title(check_plain($account->name));
+  // Retrieve all profile fields and attach to $account->content.
+  user_build_content($account);
+
+  // To theme user profiles, copy modules/user/user_profile.tpl.php
+  // to your theme directory, and edit it as instructed in that file's comments.
+	return theme('profile_page', $account);
+}
+
+/**
+ * Implements hook_theme()
+ */
+function pux_profile_theme($existing, $type, $theme, $path) {
+  return array(
+    'profile_page' => array(
+      'arguments' => array('account' => NULL),
+			'template' => 'profile-page',
+    ),
+		'create_account' => array(
+      'arguments' => array(),
+			'template' => 'create-account',
+    ),
+		'about_user' => array(
+			'arguments' => array('account' => NULL, 'fields' => array()),
+			'template' => 'about-user',
+		),
+		'block_user_picture' => array(
+			'arguments' => array('account' => NULL),
+		),
+  );
+}
+
+/**
+ * Preprocess function
+ */
+function pux_profile_preprocess_profile_page(&$vars) {
+	// This preprocess function is empty for now
+}
+
+function pux_profile_preprocess_about_user(&$variables) {
+	$variables['picture'] = theme('user_picture', $variables['account']);
+  $variables['profile'] = array();
+  // Supply filtered version of $fields that have values.
+  foreach ($variables['fields'] as $field) {
+    if ($field->value) {
+      $variables['profile'][$field->name]->title = check_plain($field->title);
+      $variables['profile'][$field->name]->value = $field->value;
+      $variables['profile'][$field->name]->type = $field->type;
+    }
+  }
+}
+
+/**
+ * Theme function for the user picture block
+ */
+function theme_block_user_picture($account) {
+	return theme('user_picture', $account);
+}
+
+/**
+ * Implement hook_block
+ */
+function pux_profile_block($op = 'list', $delta = 0, $edit = array()) {
+  if ($op == 'list') {
+		$blocks['create-account'] = array(
+			'info' => t('Create account'), 
+		);
+		
+		// This block is based in the block by profile.module : "About author"
+		// but modified to be shown in the profile page.
+		
+		// @see profile_block
+		$blocks['about-user'] = array(
+			'info' => t("About user"),
+			'cache' => BLOCK_CACHE_PER_PAGE | BLOCK_CACHE_PER_ROLE,
+		);
+		
+		// @see profile_block
+		$blocks['user-picture'] = array(
+			'info' => t("User picture"),
+		);
+
+    return $blocks;
+	}
+	else if ($op == 'configure' && $delta == "about-user") {
+    // Compile a list of fields to show
+    $fields = array();
+    $result = db_query('SELECT name, title, weight, visibility FROM {profile_fields} WHERE visibility IN (%d, %d) ORDER BY weight', PROFILE_PUBLIC, PROFILE_PUBLIC_LISTINGS);
+    while ($record = db_fetch_object($result)) {
+      $fields[$record->name] = check_plain($record->title);
+    }
+    $form['pux_profile_block_author_fields'] = array(
+      '#type' => 'checkboxes', 
+      '#title' => t('Profile fields to display'), 
+      '#default_value' => variable_get('pux_profile_block_author_fields', array()), 
+      '#options' => $fields, 
+      '#description' => t('Select which profile fields you wish to display in the block. Only fields designated as public in the <a href="@profile-admin">profile field configuration</a> are available.', array('@profile-admin' => url('admin/user/profile'))),
+    );
+    return $form;
+  }
+  else if ($op == 'save' && $delta == "about-user") {
+    variable_set('pux_profile_block_author_fields', $edit['pux_profile_block_author_fields']);
+  }
+	
+	else if ($op == 'view' && $delta == "create-account") {
+		if(user_is_anonymous()) {
+			$block['subject'] = t('Create your account');
+			$block['content'] = theme('create_account');
+			
+			return $block;
+		}
+	}
+	
+	else if ($op == "view" && $delta == "about-user") {
+		if (user_access('access user profiles') || user_access("access own user profile")) {
+			$output = '';
+			
+			$account = user_load(array('uid' => arg(1)));
+			if ($use_fields = variable_get('pux_profile_block_author_fields', array())) {
+				// Compile a list of fields to show.
+				$fields = array();
+				$result = db_query('SELECT name, title, type, visibility, weight FROM {profile_fields} WHERE visibility IN (%d, %d) ORDER BY weight', PROFILE_PUBLIC, PROFILE_PUBLIC_LISTINGS);
+				while ($record = db_fetch_object($result)) {
+					// Ensure that field is displayed only if it is among the defined block fields and, if it is private, the user has appropriate permissions.
+					if (isset($use_fields[$record->name]) && $use_fields[$record->name]) {
+						$fields[] = $record;
+					}
+				}
+			}
+			
+			if (!empty($fields)) {
+				$profile = pux_profile_update_user_fields($fields, $account);
+				$output .= theme('about_user', $account, $profile, TRUE);
+			}
+			
+			if($output) {
+				$block['subject'] = t('About !name', array('!name' => $account->name));
+				$block['content'] = $output;
+			}
+			
+			return $block;
+			
+		}
+	}
+	
+	else if ($op == 'view' && $delta == "user-picture") {
+		if(user_access("access user profiles") || user_access("access own user profile")) {
+			$account = user_load(array('uid' => arg(1)));
+			
+			$block['subject'] = t('%name', array("%name" => $account->name));
+			$block['content'] = theme('block_user_picture', $account);
+			
+			return $block;
+		}
+	}
+}
+
+/**
+ * Helper function for the about user block
+ */
+function pux_profile_update_user_fields($fields, $account) {
+  foreach ($fields as $key => $field) {
+    $fields[$key]->value = profile_view_field($account, $field);
+  }
+  return $fields;
+}

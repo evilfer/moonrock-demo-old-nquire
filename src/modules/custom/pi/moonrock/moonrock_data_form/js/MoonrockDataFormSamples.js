@@ -61,17 +61,14 @@ var MoonrockDataFormSamples = {
       })
     };
     
-    $('#moonrock-data-form-backtosearch').click(function() {
-      MoonrockDataFormHistory.back();
-    //      MoonrockDataFormSamples._closeVM();
-    });
-    $('#moonrock-data-form-backtovm').click(function() {
-      if ($(this).hasClass('moonrock-data-form-backtovm-enabled')) {
-        MoonrockDataFormHistory.forward();
-      //MoonrockDataFormSamples.reopenVM();
-      }
-    });
     
+   
+    $('#moonrock-data-form-vm-expand').click(function() {
+      MoonrockDataFormSamples._expandVM();
+    });
+    $('#moonrock-data-form-vm-restore').click(function() {
+      MoonrockDataFormSamples._restoreVM();
+    });
     
     $('#moonrock-data-form-sample-previous').click(function() {
       MoonrockDataFormSamples._nextPrevItem(-1);
@@ -79,13 +76,9 @@ var MoonrockDataFormSamples = {
     $('#moonrock-data-form-sample-next').click(function() {
       MoonrockDataFormSamples._nextPrevItem(1);
     });
-    /*$('#moonrock-data-form-snapshot-previous').click(function() {
-      MoonrockDataFormSamples._nextPrevItem('snapshot', -1);
-    });
-    $('#moonrock-data-form-snapshot-next').click(function() {
-      MoonrockDataFormSamples._nextPrevItem('snapshot', 1);
-    });
-    */
+    
+    
+
     
     MoonrockDataFormHistory.enable(function(state) {
       MoonrockDataFormSamples.browserHistoryChange(state);
@@ -176,7 +169,12 @@ var MoonrockDataFormSamples = {
     this.currentItem = item;
     MoonrockDataFormHistory.forward();
   },
-  
+  _expandVM: function() {
+    $('#moonrock-data-form-vmform').addClass('moonrock-data-form-vmform-expanded');
+  },
+  _restoreVM: function() {
+    $('#moonrock-data-form-vmform').removeClass('moonrock-data-form-vmform-expanded');
+  },
   _openVM: function() {
     $('#moonrock-data-form-sample-title').html(this.currentItem.title);
     
@@ -248,14 +246,11 @@ var MoonrockDataFormSamples = {
     
     MoonrockDataFormImage.getVMData(200, function(snapshot) {
       $('#moonrock-data-form-vm-iframe').remove();
-      //$('#moonrock-data-form-vm-iframe').attr('src', 'about:blank');
 
       $('#moonrock-activity-description').show();
       self._openSearch();
       
       self._setSnapshot(self.currentItem.sample.nid, snapshot);
-    
-      $('#moonrock-data-form-backtovm').addClass('moonrock-data-form-backtovm-enabled');
     });
   },
   _setSnapshot: function(sampleId, snapshot) {

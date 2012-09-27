@@ -57,26 +57,11 @@ function _moonrock_data_form_snapshot_menu_button($buttonClassSufix, $label) {
           . "<div class='moonrock-snapshot-menu-item-buttom'></div><div class='moonrock-snapshot-menu-item-label'>$label</div></div>";
 }
 
-function moonrock_data_form_prepare_activity() {
-  $details = get_inquiry_details_from_current_path();
-  $activity = load_activity($details->activity_id);
 
-  $sample_view = moonrock_sample_utils_find_unique_seesamples_activity();
-  if ($sample_view) {
-    $main_samples = moonrock_seesamples_get_main_samples($sample_view);
-    //$search = moonrock_seesamples_search_enabled($sample_view);
-  } else {
-    $main_samples = array();
-    //$search = TRUE;
-  }
-}
 
 function _moonrock_data_form_create_search_tab($main_samples, $snapshooting, $vm) {
   $output = ' <div id="moonrock-data-form-search" class="moonrock-data-form-search moonrock-data-form-hidden" vm="' . $vm . '">'
           . '  <div id="moonrock-data-form-search-items" class="moonrock-data-form-search-items">';
-  if ($snapshooting) {
-    $output.= '   <div id="moonrock-data-form-backtovm" class="moonrock-data-form-backtovm" title="' . t('Back to Virtual Microscope') . '"></div>';
-  }
 
   $output.= _moonrock_data_form_create_mainsamples_table($main_samples);
 
@@ -102,10 +87,12 @@ function _moonrock_data_form_create_search_tab($main_samples, $snapshooting, $vm
 
 function _moonrock_data_form_create_vm_tab($wrappedForm, $snapshooting, $selectionEnabled) {
   $prefix = ' <div id="moonrock-data-form-vmform" class="moonrock-data-form-vmform moonrock-data-form-hidden">'
-          . '  <div id="moonrock-data-form-vm" class="moonrock-data-form-vm">';
+          . '  <div id="moonrock-data-form-vm" class="moonrock-data-form-vm">'
+          . '   <div id="moonrock-data-form-vm-expand" class="moonrock-data-form-vm-expand"><div class="icon"></div>' . t('Expand') . '</div>'
+          . '   <div id="moonrock-data-form-vm-restore" class="moonrock-data-form-vm-restore"><div class="icon"></div>' . t('Restore') . '</div>';
+
   if ($selectionEnabled) {
-    $prefix .= '   <div id="moonrock-data-form-backtosearch" class="moonrock-data-form-backtosearch" title="' . t('Back to sample selection') . '"></div>'
-            . '   <div id="moonrock-data-form-sample" class="moonrock-data-form-item">'
+    $prefix .= '   <div id="moonrock-data-form-sample" class="moonrock-data-form-item">'
             . '    <div id="moonrock-data-form-sample-previous" class="moonrock-data-form-item-button moonrock-data-form-item-previous"></div>'
             . '    <div class="moonrock-data-form-item-title">' . t('Browsing ') . '</div>'
             . '    <div id="moonrock-data-form-sample-title" class="moonrock-data-form-item-title"></div>'

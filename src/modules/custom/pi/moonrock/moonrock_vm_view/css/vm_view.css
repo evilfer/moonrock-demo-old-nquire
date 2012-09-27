@@ -1,0 +1,82 @@
+
+
+
+.moonrock-samples-vm-page {
+  /*position: relative;*/
+}
+
+.moonrock-samples-page {
+  width: 100%;
+  background: white;
+}
+
+.moonrock-samples-page-hidden {
+  display: none;
+}
+
+.moonrock-samples-page-vm-top.moonrock-samples-page-vm-top-expanded {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  padding: 10px;
+  -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+	-moz-box-sizing: border-box;    /* Firefox, other Gecko */
+	box-sizing: border-box;     
+}
+
+.moonrock-samples-page-vm-top-sizemode {
+  color: blue;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.moonrock-samples-page-vm-top-sizemode .icon {
+  width: 16px;
+  height: 16px;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 26px 26px;
+  display: inline-block;
+  padding-right: 5px;
+}
+
+.moonrock-samples-page-vm-top-expand .icon {
+  background-image: url(icons/arrow_expand.png);
+}
+.moonrock-samples-page-vm-top-restore .icon {
+  background-image: url(icons/arrow_contract.png);
+}
+
+.moonrock-samples-page-vm-top .moonrock-samples-page-vm-top-restore {
+  display: none;
+}
+.moonrock-samples-page-vm-top.moonrock-samples-page-vm-top-expanded .moonrock-samples-page-vm-top-expand {
+  display: none;
+}
+
+.moonrock-samples-page-vm-top.moonrock-samples-page-vm-top-expanded .moonrock-samples-page-vm-top-restore {
+  display: block;
+}
+
+.moonrock-samples-page-vm {
+
+}
+
+.moonrock-samples-page-vm-iframe-container {
+  width: 100%;
+}
+
+.moonrock-samples-page-vm-iframe-container iframe {
+  border: none;
+  width: 100%;
+  height: 100%;  
+}
+
+
+.moonrock-samples-page-vm-resize {
+  display: none;
+}
+
+
+
+

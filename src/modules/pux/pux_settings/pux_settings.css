@@ -1,0 +1,10 @@
+.settings-picture .picture {
+  clear: both;
+  float: none;
+  padding-left:0em;
+}
+
+.settings-picture img {
+	width: 150px;
+	height: 150px;
+}

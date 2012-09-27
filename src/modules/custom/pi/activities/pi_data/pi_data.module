@@ -141,11 +141,7 @@ function pi_data_form(&$node) {
       }
     }
 
-    $wrapper = moonrock_data_form_wrap_form($form_prefix, !$node->nid);
-
-    $form['#prefix'] = $wrapper['prefix'];
-    $form['#suffix'] = $wrapper['suffix'];
-
+    $form['#prefix'] = $form_prefix;
 
     /**
      * We know all about custom forms now...
@@ -166,7 +162,7 @@ function pi_data_form(&$node) {
           $required_value = FALSE;
         }
 
-        $measure_text = moonrock_sample_utils_format_measure_info($measure_info);
+        $measure_text = theme('moonrock_sample_utils_measure_info', $measure_info);
 
         switch ($measure_info->field_type) {
           // field_type = textfield
@@ -266,7 +262,7 @@ function pi_data_form(&$node) {
             };
 
             $select = array();
-            if ($node->$form_key) {
+            if ($node->form_key) {
               foreach (explode(",", $node->$form_key) as $sel) {
                 $select[] = substr($sel, 0, 16);
               };
@@ -322,13 +318,7 @@ function pi_data_form(&$node) {
       };
     };
   }
-
-  /* $form['submit_data'] = array(
-    '#type' => 'button',
-    '#value' => t('Save'),
-    '#weight' => 5,
-    '#attributes' => array('onClick' => 'MoonrockDataFormData.submit();return false;'),
-    ); */
+  
 
   return $form;
 }
@@ -350,7 +340,6 @@ function pi_data_form(&$node) {
 function pi_data_validate($node) {
   foreach ($node->onepageprofile_categories as $key => $measure) {
     $hyphen_pos = strrpos($key, "-");
-    $selected_measure_nid = substr($key, 0, $hyphen_pos);
     $available_measure_nid = substr($key, $hyphen_pos + 1);
     $value = $measure['value'];
     if (is_array($value)) {
@@ -669,16 +658,9 @@ function pi_data_theme() {
       'pi_data_measure' => array(
           'arguments' => array('measure', 'measure_type', 'measure_value', 'teaser'),
       ),
-      'pi_data_node_form' => array(
-          'arguments' => array('form'),
-      ),
   );
 }
 
-function theme_pi_data_node_form($form) {
-  moonrock_data_form_load_resources();
-  drupal_render($form);
-}
 
 function theme_pi_data($node, $teaser) {
   $output = '';

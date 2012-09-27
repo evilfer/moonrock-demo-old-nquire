@@ -1,0 +1,61 @@
+<?php
+
+function moonrock_vm_view_theme() {
+  return array(
+      'moonrock_vm_view_vm' => array(
+          'arguments' => array('node', 'teaser'),
+      ),
+      'moonrock_vm_view_page' => array(
+          'arguments' => array('node', 'vm_view'),
+      ),
+  );
+}
+
+
+
+function theme_moonrock_vm_view_page($node, $vm_view = FALSE) {
+  moonrock_vm_view_load_resources();
+
+  $output = '';
+  $output .= '<div id="moonrock-samples-pages" class="moonrock-samples-vm-page">';
+
+
+  $output .= '<div id="moonrock-samples-page-browse" class="moonrock-samples-page moonrock-samples-page-hidden moonrock-samples-page-browse">';
+  $output .= theme('moonrock_seesamples_table', $node, FALSE, TRUE);
+  $output .= '</div>';
+
+  $output .= '<div id="moonrock-samples-page-vm-top" class="moonrock-samples-page moonrock-samples-page-hidden moonrock-samples-page-vm-top">';
+  $output .= '<div id="moonrock-samples-page-vm-top-expand" class="moonrock-samples-page-vm-top-sizemode moonrock-samples-page-vm-top-expand"><div class="icon"></div>' . t('Expand') . '</div>';
+  $output .= '<div id="moonrock-samples-page-vm-top-restore" class="moonrock-samples-page-vm-top-sizemode moonrock-samples-page-vm-top-restore"><div class="icon"></div>' . t('Restore') . '</div>';
+  $output .= $vm_view ? $vm_view : theme('moonrock_vm_view_vm');
+  $output .= '</div>';
+
+  $output .= '</div>';
+
+  return $output;
+}
+
+function theme_moonrock_vm_view_vm() {
+  $output = '<div id="moonrock-samples-page-vm" class="moonrock-samples-page-vm">'
+          . ' <div id="moonrock-samples-page-vm-sample" class="moonrock-samples-page-vm-sample">'
+          . '  <div id="moonrock-samples-page-vm-sample-previous" class="moonrock-samples-page-vm-sample-button moonrock-samples-page-vm-sample-previous"></div>'
+          . '  <div class="moonrock-samples-page-vm-sample-title">' . t('Browsing ') . '</div>'
+          . '  <div id="moonrock-samples-page-vm-sample-title" class="moonrock-samples-page-vm-sample-title"></div>'
+          . '  <div id="moonrock-samples-page-vm-sample-next" class="moonrock-samples-page-vm-sample-button moonrock-samples-page-vm-sample-next"></div>'
+          . ' </div>'
+          . ' <div id="moonrock-samples-page-vm-iframe-container" class="moonrock-samples-page-vm-iframe-container"></div>'
+          . ' <div id="moonrock-samples-page-vm-resize" class="moonrock-samples-page-vm-resize"><canvas id="moonrock-samples-page-vm-resize-canvas"></canvas></div>'
+          . '</div>';
+
+
+  return $output;
+}
+
+function moonrock_vm_view_load_resources() {
+  drupal_add_css(drupal_get_path('module', 'moonrock_vm_view') . '/css/vm_view.css');
+  drupal_add_css(drupal_get_path('module', 'moonrock_vm_view') . '/css/vm_browse.css');
+  drupal_add_js(drupal_get_path('module', 'moonrock_vm_view') . '/js/expand.js');
+  drupal_add_js(drupal_get_path('module', 'moonrock_vm_view') . '/js/history.js');
+  drupal_add_js(drupal_get_path('module', 'moonrock_vm_view') . '/js/vmManagement.js');
+  drupal_add_js(drupal_get_path('module', 'moonrock_vm_view') . '/js/jquery.ba-bbq.js');
+}

@@ -250,7 +250,49 @@ function pi_sort_data_items_around_key_measures($sorted_data_items, $key_measure
   return $sorted_data_items;
 }
 
+function pi_sort_data_get_unsorted_items() {
+  global $user;
+  $node_details = get_inquiry_details_from_current_path();
+
+
+  $unsorted_data_items = pi_sort_data_get_options();
+  
+  $selected_measure_nid = find_selected_measures_nid_for_uid_and_inquiry($user->uid, $node_details->inquiry_id);
+  $selected_measure_node = node_load($selected_measure_nid);
+  
+  $measures = array();
+  $content_measures = array();
+  foreach($selected_measure_node->categories as $nid => $category) {
+    $measure = node_load($nid);
+    $measures[$nid] = $measure;
+    if ($measure->content_options) {
+      $content_measures[$measure->content_options] = $nid;
+    }
+  }
+  
+  
+  $items = array();
+  foreach($unsorted_data_items as $nid => $item) {
+    $node = node_load($nid);
+    $item = array();
+    foreach($measures as $nid => $measure) {
+      $key = "{$selected_measure_nid}-{$nid}";
+      $item[$nid] = $node->categories[$key]['#value'];
+    }
+    $items[] = $item;
+  }
+  
+  return array(
+      'measures' => $measures,
+      'content_measures' => $content_measures,
+      'items' => $items,
+  );
+}
+
+
 function pi_sort_data_view($node, $teaser, $page = FALSE) {
+  pi_sort_data_get_unsorted_items();
+  
   global $user;
   $node_details = get_inquiry_details_from_current_path();
 
@@ -348,7 +390,7 @@ function theme_pi_sort_data($node, $teaser, $measure_headers, $data_values) {
 
     //$output .= theme('table', $header, $rows);
   } else {
-    $output .= '<p>No data entries are available. Click on <b>Add data</b> to add new data.</p>';
+    $output .= '<p>No data entries are available.</p>';
   }
   return $output;
 }
@@ -445,7 +487,6 @@ function pi_sort_data_get_options() {
   global $user;
   $details = get_inquiry_details_from_current_path();
 
-  $items = array();
   $nids = pi_activity_get_available_nids_of_type($user->uid, $details->inquiry_id, 'pi_data');
   $items = pi_activity_map_fields_from_nids($nids, array('title' => '#title'));
   foreach (array_keys($items) as $nid) {

@@ -1,0 +1,14 @@
+core = "6.x"
+files[] = "pux_settings.module"
+name = "Profile UX Settings"
+description = "Override the default Edit account settings of the site and provides a more consistent way so users can edit their account settings"
+package = "Profile UX"
+project = "pux_settings"
+version = "6.x-1.0"
+
+; Information added by drupal.org packaging script on 2011-04-26
+version = "6.x-1.0-alpha2"
+core = "6.x"
+project = "pux"
+datestamp = "1303802516"
+

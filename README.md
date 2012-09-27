@@ -8,6 +8,14 @@ Moonrock demonstators.
 Changes:
 
 -----------------
+27-09-2012
+
+- Deprecated modules moonrock_data_form (replaced by moonrock_data_input) and moonrock_sample_ajax.
+- Simplified Moonrock sample table.
+- Implemented dynamic data gathering process (not working).
+- Added data browser to Add data interface (partially working).
+
+-----------------
 20-09-2012
 
 - Added link to See samples activity images in teaser.

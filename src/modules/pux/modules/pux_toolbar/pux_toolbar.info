@@ -1,0 +1,14 @@
+core = "6.x"
+name = "Profile UX Toolbar"
+description = "Integrate with Toolbar 6.x-2.x"
+package = "Profile UX"
+project = "pux_toolbar"
+version = "6.x-1.0"
+dependencies[] = toolbar
+
+; Information added by drupal.org packaging script on 2011-04-26
+version = "6.x-1.0-alpha2"
+core = "6.x"
+project = "pux"
+datestamp = "1303802516"
+

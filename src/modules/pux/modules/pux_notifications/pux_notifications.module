@@ -1,0 +1,28 @@
+<?php
+
+/**
+ * Implements hook_account_settings()
+ */
+function pux_notifications_account_settings() {
+  $items = array();
+	
+	$items[] = array(
+    'name' => 'notifications', 
+		'title' => t('Notifications'), 
+		'weight' => 3,
+		'page arguments' => array('notifications_user_overview', 1, 2),
+		'file path' => drupal_get_path("module", "notifications"),
+		'file' => 'notifications.pages.inc'
+  );
+	
+	return $items;
+}
+
+/**
+ * Implements hook_settings_disable()
+ */
+function pux_notifications_settings_disable() {
+	return array(
+		'user/%user/notifications',
+	);
+}

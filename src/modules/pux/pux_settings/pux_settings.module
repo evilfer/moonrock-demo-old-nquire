@@ -1,0 +1,252 @@
+<?php
+
+/**
+ * API Functions
+ */
+
+/**
+ * Get all hook_account_settings
+ *
+ * Use it as hook_account_settings()
+ *
+ * Build a menu link in the form of settings/uid/category
+ * and load a page callback
+ *
+ * @todo query the menu_router to transform every menu link starting with
+ * user/%uid into the form of settings/uid/category.
+ * This could be done here or in a hook_menu_alter
+ */
+function _pux_account_settings($account = NULL) {
+  $categories = array();
+
+  foreach (module_list() as $module) {
+    if ($data = module_invoke($module, 'account_settings', $account, '')) {
+      $categories = array_merge($data, $categories);
+    }
+  }
+
+  usort($categories, '_user_sort');
+  return $categories;
+}
+
+/**
+ * Get all hook_settings_disable()
+ */
+function _pux_settings_disable() {
+  $links = array();
+
+  foreach (module_list() as $module) {
+    if ($data = module_invoke($module, 'settings_disable', '')) {
+      $links = array_merge($data, $links);
+    }
+  }
+
+  return $links;
+}
+
+/**
+ * Implements hook_account_settings()
+ */
+function pux_settings_account_settings() {
+  $items = array();
+	
+	$items[] = array(
+    'name' => 'password', 
+		'title' => t('Password'), 
+		'weight' => 1,
+		'page arguments' => array('pux_settings_password_form', 1, 2),
+		'file path' => drupal_get_path("module", "pux_settings") . '/includes',
+		'file' => 'password.settings.inc'
+  );
+	
+	if(variable_get('user_pictures', 1)) {		
+		$items[] = array(
+			'name' => 'picture', 
+			'title' => t('Picture'), 
+			'weight' => 1,
+			'page arguments' => array('pux_settings_picture_form', 1, 2),
+			'file path' => drupal_get_path("module", "pux_settings") . '/includes',
+			'file' => 'picture.settings.inc'
+		);
+	}
+
+	if(module_exists("openid")) {
+		$items[] = array(
+			'name' => 'openid', 
+			'title' => t('OpenID Identities'), 
+			'weight' => 10,
+			'page callback' => 'pux_settings_openid_form',
+			'page arguments' => array(1),
+			'file path' => drupal_get_path("module", "pux_settings") . '/includes',
+			'file' => 'openid.settings.inc'
+		);
+	}
+	
+	return $items;
+}
+
+/**
+ * Implements hook_settings_disable()
+ */
+function pux_settings_settings_disable() {
+	return array(
+		'user/%user/openid',
+	);
+}
+
+/******* END API ***********/
+
+
+/**
+ * Implements hook_permission()
+ */
+function pux_settings_perm() {
+	return array(
+    'administer profile ux settings',
+  );
+}
+
+/**
+ * Implements hook_menu()
+ */
+function pux_settings_menu() {
+	$items['settings'] = array(
+		'title' => "Settings",
+		'page callback' => 'pux_settings_redirect',
+		'access callback' => 'pux_settings_redirect_access',
+		'type' => MENU_NORMAL_ITEM,
+		'menu_name' => 'user-menu',
+		'weight' => -100,
+	);
+
+	$items['settings/%user_category'] = array(
+		'title' => 'Settings', 
+		'page callback' => 'drupal_get_form', 
+		'page arguments' => array('pux_settings_account_form', 1),
+		'access callback' => 'user_edit_access', 
+		'access arguments' => array(1),
+		'load arguments' => array('%map', '%index'),
+		'file path' => drupal_get_path("module", "pux_settings") . '/includes',
+		'file' => 'account.settings.inc',
+	);
+	
+	$items['settings/%user_category/account'] = array(
+		'title' => 'Account', 
+		'type' => MENU_DEFAULT_LOCAL_TASK, 
+		'load arguments' => array('%map', '%index'),
+	);
+	
+	// Rewrite the default menu item to use it with settings
+	// Since we're moving every profile category to its own tab
+	// it's better to do it this way than to implement alters
+	$empty_account = new stdClass();
+  if ($categories = _user_categories($empty_account)) {
+    foreach ($categories as $key => $category) {
+      // 'account' is already handled by the MENU_DEFAULT_LOCAL_TASK.
+      if ($category['name'] != 'account') {
+        $items['settings/%user_category/' . $category['name']] = array(
+          'title callback' => 'check_plain', 
+          'title arguments' => array($category['title']), 
+          'page callback' => 'pux_settings_user_edit', 
+          'page arguments' => array(1, 2), 
+          'access callback' => isset($category['access callback']) ? $category['access callback'] : 'user_edit_access', 
+          'access arguments' => isset($category['access arguments']) ? $category['access arguments'] : array(1), 
+          'type' => MENU_LOCAL_TASK, 
+          'weight' => $category['weight'], 
+          'load arguments' => array('%map', '%index'), 
+          'file path' => drupal_get_path("module", "pux_settings") . '/includes',
+					'file' => 'profile.settings.inc',
+        );
+      }
+    }
+  }
+	
+	if ($categories = _pux_account_settings()) {
+    foreach ($categories as $key => $category) {
+      // 'account' is already handled by the MENU_DEFAULT_LOCAL_TASK.
+      if ($category['name'] != 'account') {
+        $items['settings/%user/' . $category['name']] = array(
+          'title callback' => 'check_plain', 
+          'title arguments' => array($category['title']), 
+          'page callback' => isset($category['page callback']) ? $category['page callback'] : 'drupal_get_form',
+          'page arguments' => isset($category['page arguments']) ? $category['page arguments'] : '', 
+          'access callback' => isset($category['access callback']) ? $category['access callback'] : 'user_edit_access', 
+          'access arguments' => isset($category['access arguments']) ? $category['access arguments'] : array(1), 
+          'type' => MENU_LOCAL_TASK, 
+          'weight' => $category['weight'], 
+          'load arguments' => array('%map', '%index'),
+          'file path' => $category['file path'],
+          'file' => $category['file'],
+        );
+      }
+    }
+	}
+	
+  return $items;
+}
+
+/**
+ * Implements hook_menu_alter()
+ */
+function pux_settings_menu_alter(&$items) {
+	// Since disabling 'user/uid/edit' for all users is not an option because
+	// some modules might use this route in very different ways
+	// we modify the access to affect only users who don't have administer user access
+	
+	// Disable access to 'user/uid/edit' for everyone except users with
+	// administer users access
+	$items['user/%user_category/edit']['access callback'] = 'pux_settings_edit_access';
+	// Disable the Tab
+	$items['user/%user_category/edit']['type'] = MENU_CALLBACK;
+
+	// Disable all links implemented in hook_settings_disable()
+	if ($links = _pux_settings_disable()) {
+		foreach ($links as $link) {
+			// 'account' is already handled by the MENU_DEFAULT_LOCAL_TASK.
+			$items[$link]['type'] = MENU_CALLBACK;
+		}
+	}
+}
+
+/**
+ * Copy of user_edit_access()
+ * Modified to allow access only to admin users
+ */
+function pux_settings_edit_access($account) {
+  return (user_access('administer users')) && $account->uid > 0;
+}
+
+/**
+ * Redirect to the own settings page
+ * Used when user just type in 'settings' instead of 'settings/uid'
+ */
+function pux_settings_redirect() {
+	global $user;
+	
+	drupal_goto("settings/{$user->uid}");
+}
+
+/**
+ * Access callback to give user access
+ */
+function pux_settings_redirect_access() {
+	global $user;
+	
+	if(user_edit_access($user)) {
+		return TRUE;
+	}
+}
+
+/**
+ * Implements hook_form_alter()
+ */
+function pux_settings_form_alter(&$form, &$form_state, $form_id) {
+	// Remove all fieldsets when using Profiles
+	if($form_id == "pux_settings_profile_form") {
+		foreach ( element_children($form) as $key => $child ) {
+			if($form[$child]['#type'] == "fieldset") {
+				$form[$child]['#type'] = "markup";
+			}
+		}
+	}
+}

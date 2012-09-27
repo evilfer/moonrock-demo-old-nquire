@@ -1,8 +1,4 @@
 
-
-
-
-
 (function($) {
 
   var methods = {
@@ -76,13 +72,13 @@
           });
         }
       });
-      $('.rock-color-picker-chip').mouseup(function(event) {
+      $('.rock-color-picker-chip').mouseup(function() {
         if (self.data('rock-color-picker-selection-mousedown') && !self.data('rock-color-picker-selection-dragging')) {
           self.rockColorPicker('_setValue', $(this).attr('color-value'), true);
           self.rockColorPicker('close');
         }
       });
-      self.mouseup(function(event) {
+      self.mouseup(function() {
         if (self.data('rock-color-picker-selection-mousedown')) {
           self.data('rock-color-picker-selection-mousedown', false);
         }

@@ -1,0 +1,40 @@
+
+.moonrock-samples-page-vm-sample {
+  text-align: center;
+  padding-bottom: 10px;
+}
+
+.moonrock-samples-page-vm-sample div {
+  display: inline-block;
+}
+
+.moonrock-samples-page-vm-sample-title {
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.moonrock-samples-page-vm-sample-button {
+  width: 16px;
+  height: 16px;
+  background-size: 16px 16px;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.moonrock-samples-page-vm-sample-button.moonrock-samples-page-vm-sample-enabled {
+  cursor: pointer;
+}
+
+.moonrock-samples-page-vm-sample-previous {
+  background-image: url(icons/arrow_left_grey.png);
+}
+.moonrock-samples-page-vm-sample-next {
+  background-image: url(icons/arrow_right_grey.png);
+}
+.moonrock-samples-page-vm-sample-previous.moonrock-samples-page-vm-sample-enabled {
+  background-image: url(icons/arrow_left.png);
+}
+.moonrock-samples-page-vm-sample-next.moonrock-samples-page-vm-sample-enabled {
+  background-image: url(icons/arrow_right.png);
+}
+

@@ -1,0 +1,152 @@
+<?php
+
+function moonrock_data_input_menu() {
+
+  $items = array(
+      'activity/%/data' => array(
+          'page callback' => 'moonrock_data_input_data_search',
+          'access callback' => 'moonrock_data_input_data_search_access',
+          'type' => MENU_CALLBACK,
+      ),
+      'moonrock_data_input/data' => array(
+          'page callback' => 'moonrock_data_input_data_search',
+          'access callback' => 'moonrock_data_input_data_search_access',
+          'type' => MENU_CALLBACK,
+      ),
+  );
+
+  return $items;
+}
+
+function moonrock_data_input_data_search_access() {
+  return true;
+}
+
+function moonrock_data_input_data_search() {
+  $data = pi_sort_data_get_unsorted_items();
+  $sample_filter = $_REQUEST['nid'];
+  $sample_measure_nid = $data['content_measures']['moonrock_sample'];
+  $snapshot_measure_nid = $data['content_measures']['moonrock_snapshot'];
+  
+  $items = array();
+  
+  foreach ($data['items'] as $datum) {
+    if ($datum[$sample_measure_nid] === $sample_filter) {
+      $snapshot_nid = $datum[$snapshot_measure_nid];
+      $item = moonrock_sample_utils_prepare_object($snapshot_nid);
+      
+      foreach($data['measures'] as $measure_nid => $measure) {
+        
+      }
+      
+      $items[] = $item;
+    }
+  }
+  
+  drupal_json(array(
+      'status' => TRUE,
+      'items' => $items,
+  ));
+}
+
+function moonrock_data_input_theme() {
+  return array(
+      'moonrock_data_input_form_page' => array(
+          'arguments' => array('form'),
+      ),
+      'moonrock_data_input_data_browser' => array(
+          'arguments' => array(),
+      ),
+  );
+}
+
+function theme_moonrock_data_input_form_page($separator) {
+  $sample_view = moonrock_sample_utils_find_unique_seesamples_activity();
+  $vm = theme('moonrock_vm_view_vm') . theme('moonrock_data_input_data_browser');
+  $blocks = array(
+      array(
+          'id' => 'moonrock-data-input',
+          'title' => t('Data measures'),
+          'content' => $separator,
+      ),
+  );
+
+  $vm_view = theme('moonrock_sample_utils_page_with_block', $vm, $blocks);
+  $page = theme('moonrock_vm_view_page', $sample_view, $vm_view);
+  return $page;
+}
+
+function moonrock_data_input_form_pi_data_node_form_alter(&$form, &$form_state) {
+  $separator = $form['#build_id'];
+  $presentation = theme('moonrock_data_input_form_page', $separator);
+  $p = strpos($presentation, $separator);
+  $form['#prefix'] = substr($presentation, 0, $p) . $form['#prefix'];
+  $form['#suffix'] = $form['#suffix'] . substr($presentation, $p + strlen($separator));
+
+  /* $form['submit_data'] = array(
+    '#type' => 'button',
+    '#value' => t('Save'),
+    '#weight' => 5,
+    '#attributes' => array('onClick' => 'MoonrockDataFormData.submit();return false;'),
+    ); */
+
+  drupal_add_js(drupal_get_path('module', 'moonrock_data_input') . '/js/data.js');
+  drupal_add_js(drupal_get_path('module', 'moonrock_data_input') . '/js/image.js');
+
+
+  unset($form['buttons']);
+  $form['buttons'] = array(
+      'save' => array(
+          '#id' => 'moonrock-data-input-button-save',
+          '#type' => 'button',
+          '#value' => t('Save'),
+          '#weight' => 50,
+          '#attributes' => array('onClick' => 'MoonrockDataInput.saveData();return false;'),
+      ),
+      'update' => array(
+          '#id' => 'moonrock-data-input-button-update',
+          '#type' => 'button',
+          '#value' => t('Save'),
+          '#weight' => 51,
+          '#attributes' => array('onClick' => 'MoonrockDataInput.updateData();return false;'),
+      ),
+      'savenew' => array(
+          '#id' => 'moonrock-data-input-button-savenew',
+          '#type' => 'button',
+          '#value' => t('Save New'),
+          '#weight' => 52,
+          '#attributes' => array('onClick' => 'MoonrockDataInput.saveNewData();return false;'),
+      ),
+      'delete' => array(
+          '#id' => 'moonrock-data-input-button-delete',
+          '#type' => 'button',
+          '#value' => t('Delete'),
+          '#weight' => 53,
+          '#attributes' => array('onClick' => 'MoonrockDataInput.deleteData();return false;'),
+      ),
+  );
+
+
+  return;
+}
+
+function theme_moonrock_data_input_data_browser() {
+  drupal_add_css(drupal_get_path('module', 'moonrock_data_input') . '/css/dataBrowser.css');
+  drupal_add_js(drupal_get_path('module', 'moonrock_data_input') . '/js/dataBrowser.js');
+
+  drupal_add_css(drupal_get_path('module', 'moonrock_data_input') . '/css/itemBrowser.css');
+  drupal_add_js(drupal_get_path('module', 'moonrock_data_input') . '/js/jquery.itemBrowser.js');
+  drupal_add_js(drupal_get_path('module', 'moonrock_data_input') . '/js/jquery.itemBrowserItem.js');
+  drupal_add_js(drupal_get_path('module', 'moonrock_data_input') . '/js/jquery.itemBrowserThrobber.js');
+  jquery_ui_add();
+
+
+
+  $output = '<div class="moonrock-data-browser-container">'
+          . ' <div class="moonrock-data-browser-heading">' . t('Your data for this sample: ') . '</div>'
+          . ' <div id="moonrock-data-browser-throbber" class="moonrock-data-browser-throbber"></div>'
+          . ' <div id="moonrock-data-browser" class="moonrock-data-browser"></div>'
+          . '</div>';
+
+  return $output;
+}

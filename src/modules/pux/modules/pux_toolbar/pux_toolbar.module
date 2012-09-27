@@ -1,0 +1,28 @@
+<?php
+
+/**
+ * Implements hook_account_settings()
+ */
+function pux_toolbar_account_settings() {
+  $items = array();
+	
+	$items[] = array(
+    'name' => 'toolbar', 
+		'title' => t('Toolbar'), 
+		'weight' => 3,
+		'page arguments' => array('toolbar_user_select_toolbar_form', 1, 2),
+		'file path' => drupal_get_path("module", "toolbar"),
+		'file' => 'toolbar.user.inc'
+  );
+	
+	return $items;
+}
+
+/**
+ * Implements hook_settings_disable()
+ */
+function pux_toolbar_settings_disable() {
+	return array(
+		'user/%user/toolbar',
+	);
+}

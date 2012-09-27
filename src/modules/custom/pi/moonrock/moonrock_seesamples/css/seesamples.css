@@ -1,0 +1,35 @@
+
+.moonrock-sample-list {
+  padding-top: 10px;
+}
+
+.moonrock-sample-container {
+  display: inline-block;
+  padding-right: 10px;
+}
+
+.moonrock-sample-title {
+  font-weight: bold;
+  text-align: center;
+  font-size: large;
+  color: #006891;
+}
+
+.moonrock-sample-metadata {
+  padding-top: 10px;
+  display: table;
+}
+
+.moonrock-sample-metadata-row {
+  display: table-row;
+}
+
+.moonrock-sample-metadata-cell {
+  display: table-cell;
+  padding: 5px 5px 0px 5px;
+}
+
+.moonrock-sample-metadata-key {
+  color: #555;
+  text-align: right;
+} 

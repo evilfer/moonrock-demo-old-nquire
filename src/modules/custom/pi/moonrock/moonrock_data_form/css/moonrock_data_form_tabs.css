@@ -16,6 +16,49 @@
   -moz-box-orient: horizontal;
 }
 
+.moonrock-data-form-vm-expand, .moonrock-data-form-vm-restore {
+  color: blue;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.moonrock-data-form-vm-expand .icon, .moonrock-data-form-vm-restore .icon {
+  width: 16px;
+  height: 16px;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 26px 26px;
+  display: inline-block;
+  padding-right: 5px;
+}
+
+.moonrock-data-form-vm-expand .icon {
+  background-image: url(icons/arrow_expand.png);
+}
+.moonrock-data-form-vm-restore .icon {
+  background-image: url(icons/arrow_contract.png);
+}
+
+.moonrock-data-form-vmform .moonrock-data-form-vm-restore {
+  display: none;
+}
+.moonrock-data-form-vmform.moonrock-data-form-vmform-expanded .moonrock-data-form-vm-expand {
+  display: none;
+}
+
+.moonrock-data-form-vmform.moonrock-data-form-vmform-expanded {
+  position: fixed;
+  left: 0px;
+  top: 0px;
+  width: 100%;
+  height: 100%;
+  padding: 10px;
+}
+
+.moonrock-data-form-vmform.moonrock-data-form-vmform-expanded .moonrock-data-form-vm-restore {
+  display: block;
+}
+
 
 .moonrock-data-form-hidden {
   display: none;
@@ -34,22 +77,6 @@
 
 
 
-.moonrock-data-form-backtovm {
-  width: 42px;
-  height: 32px;
-}
-.moonrock-data-form-backtovm.moonrock-data-form-backtovm-enabled {
-  background: url(icons/back_to_vm.png) no-repeat center;
-  cursor: pointer;
-}
-
-.moonrock-data-form-backtosearch {
-  position: absolute;
-  width: 42px;
-  height: 32px;
-  background: url(icons/back_to_search.png) no-repeat center;
-  cursor: pointer;
-}
 
 .moonrock-data-form-snapshot-filter-key {
   font-weight: bold;
