@@ -7,6 +7,9 @@
 /*this is  the new non-database workflow rules*/
 function pi_activity_nodeapi(&$node, $op)
 {
+  if ($node->type == 'pi_data' && $op == 'insert') {
+    $node = $node;
+  }
   if ($node->type != 'image') {
     global $user;
     //only do this if the thing created is an activity

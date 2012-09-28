@@ -19,28 +19,42 @@
 
       var imgcontainer = $("<div/>").addClass("item-browser-item-img-container").appendTo(this);
       
-      $("<img/>").addClass("item-browser-item-img").appendTo(imgcontainer);
-      if (options.useVM) {
+      var image = $("<img/>").addClass("item-browser-item-img").appendTo(imgcontainer).css('display', 'none');
+      image[0].onload = function() {
+        self.parent().itemBrowser('_updateHeight');
+        image.css('display', 'block').fadeIn();
+      };
+      image.attr("src", item.image);
+      
+      if (options.imageLink) {
         $("<div/>").addClass("item-browser-item-img-open").appendTo(imgcontainer).click(function() {
           $(this).parents('.item-browser-item').itemBrowserItem('_event', 'imgclick');
         });
       }
-      this.itemBrowserItem('_setImage', item.snapshot ? 'snapshot' : 'sample');
+      //this.itemBrowserItem('_setImage', item.snapshot ? 'snapshot' : 'sample');
       
-      var title = $("<div/>").addClass("item-browser-item-title");
-      $(title).html(item.title);
-
-      if (options.metadataCallback) {
-        var contentId = id + '-metadata-content';
+      if (options.createTitle) {
+        var title = $("<div/>").addClass("item-browser-item-title");
+        $(title).html(item.title);
+        this.append(title);
+      }
+      
+      var metadata = null;
+      if (item.metadata) {
+        metadata = item.metadata;
+      } else if (options.metadataCallback) {
+        metadata = self.parent().itemBrowser('_getMetadata', self.data('item'));
+      }        
+      if (metadata) {          
+        /*var contentId = id + '-metadata-content';
         var content = $('<div style="display: none" id="' + contentId + '"/>');
         var cluetip = $('<div/>').addClass('item-browser-item-title-cluetip').attr('rel', '#' + contentId);
         
         $(title).append(content);
         $(title).append(cluetip);
+*/
 
-        var metadata = self.parent().itemBrowser('_getMetadata', self.data('item'));
-
-        $(cluetip).qtip({
+        $(imgcontainer).qtip({
           content: {
             title: metadata.title,
             text: metadata.content
@@ -64,19 +78,21 @@
           },
           style: {
             classes: {
-              tooltip: 'moonrock-sample-tip'
+              tooltip: 'item-browser-item-qtip'
             }
           }
         });
       }
-
-      this.append(title);
 
 
 
       this.itemBrowserItem('_event', 'itemadded');
 
       return this;
+    },
+    imageHeightRatio: function() {
+      var img = this.find('.item-browser-item-img')[0];
+      return img.naturalHeight / img.naturalWidth;
     },
     setSnapshot: function(snapshot) {
       var item = this.data('item');

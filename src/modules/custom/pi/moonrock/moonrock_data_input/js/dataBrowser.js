@@ -3,22 +3,24 @@
 var MoonrockDataInputDataBrowser = {
   init: function() {
     var self = this;
-    $('#moonrock-data-browser').itemBrowser();
+    $('#moonrock-data-browser').itemBrowser({
+      eventCallback: function(type, item) {
+        
+      },
+      imageLink: true
+    });
     
     MoonrockVmViewManager.addSampleSelectionCallback(function(sample) {
       self.refresh(sample.id);
     });
   },
   
-  getBaseURL : function() {
-    return "?q=moonrock_data_input/data";
-  },
   
   refresh: function(sampleId) {
     $('#moonrock-data-browser-throbber').itemBrowserThrobber("on");
 
     $.ajax({
-      url: this.getBaseURL(),
+      url: '?q=moonrock_data_input/' + MoonrockVmViewManager.getActivityId() + '/search',
       dataType: 'json',
       data: {
         nid: sampleId

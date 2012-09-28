@@ -3,14 +3,14 @@
 function moonrock_data_input_menu() {
 
   $items = array(
-      'activity/%/data' => array(
+      'moonrock_data_input/%/search' => array(
           'page callback' => 'moonrock_data_input_data_search',
           'access callback' => 'moonrock_data_input_data_search_access',
           'type' => MENU_CALLBACK,
       ),
-      'moonrock_data_input/data' => array(
-          'page callback' => 'moonrock_data_input_data_search',
-          'access callback' => 'moonrock_data_input_data_search_access',
+      'moonrock_data_input/%/submit' => array(
+          'page callback' => 'moonrock_data_input_data_submit',
+          'access callback' => 'moonrock_data_input_data_submit_access',
           'type' => MENU_CALLBACK,
       ),
   );
@@ -22,27 +22,123 @@ function moonrock_data_input_data_search_access() {
   return true;
 }
 
+function moonrock_data_input_data_submit_access() {
+  return true;
+}
+
+function moonrock_data_input_data_submit() {
+  global $user;
+
+  if (strlen($_REQUEST['data_nid']) > 0) {
+    $node = node_load($_REQUEST['data_nid']);
+    if ($node->uid != $user->uid) {
+      return;
+    }
+  } else {
+    $node = new stdClass();
+    $node->uid = $user->uid;
+    $node->type = 'pi_data';
+  }
+  $node->form_id = $_REQUEST['form_id'];
+  $node->form_build_id = $_REQUEST['form_build_id'];
+  $node->title = $_REQUEST['title'];
+  $node->onepageprofile_categories = $_REQUEST['onepageprofile_categories'];
+  node_save($node);
+
+  drupal_json(array(
+      'status' => TRUE,
+          )
+  );
+}
+
+function moonrock_data_input_nodeapi(&$node, $op) {
+  if ($op === 'presave' && $node->form_id === 'pi_data_node_form') {
+    global $user;
+    $node_details = get_inquiry_details_from_current_path();
+    $measures_param = find_selected_measures_nid_for_uid_and_inquiry($user->uid, $node_details->inquiry_id);
+    if ($measures_param) {
+      $measures_node = node_load($measures_param);
+      $measure_rows = $measures_node->measures_list;
+
+
+      $sample_key = '';
+      $snapshot_key = '';
+
+      foreach ($measure_rows as $measure_info_nid => $measure_selection) {
+        if ($measure_selection['#status'] == 'key' || $measure_selection['#status'] == 'selected') {
+          $measure_info = node_load($measure_info_nid);
+          if ($measure_info->content_options === 'moonrock_sample') {
+            $sample_key = "$measures_param-$measure_info_nid";
+          } else if ($measure_info->content_options === 'moonrock_snapshot') {
+            $snapshot_key = "$measures_param-$measure_info_nid";
+          }
+        }
+      }
+
+      $sample_nid = $node->onepageprofile_categories[$sample_key]['value'];
+      $snapshot_nid = $node->onepageprofile_categories[$snapshot_key]['value'];
+
+      $snapshot = node_load($snapshot_nid);
+      if (!$snapshot) {
+        $snapshot = new stdClass();
+        $snapshot->uid = $user->uid;
+        $snapshot->type = 'moonrock_snapshot';
+      }
+      $snapshot->notes = $node->onepageprofile_categories['moonrock_snapshot_notes']['value'];
+      $snapshot->vm_parameters = $node->onepageprofile_categories['moonrock_snapshot_notes']['value'];
+      $snapshot->sample_ref = $sample_nid;
+      node_save($snapshot);
+      $node->onepageprofile_categories[$snapshot_key]['value'] = $snapshot->nid;
+      moonrock_snapshot_images_savesnapshot($node->onepageprofile_categories['moonrock_snapshot_image']['value'], $snapshot->nid);
+      return;
+    }
+  }
+}
+
 function moonrock_data_input_data_search() {
   $data = pi_sort_data_get_unsorted_items();
   $sample_filter = $_REQUEST['nid'];
   $sample_measure_nid = $data['content_measures']['moonrock_sample'];
   $snapshot_measure_nid = $data['content_measures']['moonrock_snapshot'];
-  
+
   $items = array();
-  
-  foreach ($data['items'] as $datum) {
-    if ($datum[$sample_measure_nid] === $sample_filter) {
+
+  foreach ($data['items'] as $datum_nid => $datum) {
+    if ($datum[$sample_measure_nid] == $sample_filter) {
       $snapshot_nid = $datum[$snapshot_measure_nid];
-      $item = moonrock_sample_utils_prepare_object($snapshot_nid);
-      
-      foreach($data['measures'] as $measure_nid => $measure) {
+
+      $metadata_headers = array(t('Measure'), t('Value'));
+      $metadata_rows = array();
+      foreach ($data['measures'] as $measure_nid => $measure) {
+        if ($measure_nid !== $snapshot_measure_nid) {
+          $value = $datum[$measure_nid];
+          $formatted_value = pi_chart_get_html_value($value, $measure);
+          $measure_text = check_plain($measure->title);
+          if ($measure->units_short) {
+            $formatted_value .= ' ' . check_plain($measure->units_short);
+          }
+          $metadata_rows[] = array($measure_text, $formatted_value);
+        }
+      }
+
+      $item = array(
+          'id' => $datum_nid,
+          'image' => moonrock_snapshot_images_get_snapshot_url($snapshot_nid),
+          'data' => $datum,
+          'metadata' => array(
+              'title' => t('Data'),
+              'content' => theme('table', $metadata_headers, $metadata_rows),
+          ),
+      );
+
+      foreach ($data['measures'] as $measure_nid => $measure) {
         
       }
-      
+
       $items[] = $item;
     }
   }
-  
+
   drupal_json(array(
       'status' => TRUE,
       'items' => $items,
@@ -82,6 +178,10 @@ function moonrock_data_input_form_pi_data_node_form_alter(&$form, &$form_state) 
   $p = strpos($presentation, $separator);
   $form['#prefix'] = substr($presentation, 0, $p) . $form['#prefix'];
   $form['#suffix'] = $form['#suffix'] . substr($presentation, $p + strlen($separator));
+  $form['data_nid'] = array(
+      '#type' => 'hidden',
+      '#value' => isset($form['#node']->nid) ? $form['#node']->nid : '',
+  );
 
   /* $form['submit_data'] = array(
     '#type' => 'button',
@@ -99,7 +199,7 @@ function moonrock_data_input_form_pi_data_node_form_alter(&$form, &$form_state) 
       'save' => array(
           '#id' => 'moonrock-data-input-button-save',
           '#type' => 'button',
-          '#value' => t('Save'),
+          '#value' => t('Add data'),
           '#weight' => 50,
           '#attributes' => array('onClick' => 'MoonrockDataInput.saveData();return false;'),
       ),
@@ -134,11 +234,7 @@ function theme_moonrock_data_input_data_browser() {
   drupal_add_css(drupal_get_path('module', 'moonrock_data_input') . '/css/dataBrowser.css');
   drupal_add_js(drupal_get_path('module', 'moonrock_data_input') . '/js/dataBrowser.js');
 
-  drupal_add_css(drupal_get_path('module', 'moonrock_data_input') . '/css/itemBrowser.css');
-  drupal_add_js(drupal_get_path('module', 'moonrock_data_input') . '/js/jquery.itemBrowser.js');
-  drupal_add_js(drupal_get_path('module', 'moonrock_data_input') . '/js/jquery.itemBrowserItem.js');
-  drupal_add_js(drupal_get_path('module', 'moonrock_data_input') . '/js/jquery.itemBrowserThrobber.js');
-  jquery_ui_add();
+  moonrock_sample_utils_load_item_browser_resources();
 
 
 

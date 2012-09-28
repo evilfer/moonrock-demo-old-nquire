@@ -9,7 +9,8 @@
         itemWidth: 200,
         itemMargin: 20,
         taperingPortion: .2,
-        useVM: false
+        imageLink: false,
+        createTitle: false
       }, options, {
         id: this.attr('id')
       });
@@ -94,9 +95,6 @@
           } 
         }
         self.itemBrowser('_updatePositionsAnimate');
-      /*        for (var i in added) {
-          self.find('.item-browser-item[item-id="' + added[i] + '"]').itemBrowserItem('playAppearAnimation');
-        }*/
       };
 
       if (count === 0) {
@@ -167,7 +165,8 @@
     },
     update: function() {
       if (this.length > 0) {
-        this.itemBrowser('_updatePositionsAnimate');
+        //        this.itemBrowser('_updatePositionsAnimate');
+        this.itemBrowser('_updatePositions');
       }
       return this;
     },
@@ -223,7 +222,7 @@
           var x1 = realPos(x + itemWidth);
           var w = x1 - x0;
           x += itemWidth + itemMargin;
-
+          
           positions.push({
             element: this,
             oldx: $(this).position().left,
@@ -236,7 +235,7 @@
       } else {
         var x0 = 0; //.5 * (width - neededWidth);
         
-        items.each(function() {
+        items.each(function() {          
           positions.push({
             element: this,
             oldx: $(this).position().left,
@@ -271,9 +270,11 @@
           });
         }
       }
+      this.itemBrowser('_updateHeight');
     },
     _updatePositionsAnimate: function() {
       var status = this.itemBrowser('_calculatePositions');
+      
       this.itemBrowser('_displayScroll', status.scroll);
       for (var i in status.positions) {
         var pos = status.positions[i];
@@ -284,6 +285,16 @@
           width: pos.neww + 'px'
         }, 'fast');
       }
+      this.itemBrowser('_updateHeight');
+    },
+    _updateHeight: function() {
+      var width = this.data('settings').itemWidth;
+      var max = 0;
+      this.find('.item-browser-item').each(function() {
+        max = Math.max(max, width * $(this).itemBrowserItem('imageHeightRatio'));
+      });
+      this.css('height', max + 40);
+      return this;
     },
     _displayScroll: function(scroll) {
       this.find('.item-browser-scroll-container').css('width', scroll.active ? '100%' : '0px');

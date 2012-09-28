@@ -9,11 +9,12 @@ var MoonrockVmViewManager = {
   sampleSelectionCallbacks: [],
   
   init: function() {
+    console.log('vmmanager');
     var self = this;
     
     MoonrockSeeSamples.addCallback(function(type, item) {
       if (type === 'imgclick') {
-        self.sampleSelected(item);
+        self._sampleSelected(item, true);
       }
     });
     
@@ -33,20 +34,26 @@ var MoonrockVmViewManager = {
     });
     
     $('#moonrock-samples-page-vm-sample-previous').click(function() {
-      self.sampleSelected(self.browseItems.prev);
+      self._sampleSelected(self.browseItems.prev, true);
     });
     $('#moonrock-samples-page-vm-sample-next').click(function() {
-      self.sampleSelected(self.browseItems.next);
+      self._sampleSelected(self.browseItems.next, true);
     });
     
     self._openBrowser();
   },
   
-  addSampleSelectionCallback: function(callback) {
-    if (this.currentItem) {
-      callback(this.currentItem);
+  openSample: function(sampleId) {
+    var items = MoonrockSeeSamples.getItems();
+    for (var i in items) {
+      if (items[i].id === sampleId) {
+        this._sampleSelected(items[i], false);
+        break;
+      }
     }
-    
+  },
+  
+  addSampleSelectionCallback: function(callback) {
     this.sampleSelectionCallbacks.push(callback);
   },
   
@@ -58,14 +65,28 @@ var MoonrockVmViewManager = {
     }
   },
   
-  sampleSelected: function(item) {
+  _sampleSelected: function(item, sampleChanged) {
     if (item) {
       this.currentItem = item;
       MoonrockVmViewHistory.forward();
       for(var i in this.sampleSelectionCallbacks) {
-        (this.sampleSelectionCallbacks[i])(this.currentItem);
+        (this.sampleSelectionCallbacks[i])(this.currentItem, sampleChanged);
       }
     }
+  },
+  
+  getActivityId : function() {
+    var currentpath = window.location.search;
+    var pos = currentpath.indexOf("activity/");
+    if (pos >= 0) {
+      pos += "activity/".length;
+      var pos2 = currentpath.indexOf("/", pos + 1);
+      if (pos >= 0 && pos2 >= 0) {
+        return currentpath.substr(pos, pos2 - pos);
+      }
+    }
+    return "0";
+    
   },
   
   _updateSampleBrowser: function() {

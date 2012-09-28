@@ -43,11 +43,14 @@
 .item-browser-item-img-container {
   position: relative;
   width: 100%;
+  border: 1px solid gray;
+  border-radius: 0px;
+  padding: 2px;
 }
 
 .item-browser-item-img {
   width: 100%;
-  image-rendering: optimizeQuality;
+  background: black;
 }
 
 .item-browser-item-img-open {
@@ -68,7 +71,7 @@
   cursor: pointer;
 }
 .item-browser-item-img-container:hover .item-browser-item-img-open {
-  background: url(icons/magnifier2.png) no-repeat center;
+  background: url(icons/magnifier.png) no-repeat center;
 }
 
 .item-browser-item-img-toggle {
@@ -129,4 +132,9 @@
   background: url("icons/throbber.gif");
   background-repeat: no-repeat;
   background-position: right;
+}
+
+.item-browser-item-qtip {
+  font-size: 12px;
+  width: auto !important;
 }

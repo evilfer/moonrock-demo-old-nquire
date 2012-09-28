@@ -6,6 +6,8 @@ var MoonrockSeeSamples = {
   items : [],
   
   init: function() {
+    console.log('seesamples');
+    
     var self = this;
     
     $('.vmSample').each(function() {

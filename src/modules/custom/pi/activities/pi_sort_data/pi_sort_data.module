@@ -272,14 +272,14 @@ function pi_sort_data_get_unsorted_items() {
   
   
   $items = array();
-  foreach($unsorted_data_items as $nid => $item) {
-    $node = node_load($nid);
+  foreach($unsorted_data_items as $item_nid => $item) {
+    $node = node_load($item_nid);
     $item = array();
     foreach($measures as $nid => $measure) {
       $key = "{$selected_measure_nid}-{$nid}";
       $item[$nid] = $node->categories[$key]['#value'];
     }
-    $items[] = $item;
+    $items[$item_nid] = $item;
   }
   
   return array(
@@ -291,8 +291,6 @@ function pi_sort_data_get_unsorted_items() {
 
 
 function pi_sort_data_view($node, $teaser, $page = FALSE) {
-  pi_sort_data_get_unsorted_items();
-  
   global $user;
   $node_details = get_inquiry_details_from_current_path();
 

@@ -219,7 +219,7 @@ function get_inquiry_details_from_current_path() {
     $result->stage_id = $stage->stage_id;
 
     //activity is not set
-  } elseif ((arg(0) == 'activity') || (arg(0) == 'export')) {
+  } elseif ((arg(0) == 'activity') || (arg(0) == 'export') || (arg(0) == 'moonrock_data_input')) {
     //get inquiry from the database
     //get direct from the activity id rather than session id
     //$sid = get_current_session_id();

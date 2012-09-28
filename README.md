@@ -8,6 +8,11 @@ Moonrock demonstators.
 Changes:
 
 -----------------
+28-09-2012
+
+- Improved add data new interface.
+
+-----------------
 27-09-2012
 
 - Deprecated modules moonrock_data_form (replaced by moonrock_data_input) and moonrock_sample_ajax.
