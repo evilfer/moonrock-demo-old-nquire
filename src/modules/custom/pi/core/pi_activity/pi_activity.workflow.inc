@@ -117,7 +117,10 @@ function pi_activity_nodeapi(&$node, $op)
             break;
           case 'pi_data':
             //none come from datalogger as it is not used to update existing data
-            update_activity_when_activity_node_updated($node, $node->title);
+            /* FIX (eloy) 
+             * to support ajax data creation.
+             */
+            //update_activity_when_activity_node_updated($node, $node->title);
             break;
         }
         //update og

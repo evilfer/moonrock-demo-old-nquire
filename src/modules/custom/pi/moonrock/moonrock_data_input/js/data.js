@@ -8,12 +8,14 @@ var MoonrockDataInput = {
 
     var self = this;
     
-    MoonrockVmViewManager.addSampleSelectionCallback(function(sample) {
-      self.setSample(sample);
+    MoonrockVmViewManager.addSampleSelectionCallback(function(sample, sampleChanged) {
+      self.setSample(sample, sampleChanged);
     });
-
-    if ($('input[measure_content_type="moonrock_sample"]').attr('value')) {
+    
+    var data_nid = $('input[name="data_nid"]').attr('value');
+    if (data_nid) {
       MoonrockVmViewManager.openSample($('input[measure_content_type="moonrock_sample"]').attr('value'));
+      MoonrockDataInputDataBrowser.select(data_nid);
       this.setModeEdit(true);
     } else {
       this.setModeEdit(false);
@@ -27,19 +29,48 @@ var MoonrockDataInput = {
     } else {
       $('#moonrock-data-input-button-update, #moonrock-data-input-button-savenew, #moonrock-data-input-button-delete').hide();
       $('#moonrock-data-input-button-save').show();
-      this.clearForm();
     }
   },
   
   setSample: function(sample, sampleChanged) {
     if (sampleChanged) {
+      this.clearForm();
       this.setModeEdit(false);
     }
     this.updateSampleData(sample);
   },
   
   setItem: function(item) {
+    this.clearForm();
+    this.setModeEdit(true);
+    MoonrockDataInputDataBrowser.select(item.id);
     
+    $('input[name="data_nid"]').val(item.id);
+    
+    
+    for (var measure_nid in item.data.values) {
+      var content = item.data.measures_content[measure_nid];
+      switch (content) {
+        case 'moonrock_color':
+          if (item.data.values[measure_nid]) {
+            $('body').rockColorPicker('select', item.data.values[measure_nid]);
+          } else {
+            $('body').rockColorPicker('clearSelection'); 
+          }
+          break;
+        case 'moonrock_snapshot':
+          /* load params */
+          $('input[measure_content_type="moonrock_snapshot"]').attr('value', item.data.values[measure_nid]);
+          break;
+        case 'moonrock_sample':
+          $('input[measure_content_type="moonrock_sample"]').attr('value', item.data.values[measure_nid]);
+          break;
+        default:
+          var name = 'onepageprofile_categories[' + item.data.selected_measures_nid + '-' + measure_nid + '][value]';
+          $('[name="' + name + '"]').val(item.data.values[measure_nid]);
+          break;
+      }
+    }
   },
   
   clearForm: function() {
@@ -49,7 +80,10 @@ var MoonrockDataInput = {
       $('body').rockColorPicker('clearSelection');
     }
     
-    $('#edit-data-nid').attr('value', '');
+    $('input[name="data_nid"]').attr('value', '');
+    $('input[measure_content_type="moonrock_snapshot"]').attr('value', '');
+    $('input[measure_content_type="moonrock_color"]').attr('value', '');
+    //$('input[measure_content_type="moonrock_sample"]').attr('value', '');
     
     $('input[type="text"], textarea').val('');
     $('select').val(null);
@@ -77,6 +111,8 @@ var MoonrockDataInput = {
         data: $('form').serialize(),
         success: function(data) {
           if (data.status) {
+            self.clearForm();
+            MoonrockDataInputDataBrowser.select(false);
             self.setModeEdit(false);
             MoonrockDataInputDataBrowser.refresh($('input[measure_content_type="moonrock_sample"]').attr('value'));
           }
@@ -96,6 +132,7 @@ var MoonrockDataInput = {
   },
   saveNewData: function() {
     $('#edit-data-nid').attr('value', '');
+    $('input[measure_content_type="moonrock_snapshot"]').attr('value', '');
     this.submitData();
   },
   deleteData: function() {

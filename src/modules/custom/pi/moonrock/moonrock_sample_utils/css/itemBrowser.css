@@ -34,19 +34,19 @@
   border: 1px solid transparent;
 }
 
-.item-browser-item-selected {
-  border: 1px solid black;
-  background: lightgreen;
-  z-index: 1000;
-}
-
 .item-browser-item-img-container {
   position: relative;
   width: 100%;
-  border: 1px solid gray;
-  border-radius: 0px;
-  padding: 2px;
+  border: 1px solid black;
+  border-radius: 3px;
+  padding: 3px;
 }
+
+.item-browser-item-selected .item-browser-item-img-container {
+  border: 1px solid darkred;
+  background: #f77;
+}
+
 
 .item-browser-item-img {
   width: 100%;

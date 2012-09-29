@@ -100,7 +100,12 @@ function moonrock_data_input_data_search() {
   $sample_filter = $_REQUEST['nid'];
   $sample_measure_nid = $data['content_measures']['moonrock_sample'];
   $snapshot_measure_nid = $data['content_measures']['moonrock_snapshot'];
-
+  
+  $measures_content = array();
+  foreach($data['content_measures'] as $content => $nid) {
+    $measures_content[$nid] = $content;
+  }
+  
   $items = array();
 
   foreach ($data['items'] as $datum_nid => $datum) {
@@ -112,19 +117,30 @@ function moonrock_data_input_data_search() {
       foreach ($data['measures'] as $measure_nid => $measure) {
         if ($measure_nid !== $snapshot_measure_nid) {
           $value = $datum[$measure_nid];
-          $formatted_value = pi_chart_get_html_value($value, $measure);
-          $measure_text = check_plain($measure->title);
-          if ($measure->units_short) {
-            $formatted_value .= ' ' . check_plain($measure->units_short);
+          if (strlen($value) > 0) {
+            $formatted_value = pi_chart_get_html_value($value, $measure);
+            $measure_text = check_plain($measure->title);
+            if ($measure->units_short) {
+              $formatted_value .= ' ' . check_plain($measure->units_short);
+            }
+            $metadata_rows[] = array($measure_text, $formatted_value);
           }
-          $metadata_rows[] = array($measure_text, $formatted_value);
         }
       }
+      
+      $snapshot = node_load($snapshot_nid);
+      
 
       $item = array(
           'id' => $datum_nid,
           'image' => moonrock_snapshot_images_get_snapshot_url($snapshot_nid),
-          'data' => $datum,
+          'data' => array(
+              'selected_measures_nid' => $data['selected_measures_nid'],
+              'content_measures' => $data['content_measures'],
+              'measures_content' => $measures_content,
+              'values' => $datum,
+              'snapshot_vm_parameters' => $snapshot->vm_parameters,
+          ),
           'metadata' => array(
               'title' => t('Data'),
               'content' => theme('table', $metadata_headers, $metadata_rows),
@@ -180,7 +196,7 @@ function moonrock_data_input_form_pi_data_node_form_alter(&$form, &$form_state) 
   $form['#suffix'] = $form['#suffix'] . substr($presentation, $p + strlen($separator));
   $form['data_nid'] = array(
       '#type' => 'hidden',
-      '#value' => isset($form['#node']->nid) ? $form['#node']->nid : '',
+      '#default_value' => isset($form['#node']->nid) ? $form['#node']->nid : '',
   );
 
   /* $form['submit_data'] = array(

@@ -69,7 +69,7 @@
             
       var itemsToKeep = {};
       for (var i in items) {
-        itemsToKeep[items[i].id] = true;
+        itemsToKeep[items[i].id] = items[i];
       }
 
       var currentIds = {};
@@ -78,6 +78,7 @@
         var id = $(this).attr('item-id');
         if (itemsToKeep[id]) {
           currentIds[id] = true;
+          $(this).itemBrowserItem('update', itemsToKeep[id]);
         } else if (deleteOld) {
           itemsToRemove.push(this);
         }
@@ -303,6 +304,12 @@
         left: this.data('scroll') * (this.find('.item-browser-scroll-container').width() - scroll.width)
       });
       return this;
+    },
+    select: function(id) {
+      this.find('.item-browser-item').each(function() {
+        $(this).itemBrowserItem('setSelected', $(this).attr('item-id') == id);
+      });
+      return this;
     }
   };
 
@@ -314,7 +321,7 @@
       return methods.init.apply(this, arguments);
     } else {
       console.log('Method ' + method + ' does not exist on jQuery.itemBrowser');
-      return FALSE;
+      return false;
     }
   };
 })(jQuery);

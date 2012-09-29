@@ -286,6 +286,7 @@ function pi_sort_data_get_unsorted_items() {
       'measures' => $measures,
       'content_measures' => $content_measures,
       'items' => $items,
+      'selected_measures_nid' => $selected_measure_nid,
   );
 }
 

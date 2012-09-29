@@ -124,6 +124,9 @@
     clearSelection: function() {
       this.rockColorPicker('_setValue', '', true);
       this.rockColorPicker('close');
+    },
+    select: function(value) {
+      this.rockColorPicker('_setValue', value, true);
     }
   };
 

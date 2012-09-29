@@ -8,6 +8,11 @@ Moonrock demonstators.
 Changes:
 
 -----------------
+29-09-2012
+
+- Add data new interface working.
+
+-----------------
 28-09-2012
 
 - Improved add data new interface.
