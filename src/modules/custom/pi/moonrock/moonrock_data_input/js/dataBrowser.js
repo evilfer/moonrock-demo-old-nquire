@@ -1,6 +1,7 @@
 
 
 var MoonrockDataInputDataBrowser = {
+  selectedSample: null,
   selectedData: null,
   
   init: function() {
@@ -25,6 +26,12 @@ var MoonrockDataInputDataBrowser = {
   },
   
   refresh: function(sampleId) {
+    //alert('going to refresh');
+    
+    if (sampleId) {
+      this.selectedSample = sampleId;
+    }
+    
     var self = this;
     $('#moonrock-data-browser-throbber').itemBrowserThrobber("on");
 
@@ -34,13 +41,15 @@ var MoonrockDataInputDataBrowser = {
       dataType: 'json',
       data: {
         t: (new Date()).getTime(),
-        nid: sampleId
+        nid: self.selectedSample
       },
       success: function(data) {
         $('#moonrock-data-browser-throbber').itemBrowserThrobber("off");
         if (data.status) {
           $('#moonrock-data-browser').itemBrowser('setItems', data.items);
-          $('#moonrock-data-browser').itemBrowser('select', self.selectedData);
+          if (self.selectedData || sampleId) {
+            $('#moonrock-data-browser').itemBrowser('select', self.selectedData);
+          }
         }
       },
       error: function() {

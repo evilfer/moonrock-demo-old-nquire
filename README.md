@@ -8,6 +8,11 @@ Moonrock demonstators.
 Changes:
 
 -----------------
+01-10-2012
+
+- Modified data browser.
+
+-----------------
 29-09-2012
 
 - Add data new interface working.

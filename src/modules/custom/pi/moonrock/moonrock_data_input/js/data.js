@@ -114,7 +114,7 @@ var MoonrockDataInput = {
             self.clearForm();
             MoonrockDataInputDataBrowser.select(false);
             self.setModeEdit(false);
-            MoonrockDataInputDataBrowser.refresh($('input[measure_content_type="moonrock_sample"]').attr('value'));
+            MoonrockDataInputDataBrowser.refresh();
           }
         },
         error: function() {
