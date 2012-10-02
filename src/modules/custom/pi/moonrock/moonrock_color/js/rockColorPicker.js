@@ -16,6 +16,7 @@
         left: .5 * ($(window).width() - picker.width())
       });
 
+      self.data('rock-color-picker-user-selection-callbacks', []);
       self.data('rock-color-picker-selection-callback', _options.selectionCallback);
       self.data('rock-color-picker-openclose-callback', _options.opencloseCallback);
 
@@ -84,7 +85,7 @@
         }
       });
 
-      this.rockColorPicker('_setValue', _options.defaultValue, true);
+      this.rockColorPicker('_setValue', _options.defaultValue, false);
     },
     open: function() {
       $('#rock-color-picker-container').fadeIn();
@@ -106,7 +107,7 @@
       }
       return this;
     },
-    _setValue: function(value, notify) {
+    _setValue: function(value, userAction) {
       this.data('rock-color-picker-selected', value);
       $('.rock-color-picker-chip').attr('selected', false);
       $('.rock-color-picker-chip[color-value="' + value + '"]').attr('selected', true);
@@ -117,16 +118,26 @@
         name = $('.rock-color-picker-chip[color-value="' + value + '"]').attr('title');
       }
 
-      if (notify && this.data('rock-color-picker-selection-callback')) {
-        this.data('rock-color-picker-selection-callback')(value, color, name);
+      (this.data('rock-color-picker-selection-callback'))(value, color, name);
+      
+      if (userAction) {
+        var callbacks = this.data('rock-color-picker-user-selection-callbacks');
+        for(var i in callbacks) {
+          (callbacks[i])(value, color, name);
+        }
       }
     },
-    clearSelection: function() {
-      this.rockColorPicker('_setValue', '', true);
+    clearSelection: function(userAction) {
+      this.rockColorPicker('_setValue', '', userAction);
       this.rockColorPicker('close');
     },
     select: function(value) {
-      this.rockColorPicker('_setValue', value, true);
+      this.rockColorPicker('_setValue', value, false);
+    },
+    addUserSelectionCallback: function(callback) {
+      var callbacks = this.data('rock-color-picker-user-selection-callbacks');
+      callbacks.push(callback);
+      this.data('rock-color-picker-user-selection-callbacks', callbacks);
     }
   };
 
@@ -137,6 +148,7 @@
       return methods.init.apply(this, arguments);
     } else {
       console.log('Method ' + method + ' does not exist on jQuery.rockColorPicker');
+      return false;
     }
   };
 })(jQuery);

@@ -52,16 +52,16 @@
         }
       });
     },
-    '_bind': function(event, callback) {
+    '_bind': function(eventType, callback) {
       switch(this.customMouseInput('_type')) {
         case 'ipad':
-          this.bind(binds.ipad[event], function(event) {
+          this[0].addEventListener(binds.ipad[eventType], function(event) {
             var standardEvent = event.touches[0];
             return callback(standardEvent);
-          });
+          }, false);
           break;
         case 'other':
-          this.bind(binds.other[event], callback);
+          this.bind(binds.other[eventType], callback);
           break;
         default:
           break;

@@ -26,8 +26,6 @@ var MoonrockDataInputDataBrowser = {
   },
   
   refresh: function(sampleId) {
-    //alert('going to refresh');
-    
     if (sampleId) {
       this.selectedSample = sampleId;
     }
@@ -47,6 +45,7 @@ var MoonrockDataInputDataBrowser = {
         $('#moonrock-data-browser-throbber').itemBrowserThrobber("off");
         if (data.status) {
           $('#moonrock-data-browser').itemBrowser('setItems', data.items);
+
           if (self.selectedData || sampleId) {
             $('#moonrock-data-browser').itemBrowser('select', self.selectedData);
           }
@@ -56,6 +55,27 @@ var MoonrockDataInputDataBrowser = {
         $('#moonrock-data-browser-throbber').itemBrowserThrobber("off");
       }
     });
+  },
+  updateItem: function(item) {
+    $('#moonrock-data-browser').itemBrowser('updateItem', item);
+  },
+  
+  repaint: function() {
+    var items = [];
+    var selected = null;
+    $('#moonrock-data-browser').find('.item-browser-item').each(function() {
+      var item = $(this).data('item');
+      items.push(item);
+      if ($(this).hasClass('item-browser-item-selected')) {
+        selected = item.id;
+      }
+    });
+    
+    $('#moonrock-data-browser').itemBrowser('setItems', []);
+    $('#moonrock-data-browser').itemBrowser('setItems', items);
+    if (selected) {
+      $('#moonrock-data-browser').itemBrowser('select', selected);
+    }
   }
 };
 

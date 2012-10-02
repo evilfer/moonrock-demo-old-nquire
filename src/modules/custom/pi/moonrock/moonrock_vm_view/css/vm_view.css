@@ -11,7 +11,7 @@
 }
 
 .moonrock-samples-page-hidden {
-  display: none;
+  display: none !important;
 }
 
 .moonrock-samples-page-vm-top.moonrock-samples-page-vm-top-expanded {
@@ -20,8 +20,8 @@
   top: 0px;
   padding: 10px;
   -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
-	-moz-box-sizing: border-box;    /* Firefox, other Gecko */
-	box-sizing: border-box;     
+  -moz-box-sizing: border-box;    /* Firefox, other Gecko */
+  box-sizing: border-box;     
 }
 
 .moonrock-samples-page-vm-top-sizemode {
@@ -38,6 +38,21 @@
   background-size: 26px 26px;
   display: inline-block;
   padding-right: 5px;
+}
+
+.moonrock-samples-page-vm-top {
+  position: relative;
+  display: -moz-inline-box;
+  display: -webkit-inline-box;
+
+  -webkit-box-orient: vertical;
+  -moz-box-orient: vertical;
+}
+
+.moonrock-samples-page-vm-top-expand, .moonrock-samples-page-vm-top-restore {
+  position: absolute;
+  top: 0px;
+  left: 0px;
 }
 
 .moonrock-samples-page-vm-top-expand .icon {
@@ -59,22 +74,30 @@
 }
 
 .moonrock-samples-page-vm {
+  width: 100%;
 
+  display: -moz-inline-box;
+  display: -webkit-inline-box;
+
+  -webkit-box-orient: vertical;
+  -moz-box-orient: vertical;
 }
 
 .moonrock-samples-page-vm-iframe-container {
   width: 100%;
+  padding: 0px;
 }
 
-.moonrock-samples-page-vm-iframe-container iframe {
+#moonrock-samples-page-vm-iframe {
   border: none;
   width: 100%;
-  height: 100%;  
 }
 
 
 .moonrock-samples-page-vm-resize {
   display: none;
+  width: 0px;
+  height: 0px;
 }
 
 

@@ -5,7 +5,9 @@ var MoonrockDataInput = {
   
   init: function() {
     console.log('datainput');
-
+    this.imageHelper = MoonrockDataInputImage;
+    this.dataBrowser = MoonrockDataInputDataBrowser;
+    
     var self = this;
     
     MoonrockVmViewManager.addSampleSelectionCallback(function(sample, sampleChanged) {
@@ -20,15 +22,75 @@ var MoonrockDataInput = {
     } else {
       this.setModeEdit(false);
     }
+    
+    $('#moonrock-data-input-button-newdata').click(function() {
+      if ($(this).hasClass('enabled')) {
+        self.newData();
+      }
+    });    
+    $('#moonrock-data-input-button-save').click(function() {
+      if ($(this).hasClass('enabled')) {
+        self.saveData();
+      }
+    });
+    
+    $('form').find('input[type="text"], textarea').keypress(function() {
+      self._userDataChanged();
+    });
+    $('select').change(function() {
+      self._userDataChanged();
+    });
+    $('body').rockColorPicker('addUserSelectionCallback', function() {
+      self._userDataChanged();
+    });
   },
   
   setModeEdit: function(editing) {
     if (editing) {
-      $('#moonrock-data-input-button-save').hide();
-      $('#moonrock-data-input-button-update, #moonrock-data-input-button-savenew, #moonrock-data-input-button-delete').show();
+      $('#moonrock-data-input-header-new').hide();
+      $('#moonrock-data-input-header-edit').show();
+      
+      this._setButtons({
+        save: 'disabled',
+        saving: 'hidden',
+        saved: 'hidden',
+        newdata: 'enabled',
+        deletedata: 'enabled',
+        cancel: 'hidden'
+      });
     } else {
-      $('#moonrock-data-input-button-update, #moonrock-data-input-button-savenew, #moonrock-data-input-button-delete').hide();
-      $('#moonrock-data-input-button-save').show();
+      $('#moonrock-data-input-header-edit').hide();
+      $('#moonrock-data-input-header-new').show();
+      
+      this._setButtons({
+        save: 'disabled',
+        saving: 'hidden',
+        saved: 'hidden',
+        newdata: 'hidden',
+        deletedata: 'hidden',
+        cancel: 'enabled'
+      });
+    }
+  },
+  _setButtons: function(modes) {
+    for(var button in modes) {
+      this._setButton(button, modes[button]);
+    }
+  },
+  _setButton: function(button, mode) {
+    var element = $('#moonrock-data-input-button-' + button);
+    switch(mode) {
+      case 'enabled':
+        element.addClass('enabled').removeClass('moonrock-data-input-hidden');
+        break;
+      case 'disabled':
+        element.removeClass('enabled').removeClass('moonrock-data-input-hidden');
+        break;
+      case 'hidden':
+        element.addClass('moonrock-data-input-hidden');
+        break;
+      default:
+        break;
     }
   },
   
@@ -76,48 +138,58 @@ var MoonrockDataInput = {
   clearForm: function() {
     this.dataModified = false;
     
+    this.clearDataIds();
+    
     if ($.fn.rockColorPicker) {
       $('body').rockColorPicker('clearSelection');
     }
-    
-    $('input[name="data_nid"]').attr('value', '');
-    $('input[measure_content_type="moonrock_snapshot"]').attr('value', '');
     $('input[measure_content_type="moonrock_color"]').attr('value', '');
-    //$('input[measure_content_type="moonrock_sample"]').attr('value', '');
-    
     $('input[type="text"], textarea').val('');
     $('select').val(null);
   },
-  
+  clearDataIds: function() {
+    $('input[name="data_nid"]').attr('value', '');
+    $('input[measure_content_type="moonrock_snapshot"]').attr('value', '');
+  },
   updateSampleData: function(sample) {
     $('input[measure_content_type="moonrock_sample"]').attr('value', sample.id);
     $('#moonrock-measure-fixedvalue-sample').html(sample.title);
   },
   
+  getSubmitURL: function() {
+    return '?q=moonrock_data_input/' + MoonrockVmViewManager.getActivityId() + '/submit';
+  },
 
-  
+  /**
+   * Submits the form to update the data item being currently edited, 
+   * or to create a new one.
+   */
   submitData: function() {
     var self = this;
     
-    MoonrockDataInputImage.getVMData(200, function(snapshot) {
+    /*
+     * Request the current snapshot from the Virtual Microscope, submits when ready.
+     */
+    this.imageHelper.getVMSnapshot(function(snapshot) {
       $('input[measure_content_type="moonrock_snapshot_image"]').attr('value', snapshot.image);
       $('input[measure_content_type="moonrock_snapshot_parameters"]').attr('value', snapshot.vm_parameters);
       $('input[measure_content_type="moonrock_snapshot_notes"]').attr('value', $('form#node-form').find('.form-textarea').val());
       
       $.ajax({
-        url: '?q=moonrock_data_input/' + MoonrockVmViewManager.getActivityId() + '/submit',
+        url: self.getSubmitURL(),
         type: "POST",
         dataType: 'json',
         data: $('form').serialize(),
         success: function(data) {
           if (data.status) {
-            self.clearForm();
-            MoonrockDataInputDataBrowser.select(false);
-            self.setModeEdit(false);
-            MoonrockDataInputDataBrowser.refresh();
+            self.dataBrowser.updateItem(data.item);
+            self.setItem(data.item);
+          } else {
+            self.submissionError(data.error, 'data');
           }
         },
-        error: function() {
+        error: function(jqXHR, textStatus) {
+          self.submissionError(jqXHR, textStatus);
         }
       });
     });
@@ -125,19 +197,30 @@ var MoonrockDataInput = {
     
   
   saveData: function() {
+    this._setButtons({
+      save: 'hidden',
+      saving: 'disabled',
+      saved: 'hidden'
+    });
     this.submitData();
   },
-  updateData: function() {
-    this.submitData();
-  },
-  saveNewData: function() {
-    $('#edit-data-nid').attr('value', '');
-    $('input[measure_content_type="moonrock_snapshot"]').attr('value', '');
-    this.submitData();
+  newData: function() {
+    this.clearDataIds();
+    this.setModeEdit(false);
+    this.dataBrowser.select(null);
   },
   deleteData: function() {
     
-  }  
+  },
+  
+  _userDataChanged: function(submit) {
+    console.log('change ' + (new Date()).getTime());
+    this._setButtons({
+      save: 'enabled',
+      saving: 'hidden',
+      saved: 'hidden'
+    });
+  }
 };
 
 $(function() {

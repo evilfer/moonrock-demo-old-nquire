@@ -24,7 +24,7 @@ var MoonrockColorSelect = {
       $('body').rockColorPicker('close');
     });
     $('#moonrockColorPickerClear').click(function() {
-      $('body').rockColorPicker('clearSelection');
+      $('body').rockColorPicker('clearSelection', true);
     });
   },
   setOpenCloseButtons: function(pickerShown) {

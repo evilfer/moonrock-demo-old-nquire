@@ -69,14 +69,17 @@ function pi_data_access($op, $node, $account) {
 function pi_data_form(&$node) {
   global $user;
   $node_details = get_inquiry_details_from_current_path();
+  $form_prefix = '';
 
-  $form_prefix = t('Add data to answer your key questions:</p><ul>');
-  $query = "SELECT {node}.title FROM {node} WHERE {node}.type='pi_key_questions' and {node}.uid=%d";
-  $result = db_query($query, $user->uid);
-  while ($obj = db_fetch_object($result)) {
+  /*
+    $form_prefix .= t('Add data to answer your key questions:</p><ul>');
+    $query = "SELECT {node}.title FROM {node} WHERE {node}.type='pi_key_questions' and {node}.uid=%d";
+    $result = db_query($query, $user->uid);
+    while ($obj = db_fetch_object($result)) {
     $form_prefix .= "<li><b>{$obj->title}</b></li>";
-  }
-  $form_prefix .= '</ul><br/>';
+    }
+    $form_prefix .= '</ul><br/>';
+   */
 
   if (is_numeric($node_details->activity_id)) {
     $current_activity = load_activity($node_details->activity_id);
@@ -153,8 +156,6 @@ function pi_data_form(&$node) {
         $measure_info = node_load($measure_info_nid);
 
         //format the measure units
-
-
         //set as required field if a key measure
         if ($measure_selection['#status'] == 'key') {
           $required_value = TRUE;
@@ -318,7 +319,7 @@ function pi_data_form(&$node) {
       };
     };
   }
-  
+
 
   return $form;
 }
@@ -660,7 +661,6 @@ function pi_data_theme() {
       ),
   );
 }
-
 
 function theme_pi_data($node, $teaser) {
   $output = '';

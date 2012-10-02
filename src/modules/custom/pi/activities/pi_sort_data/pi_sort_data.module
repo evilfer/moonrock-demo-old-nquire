@@ -250,46 +250,56 @@ function pi_sort_data_items_around_key_measures($sorted_data_items, $key_measure
   return $sorted_data_items;
 }
 
-function pi_sort_data_get_unsorted_items() {
+function pi_sort_data_get_measure_information() {
   global $user;
   $node_details = get_inquiry_details_from_current_path();
 
 
-  $unsorted_data_items = pi_sort_data_get_options();
-  
   $selected_measure_nid = find_selected_measures_nid_for_uid_and_inquiry($user->uid, $node_details->inquiry_id);
   $selected_measure_node = node_load($selected_measure_nid);
-  
+
   $measures = array();
   $content_measures = array();
-  foreach($selected_measure_node->categories as $nid => $category) {
+  foreach ($selected_measure_node->categories as $nid => $category) {
     $measure = node_load($nid);
     $measures[$nid] = $measure;
     if ($measure->content_options) {
       $content_measures[$measure->content_options] = $nid;
     }
   }
-  
-  
-  $items = array();
-  foreach($unsorted_data_items as $item_nid => $item) {
-    $node = node_load($item_nid);
-    $item = array();
-    foreach($measures as $nid => $measure) {
-      $key = "{$selected_measure_nid}-{$nid}";
-      $item[$nid] = $node->categories[$key]['#value'];
-    }
-    $items[$item_nid] = $item;
-  }
-  
+
   return array(
       'measures' => $measures,
       'content_measures' => $content_measures,
-      'items' => $items,
       'selected_measures_nid' => $selected_measure_nid,
   );
 }
 
+function pi_sort_data_get_process_item($node, $measures_info) {
+  $item = array();
+  foreach ($measures_info['measures'] as $nid => $_) {
+    $key = "{$measures_info['selected_measures_nid']}-{$nid}";
+    $item[$nid] = $node->categories[$key]['#value'];
+  }
+  return $item;
+}
+
+function pi_sort_data_get_unsorted_items() {
+  $data = pi_sort_data_get_measure_information();
+
+  $unsorted_data_items = pi_sort_data_get_options();
+  $nids = array_keys($unsorted_data_items);
+
+  $items = array();
+  foreach ($nids as $item_nid) {
+    $node = node_load($item_nid);
+    $items[$item_nid] = pi_sort_data_get_process_item($node, $data);
+  }
+  
+  $data['items'] = $items;
+
+  return $data;
+}
 
 function pi_sort_data_view($node, $teaser, $page = FALSE) {
   global $user;

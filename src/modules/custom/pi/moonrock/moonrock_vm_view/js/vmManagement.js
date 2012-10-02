@@ -24,13 +24,15 @@ var MoonrockVmViewManager = {
       } else {
         self._openBrowser();
       }
-    })
+    });
     
     $('#moonrock-samples-page-vm-top-expand').click(function() {
       $('#moonrock-samples-page-vm-top').addClass('moonrock-samples-page-vm-top-expanded');
+      self._resizeVMPage();
     });
     $('#moonrock-samples-page-vm-top-restore').click(function() {
       $('#moonrock-samples-page-vm-top').removeClass('moonrock-samples-page-vm-top-expanded');
+      self._resizeVMPage();
     });
     
     $('#moonrock-samples-page-vm-sample-previous').click(function() {
@@ -118,10 +120,35 @@ var MoonrockVmViewManager = {
     $('#moonrock-samples-page-browse').addClass('moonrock-samples-page-hidden');
     $('#moonrock-samples-page-vm-top').removeClass('moonrock-samples-page-hidden'); 
     
-    $('#moonrock-samples-page-vm-iframe-container').css('height', 680);
+    
+    //$('#moonrock-samples-page-vm-iframe-container').css('height', 680);
     $('#moonrock-samples-page-vm-iframe').remove();
     $('#moonrock-samples-page-vm-iframe-container').append('<iframe id="moonrock-samples-page-vm-iframe" src="' + this.currentItem.vm + '"></iframe>');
+    this._resizeVMPage();
     this._updateSampleBrowser();
+  },
+  _resizeVMPage: function() {
+    var element = $('.moonrock-sample-utils-pageblock-page');
+    var top = element.offset().top;
+    var height = $(window).height();
+    var pageblockHeight = height - top;
+    element.css('height', pageblockHeight);
+    console.log(pageblockHeight);
+    
+    $('#moonrock-samples-page-vm-iframe').remove();
+    
+    $('.moonrock-samples-page-vm-and-browser').css('height', pageblockHeight);
+    
+    var dataContainerHeight = $('.moonrock-data-browser-container').height();
+    var vmPageHeight = pageblockHeight - dataContainerHeight - 20;
+    $('#moonrock-samples-page-vm').css('height', vmPageHeight);
+    
+    
+    var vmSampleBrowserHeight = $('#moonrock-samples-page-vm-sample').height();
+    
+    $('#moonrock-samples-page-vm-iframe-container').append('<iframe id="moonrock-samples-page-vm-iframe" src="' + this.currentItem.vm + '"></iframe>');
+    $('#moonrock-samples-page-vm-iframe-container').css('height', vmPageHeight - vmSampleBrowserHeight);
+    $('#moonrock-samples-page-vm-iframe').css('height', vmPageHeight - vmSampleBrowserHeight);
   },
   
   _closeVM: function() {

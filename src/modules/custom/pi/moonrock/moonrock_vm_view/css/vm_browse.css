@@ -1,3 +1,12 @@
+.moonrock-samples-page-vm-and-browser {
+  width: 100%;
+  height: 100%;
+  display: -moz-inline-box;
+  display: -webkit-inline-box;
+
+  -webkit-box-orient: vertical;
+  -moz-box-orient: vertical;
+}
 
 .moonrock-samples-page-vm-sample {
   text-align: center;

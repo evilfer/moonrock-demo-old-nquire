@@ -46,6 +46,9 @@
     setItems : function(items) {
       this.itemBrowser('_setItems', items, true);
     },
+    updateItems: function(items) {
+      this.itemBrowser('_setItems', items, false);
+    },
     _setItems: function(items, deleteOld) {
       var itemsToKeep = {};
       for (var i in items) {
@@ -102,6 +105,7 @@
       var self = this;
       image[0].onload = function() {
         self.itemBrowser('_checkSliderPosition');
+        element.css('width', $(this).width() + 6);
       };
       
       image.attr("src", item.image + '?t=' + (new Date()).getTime());
@@ -109,7 +113,8 @@
       if (this.data('options').imageLink) {
         var link = $("<div/>").addClass('open').appendTo(element);
         link.customMouseInput('click', function() {
-          self.itemBrowser('_event', 'imgclick', item);
+          var _item = element.data('item');
+          self.itemBrowser('_event', 'imgclick', _item);
         });
       }
     },
@@ -142,10 +147,10 @@
       return this.find('.item-browser-item[item-id="' + itemId + '"]');
     },
     updateItem: function(item) {
-      this.itemBrowser('_upateItem', item, this.find('.item-browser-item[item-id="' + item.id + '"]'));
+      this.itemBrowser('_updateItem', item, this.find('.item-browser-item[item-id="' + item.id + '"]'));
     },
     _updateItem: function(item, element) {
-      element.find('img').attr("src", item.image + '?t=' + (new Date()).getTime());
+      element.data('item', item).find('img').attr("src", item.image + '?t=' + (new Date()).getTime());
       return this;
     },
     
