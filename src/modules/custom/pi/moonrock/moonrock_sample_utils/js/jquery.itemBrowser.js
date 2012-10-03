@@ -22,18 +22,17 @@
       var right = $('<div/>').addClass('item-browser-right').appendTo(self);
       
       slider.customMouseInput('move', function(deltaX) {
-        self.itemBrowser('_slide', deltaX);
+        self.data('item-browser-center-on', false);
+        self.itemBrowser('_slide', deltaX, false);
       });
       
       left.customMouseInput('click', function() {
-        //if ($(this).hasClass('enabled')) {
-        self.itemBrowser('_slide', 'left');
-      //}
+        self.data('item-browser-center-on', false);
+        self.itemBrowser('_slide', 'left', true);
       });
       right.customMouseInput('click', function() {
-        //if ($(this).hasClass('enabled')) {
-        self.itemBrowser('_slide', 'right');
-      //}
+        self.data('item-browser-center-on', false);
+        self.itemBrowser('_slide', 'right', true);
       });
     },
     
@@ -104,8 +103,11 @@
             
       var self = this;
       image[0].onload = function() {
-        self.itemBrowser('_checkSliderPosition');
         element.css('width', $(this).width() + 6);
+        self.itemBrowser('_checkSliderPosition');
+        if (self.data('item-browser-center-on') == item.id) {
+          self.itemBrowser('_makeItemVisible', item.id);
+        }
       };
       
       image.attr("src", item.image + '?t=' + (new Date()).getTime());
@@ -147,31 +149,29 @@
       return this.find('.item-browser-item[item-id="' + itemId + '"]');
     },
     updateItem: function(item) {
-      this.itemBrowser('_updateItem', item, this.find('.item-browser-item[item-id="' + item.id + '"]'));
+      var element = this.find('.item-browser-item[item-id="' + item.id + '"]');
+      if (element.length == 1) {
+        this.itemBrowser('_updateItem', item, element);
+      } else {
+        this.itemBrowser('_addItem', item);
+      }
+      return this;
     },
     _updateItem: function(item, element) {
       element.data('item', item).find('img').attr("src", item.image + '?t=' + (new Date()).getTime());
       return this;
     },
-    
-    centerOn: function(itemId) {
-      var itemCount = this.itemBrowser('countItems');
-      if (itemCount > 1) {
-        var center = this.itemBrowser('position', itemId) / (itemCount - 1.0);
-        this.itemBrowser('_updatePositionsAnimate', center);
-      }
-      return this;
-    },
     select: function(id) {
       var self = this;
+      this.data('item-browser-center-on', id ? id : false);
       
       this.find('.item-browser-item').each(function() {
         self.itemBrowser('_setItemClass', $(this), 'item-browser-item-selected', $(this).attr('item-id') == id);
       });
       
-      /*      if (id) {
-        this.itemBrowser('centerOn', id);
-      }*/
+      if (id) {
+        this.itemBrowser('_makeItemVisible', id);
+      }
       return this;
     },
     _setItemClass: function(element, className, enabled) {
@@ -212,8 +212,28 @@
       }
       return this;
     },
+    _makeItemVisible: function(itemId) {
+      var element = this.find('.item-browser-item[item-id="' + itemId + '"]');
+      if (element.length > 0) {
+        var container = this.find('.item-browser-container');
+        var slider = container.find('.item-browser-slider');
+      
+        var itemLeft = element.position().left;
+        var sliderLeft = slider.position().left;
+        var relativeLeft = itemLeft + sliderLeft;
+        var containerWidth = container.width();
+        var itemWidth = element.width() + 10;
+        var relativeRight = containerWidth - relativeLeft - itemWidth;
+        if (relativeLeft < 0) {
+          this.itemBrowser('_slide', -relativeLeft, true);
+        } else if (relativeRight < 0) {
+          this.itemBrowser('_slide', relativeRight, true);
+        }
+      }
+      return this;
+    },
     
-    _slide: function(slide) {
+    _slide: function(slide, animate) {
       var self = this;
       
       var container = this.find('.item-browser-container');
@@ -223,20 +243,17 @@
       var pos = slider.position().left;
       
       var newPos;
-      var animate;
+      var k = .75;
       
       switch(slide) {
         case 'left':
-          newPos = pos + .5 * width;
-          animate = true;
+          newPos = pos + k * width;
           break;
         case 'right':
-          newPos = pos - .5 * width;
-          animate = true;
+          newPos = pos - k * width;
           break;
         default:
           newPos = pos + slide;
-          animate = false;
           break;
       }
       var correctedPos = Math.min(0, Math.max(width - sliderWidth, newPos));
@@ -254,8 +271,7 @@
           self.itemBrowser('_checkSliderPosition');
         }
       }
-    }
-    
+    }    
   };
 
 

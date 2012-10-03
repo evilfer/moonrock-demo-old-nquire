@@ -8,6 +8,13 @@ Moonrock demonstators.
 Changes:
 
 -----------------
+09-10-2012
+
+- Improved add data interface.
+- Inproved color chart.
+- Added support for iPad/Android tablets.
+
+-----------------
 02-10-2012
 
 - Improved add data interface.

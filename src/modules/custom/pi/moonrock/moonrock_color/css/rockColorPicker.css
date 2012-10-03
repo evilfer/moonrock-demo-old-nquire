@@ -14,21 +14,40 @@
 }
 
 #moonrockColorPickerSelectionColor {
-  width: 120px;
-  height: 60px;
-  display: inline-block;
+  width: 100%;
+  height: 30px;
   border: solid 1px black;
   margin-right: 5px;
+  color: transparent;
+  padding: 20px;
+  
+  display:table-cell;
+  text-align: center;
+  vertical-align: middle;
+  cursor: pointer;
 }
 .moonrockColorPickerSelectionNoColor {
   border: solid 1px gray !important;
   background: white !important;
+  color: black !important;
 }
 
 #moonrockColorPickerSelectionName {
   font-weight: bold;
   display: inline-block;
 }
+
+#moonrockColorPickerSelectionNameClear {
+  display: inline-block;
+  color: blue;
+  cursor: pointer;
+  padding-left: 5px;
+}
+#moonrockColorPickerSelectionNameClear.hidden {
+  display: none;
+}
+
+
 
 #moonrockColorPickerSelectionNoName {
   font-style: italic;
@@ -61,13 +80,17 @@
   stroke: black;
 }
 
-.rock-color-picker-chip[selected=true] .rock-color-picker-selection-border  {
+.rock-color-picker-chip .rock-color-picker-selection-border  {
   stroke: blue;
   stroke-width: 3;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
 
-.rock-color-picker-chip[selected=true] .rock-color-picker-border {
+.rock-color-picker-chip.selected .rock-color-picker-border {
   stroke: none;
+}
+
+.rock-color-picker-close {
+  cursor: pointer;
 }

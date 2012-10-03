@@ -8,42 +8,24 @@ var MoonrockColorSelect = {
       selectionCallback: function(value, color, name) {
         MoonrockColorSelect.colorSelected(value, color, name);
       },
-      opencloseCallback: function(shown) {
-        MoonrockColorSelect.setOpenCloseButtons(shown);
-      },
-      defaultValue:defaultValue
+      defaultValue: defaultValue
     });
 
     $('#moonrockColorPickerSelectionColor').click(function() {
       $('body').rockColorPicker('toggle');
     });
-    $('#moonrockColorPickerOpen').click(function() {
-      $('body').rockColorPicker('open');
-    });
-    $('#moonrockColorPickerClose').click(function() {
-      $('body').rockColorPicker('close');
-    });
-    $('#moonrockColorPickerClear').click(function() {
+    $('#moonrockColorPickerSelectionNameClear').click(function() {
       $('body').rockColorPicker('clearSelection', true);
     });
-  },
-  setOpenCloseButtons: function(pickerShown) {
-    if (pickerShown) {
-      $('#moonrockColorPickerOpen').hide();
-      $('#moonrockColorPickerClose').show();
-    } else {
-      $('#moonrockColorPickerClose').hide();
-      $('#moonrockColorPickerOpen').show();
-    }
   },
   colorSelected: function(value, color, name) {
     $('[measure_content_type="moonrock_color"]').attr('value', value);
     if (color) {
-      $('#moonrockColorPickerClear').attr("disabled", false);
+      $('#moonrockColorPickerSelectionNameClear').removeClass('hidden');
       $('#moonrockColorPickerSelectionColor').removeClass('moonrockColorPickerSelectionNoColor');
       $('#moonrockColorPickerSelectionColor').css('background', color);
     } else {
-      $('#moonrockColorPickerClear').attr("disabled", true);
+      $('#moonrockColorPickerSelectionNameClear').addClass('hidden');
       $('#moonrockColorPickerSelectionColor').addClass('moonrockColorPickerSelectionNoColor');
     }
 

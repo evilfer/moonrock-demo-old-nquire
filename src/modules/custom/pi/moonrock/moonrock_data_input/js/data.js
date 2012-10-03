@@ -2,6 +2,7 @@
 
 var MoonrockDataInput = {
   dataModified: false,
+  currentItem: null,
   
   init: function() {
     console.log('datainput');
@@ -33,8 +34,13 @@ var MoonrockDataInput = {
         self.saveData();
       }
     });
+    $('#moonrock-data-input-button-cancel').click(function() {
+      if ($(this).hasClass('enabled')) {
+        self.cancelData();
+      }
+    });
     
-    $('form').find('input[type="text"], textarea').keypress(function() {
+    $('form').find('input[type="text"], textarea').keydown(function() {
       self._userDataChanged();
     });
     $('select').change(function() {
@@ -56,19 +62,19 @@ var MoonrockDataInput = {
         saved: 'hidden',
         newdata: 'enabled',
         deletedata: 'enabled',
-        cancel: 'hidden'
+        cancel: 'disabled'
       });
     } else {
       $('#moonrock-data-input-header-edit').hide();
       $('#moonrock-data-input-header-new').show();
       
       this._setButtons({
-        save: 'disabled',
+        save: 'enabled',
         saving: 'hidden',
         saved: 'hidden',
         newdata: 'hidden',
         deletedata: 'hidden',
-        cancel: 'enabled'
+        cancel: 'disabled'
       });
     }
   },
@@ -103,6 +109,8 @@ var MoonrockDataInput = {
   },
   
   setItem: function(item) {
+    this.currentItem = item;
+    
     this.clearForm();
     this.setModeEdit(true);
     MoonrockDataInputDataBrowser.select(item.id);
@@ -159,6 +167,15 @@ var MoonrockDataInput = {
   getSubmitURL: function() {
     return '?q=moonrock_data_input/' + MoonrockVmViewManager.getActivityId() + '/submit';
   },
+  
+  cancelData: function() {
+    if (this.currentItem) {
+      this.setItem(this.currentItem);
+    } else {
+      this.clearForm();
+      this.newData();
+    }
+  },
 
   /**
    * Submits the form to update the data item being currently edited, 
@@ -205,6 +222,7 @@ var MoonrockDataInput = {
     this.submitData();
   },
   newData: function() {
+    this.currentItem = null;
     this.clearDataIds();
     this.setModeEdit(false);
     this.dataBrowser.select(null);
@@ -218,7 +236,8 @@ var MoonrockDataInput = {
     this._setButtons({
       save: 'enabled',
       saving: 'hidden',
-      saved: 'hidden'
+      saved: 'hidden',
+      cancel: 'enabled'
     });
   }
 };

@@ -15,7 +15,7 @@
 }
 
 .moonrock-samples-page-vm-top.moonrock-samples-page-vm-top-expanded {
-  position: absolute;
+  position: fixed;
   left: 0px;
   top: 0px;
   padding: 10px;

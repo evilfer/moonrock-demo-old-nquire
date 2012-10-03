@@ -11,10 +11,7 @@
 
       var self = this;
       var picker = $('#rock-color-picker-container');
-      picker.css({
-        top: '100px',
-        left: .5 * ($(window).width() - picker.width())
-      });
+
 
       self.data('rock-color-picker-user-selection-callbacks', []);
       self.data('rock-color-picker-selection-callback', _options.selectionCallback);
@@ -23,66 +20,49 @@
       $('#rock-color-picker-container').each(function() {
         $(this).remove().appendTo(self);
       });
-
-      picker.mousewheel(function(event, delta) {
-        var k = delta > 0 ? 1.25 : .8;
-
+      
+      picker.css({
+        top: .5 * ($(window).height() - picker.height()),
+        left: .5 * ($(window).width() - picker.width())
+      });
+      
+      picker.customMouseInput('sizing', function(k, x, y, dx, dy) {
         var w = picker.width();
-        var neww = Math.max(50, Math.min(2000, k*w));
+        var neww = Math.max(200, Math.min(2000, k*w));
         var appliedk = neww / w;
         var newh = appliedk * picker.height();
         var pos = picker.position();
         
-        var newpos = {
-          left: event.pageX - appliedk * (event.pageX - pos.left) - $(window).scrollLeft(),
-          top: event.pageY - appliedk * (event.pageY - pos.top) - $(window).scrollTop(),
+        var newstate = {
+          left: x - appliedk * (x - pos.left) - $(window).scrollLeft() + dx,
+          top: y - appliedk * (y - pos.top) - $(window).scrollTop() + dy,
           width: neww,
           height: newh
         };
 
-        picker.css(newpos);
-        
-        event.preventDefault();
-        event.stopPropagation();
+        picker.css(newstate);
       });
-
-      picker.mousedown(function(event) {
-        self.data('rock-color-picker-selection-drag-mx', event.pageX - picker.position().left);
-        self.data('rock-color-picker-selection-drag-my', event.pageY - picker.position().top);
-        self.data('rock-color-picker-selection-mousedown', true);
-        self.data('rock-color-picker-selection-dragging', false);
-      });
-      self.mousemove(function(event) {
-        if (self.data('rock-color-picker-selection-mousedown')) {
-          event.preventDefault();
-          event.stopPropagation();
-
-          self.data('rock-color-picker-selection-dragging', true);
-          var current_pos = picker.position();
-          var margin = 100;
-          var w = picker.width();
-          var h = picker.height();
-          var ww = $(window).width();
-          var wh = $(window).height();
-          var dx = event.pageX - $(window).scrollLeft() - self.data('rock-color-picker-selection-drag-mx');
-          var dy = event.pageY - $(window).scrollTop() - self.data('rock-color-picker-selection-drag-my');
+      
+      picker.customMouseInput('move', function(deltaX, deltaY) {
+        var margin = 100;
+        var w = picker.width();
+        var h = picker.height();
+        var ww = $(window).width();
+        var wh = $(window).height();
+        var pos = picker.offset();
+        pos.left = Math.max(margin - w, Math.min(ww - margin, pos.left + deltaX - $(window).scrollLeft()));
+        pos.top = Math.max(margin - h, Math.min(wh - margin, pos.top + deltaY - $(window).scrollTop()));
           
-          picker.css({
-            left: Math.max(margin - w, Math.min(ww - margin, dx)),
-            top: Math.max(margin - h, Math.min(wh - margin, dy))
-          });
-        }
+        picker.css(pos);
       });
-      $('.rock-color-picker-chip').mouseup(function() {
-        if (self.data('rock-color-picker-selection-mousedown') && !self.data('rock-color-picker-selection-dragging')) {
-          self.rockColorPicker('_setValue', $(this).attr('color-value'), true);
-          self.rockColorPicker('close');
-        }
+      
+      $('.rock-color-picker-chip').customMouseInput('click', function(element) {
+        self.rockColorPicker('_setValue', $(element).attr('color-value'), true);
+        self.rockColorPicker('close');
       });
-      self.mouseup(function() {
-        if (self.data('rock-color-picker-selection-mousedown')) {
-          self.data('rock-color-picker-selection-mousedown', false);
-        }
+      
+      $('#rock-color-picker-close').customMouseInput('click', function() {
+        self.rockColorPicker('close');
       });
 
       this.rockColorPicker('_setValue', _options.defaultValue, false);
@@ -109,11 +89,11 @@
     },
     _setValue: function(value, userAction) {
       this.data('rock-color-picker-selected', value);
-      $('.rock-color-picker-chip').attr('selected', false);
-      $('.rock-color-picker-chip[color-value="' + value + '"]').attr('selected', true);
+      $('.rock-color-picker-selection-border').hide();
       var color = false;
       var name = false;
       if (value.length > 0) {
+        $('.rock-color-picker-chip[color-value="' + value + '"] > .rock-color-picker-selection-border').show();
         color = $('.rock-color-picker-chip[color-value="' + value + '"]').attr('color-html');
         name = $('.rock-color-picker-chip[color-value="' + value + '"]').attr('title');
       }

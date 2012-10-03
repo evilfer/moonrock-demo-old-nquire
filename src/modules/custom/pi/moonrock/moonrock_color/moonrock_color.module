@@ -222,16 +222,10 @@ function moonrock_color_nquire_data_form_prefix($measure) {
           . "</div>";
 
   $output .= "<div id='moonrockColorPickerSelection'>";
-  $output .= "<div id='moonrockColorPickerSelectionColor' class='moonrockColorPickerSelectionNoColor'> </div>";
-  $output .= "<div id='moonrockColorPickerSelectionName'> </div>";
+  $output .= "<div id='moonrockColorPickerSelectionColor' class='moonrockColorPickerSelectionNoColor'>" . t('Click here to select a color!') . '</div>';
+  $output .= "<div><div id='moonrockColorPickerSelectionName'></div><div id='moonrockColorPickerSelectionNameClear'>" . t('[clear]') . "</div></div>";
   $output .= "<div id='moonrockColorPickerSelectionNoName'>" . t('No color selected.') . "</div>";
   $output .= "</div>";
-  $output .= "<div id='moonrockColorPickerButtons'>";
-  $output .= "<button type='button' id='moonrockColorPickerOpen'>" . t("Open") . "</button>";
-  $output .= "<button type='button' id='moonrockColorPickerClose' style='display: none;'>" . t("Close") . "</button>";
-  $output .= "<button type='button' id='moonrockColorPickerClear'>" . t("Clear") . "</button>";
-  $output .= "</div>";
-  $output .= '<small>' . t('Use the mouse to move and zoom the colour chart.') . '</small>';
   $output .= "</div>";
 
   $output .= _moonrock_color_create_color_picker_image();
@@ -247,10 +241,12 @@ function _moonrock_color_create_color_picker_image() {
   $result = db_query("SELECT DISTINCT nid FROM {node} where {node}.type='moonrock_color'");
   $maxrow = 0;
   $maxcol = 0;
+  $holes = array();
   while ($obj = db_fetch_object($result)) {
     $color = node_load($obj->nid);
     $maxcol = max($maxcol, $color->col);
     $maxrow = max($maxrow, $color->row);
+    $holes[$color->col][$color->row] = TRUE;
     $colors[] = $color;
   }
 
@@ -318,13 +314,28 @@ function _moonrock_color_create_color_picker_image() {
 
   for ($j = 0, $y = $margin + $chipHeight + $halfVGap; $j < $maxrow; $j++, $y += $chipHeight + $chipVGap) {
     for ($i = 0, $x = $margin; $i <= $maxcol; $i++, $x += $chipWidth + $chipHGap) {
-      $holesPath .= "M $x,$y $holePath ";
+      if ($holes[$i][$j]) {
+        $holesPath .= "M $x,$y $holePath ";
+      }
     }
   }
 
   $output .= "<path d='M 0,0 v $height h $width v -$height z $holesPath' fill='#fafafa' fill-opacity='0.85'></path>";
   $output .= "<rect x='0' y ='0' width='$width' height='$height' fill-opacity='0' stroke='black' stroke-width='1'></rect>";
   $output .= $chipElements;
+
+  $pos = 15;
+  $pos2 = $pos + 12;
+  $text_style = "text-anchor='start' font-family='sans-serif' font-size='10' fill='#333'";
+
+  $output .= "<text x='$pos' y='$pos' $text_style>" . t("Drag and zoom in/out this color chart to match a color you see in the sample.") . "</text>"
+          . "<text x='$pos' y='$pos2' $text_style>" . t("Click on a color to select it.") . "</text>";
+
+  $size = 24;
+  $y = 5;
+  $x = $width - $size - $y;
+  $link = drupal_get_path('module', 'moonrock_color') . '/css/icons/64_close.png';
+  $output .= "<image id='rock-color-picker-close' class='rock-color-picker-close' x='$x' y='$y' width='$size' height='$size' xlink:href='$link' />";
 
   $output .= "</g>";
   $output .= "</svg>";
@@ -338,9 +349,10 @@ function moonrock_color_nquire_measure_choose_explanation() {
 }
 
 function _moonrock_color_load_form_resources() {
-  drupal_add_js(drupal_get_path('module', 'moonrock_color') . '/js/jquery.mousewheel.js');
+  moonrock_sample_utils_load_mouse_input();
+  
   drupal_add_js(drupal_get_path('module', 'moonrock_color') . '/js/moonrockColorSelect.js');
-  drupal_add_js(drupal_get_path('module', 'moonrock_color') . '/js/rockColorPicker.js');
+  drupal_add_js(drupal_get_path('module', 'moonrock_color') . '/js/jquery.rockColorPicker.js');
   drupal_add_css(drupal_get_path('module', 'moonrock_color') . '/css/rockColorPicker.css');
 }
 
