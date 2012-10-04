@@ -58,7 +58,13 @@ function pi_data_access($op, $node, $account) {
         return FALSE;
       }
     } else {
-      return check_node_function_of_activity($details->inquiry_id, $details->activity_id, $user->uid, 'edit');
+      /* FIX (eloy) 
+       * Can remove data from any activity...
+       */
+      /*$activity_id = (int) get_activity_id_for_nid($node->nid);
+      $access = check_node_function_of_activity($details->inquiry_id, activity_id, $user->uid, 'edit'); 
+      return $access;*/
+      return TRUE;
     }
   }
 }

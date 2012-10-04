@@ -2,12 +2,12 @@
 (function($) {
   
   var directBinds = {
-    ipad: {
+    touch: {
       down: 'touchstart',
       up: 'touchend',
       move: 'touchmove'
     },
-    other: {
+    mouse: {
       down: 'mousedown',
       up: 'mouseup',
       move: 'mousemove'
@@ -120,7 +120,7 @@
       switch(this.customMouseInput('_type')) {
         case 'ipad':
         case 'android':
-          this[0].addEventListener(directBinds.ipad[eventType], function(event) {
+          this[0].addEventListener(directBinds.touch[eventType], function(event) {
             if (event.touches.length <= 1) {
               var standardEvent = event.touches.length > 0 ? event.touches[0] : null;
               callback(standardEvent, event);
@@ -128,7 +128,7 @@
           }, false);
           break;
         case 'other':
-          this.bind(directBinds.other[eventType], function(event) {
+          this.bind(directBinds.mouse[eventType], function(event) {
             if (eventType === 'up') {
               var a = 1;
               a = 2;

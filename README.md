@@ -8,7 +8,14 @@ Moonrock demonstators.
 Changes:
 
 -----------------
-09-10-2012
+04-10-2012
+
+- Data is saved automatically.
+- Implemented data delete.
+- Added undo/redo support for data manipulation.
+
+-----------------
+03-10-2012
 
 - Improved add data interface.
 - Inproved color chart.

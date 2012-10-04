@@ -1,12 +1,11 @@
 
 
 var MoonrockDataInput = {
-  dataModified: false,
-  currentItem: null,
+  currentItemId: false,
   
   init: function() {
     console.log('datainput');
-    this.imageHelper = MoonrockDataInputImage;
+    this.actionsHelper = ActionsManager;
     this.dataBrowser = MoonrockDataInputDataBrowser;
     
     var self = this;
@@ -34,20 +33,30 @@ var MoonrockDataInput = {
         self.saveData();
       }
     });
-    $('#moonrock-data-input-button-cancel').click(function() {
+    $('#moonrock-data-input-button-undo').click(function() {
       if ($(this).hasClass('enabled')) {
-        self.cancelData();
+        self.undoRedoData('undo');
+      }
+    });
+    $('#moonrock-data-input-button-redo').click(function() {
+      if ($(this).hasClass('enabled')) {
+        self.undoRedoData('redo');
+      }
+    });
+    $('#moonrock-data-input-button-deletedata').click(function() {
+      if ($(this).hasClass('enabled')) {
+        self.deleteData();
       }
     });
     
     $('form').find('input[type="text"], textarea').keydown(function() {
-      self._userDataChanged();
+      self._smallDataChange();
     });
-    $('select').change(function() {
-      self._userDataChanged();
+    $('form').find('select, input[type="text"], textarea').change(function() {
+      self._bigDataChange();
     });
     $('body').rockColorPicker('addUserSelectionCallback', function() {
-      self._userDataChanged();
+      self._bigDataChange();
     });
   },
   
@@ -59,10 +68,8 @@ var MoonrockDataInput = {
       this._setButtons({
         save: 'disabled',
         saving: 'hidden',
-        saved: 'hidden',
         newdata: 'enabled',
-        deletedata: 'enabled',
-        cancel: 'disabled'
+        deletedata: 'enabled'
       });
     } else {
       $('#moonrock-data-input-header-edit').hide();
@@ -71,10 +78,8 @@ var MoonrockDataInput = {
       this._setButtons({
         save: 'enabled',
         saving: 'hidden',
-        saved: 'hidden',
         newdata: 'hidden',
-        deletedata: 'hidden',
-        cancel: 'disabled'
+        deletedata: 'hidden'
       });
     }
   },
@@ -106,13 +111,14 @@ var MoonrockDataInput = {
       this.setModeEdit(false);
     }
     this.updateSampleData(sample);
+    this.actionsHelper.setSample(sample.id);
   },
   
   setItem: function(item) {
-    this.currentItem = item;
+    this.currentItemId = item.id;
     
-    this.clearForm();
     this.setModeEdit(true);
+    this.clearForm();
     MoonrockDataInputDataBrowser.select(item.id);
     
     $('input[name="data_nid"]').val(item.id);
@@ -164,17 +170,40 @@ var MoonrockDataInput = {
     $('#moonrock-measure-fixedvalue-sample').html(sample.title);
   },
   
-  getSubmitURL: function() {
-    return '?q=moonrock_data_input/' + MoonrockVmViewManager.getActivityId() + '/submit';
+  _processUndoRedoResult: function(op, data) {
+    switch(op) {
+      case 'update':
+        this.dataBrowser.updateItem(data);
+        this.setItem(data);
+        break;
+      case 'delete':
+        this.dataBrowser.removeItem(data);
+        this.newData();
+        break;
+      default:
+        break;
+    }
+  },
+  undoRedoData: function(action) {
+    var self = this;
+    var callback = function(op, data) {
+      self._processUndoRedoResult(op, data);
+    };
+    if (action === 'undo') {
+      this.actionsHelper.undo(callback);
+    } else {
+      this.actionsHelper.redo(callback);
+    }
   },
   
-  cancelData: function() {
-    if (this.currentItem) {
-      this.setItem(this.currentItem);
-    } else {
-      this.clearForm();
-      this.newData();
+  setUndoRedoButtons: function(mode) {
+    var f = function(filter) {
+      return mode.indexOf(filter) >= 0 ? 'enabled' : 'disabled';
     }
+    this._setButtons({
+      undo: f('undo'),
+      redo: f('redo')
+    });
   },
 
   /**
@@ -184,61 +213,72 @@ var MoonrockDataInput = {
   submitData: function() {
     var self = this;
     
-    /*
-     * Request the current snapshot from the Virtual Microscope, submits when ready.
-     */
-    this.imageHelper.getVMSnapshot(function(snapshot) {
-      $('input[measure_content_type="moonrock_snapshot_image"]').attr('value', snapshot.image);
-      $('input[measure_content_type="moonrock_snapshot_parameters"]').attr('value', snapshot.vm_parameters);
-      $('input[measure_content_type="moonrock_snapshot_notes"]').attr('value', $('form#node-form').find('.form-textarea').val());
-      
-      $.ajax({
-        url: self.getSubmitURL(),
-        type: "POST",
-        dataType: 'json',
-        data: $('form').serialize(),
-        success: function(data) {
-          if (data.status) {
-            self.dataBrowser.updateItem(data.item);
-            self.setItem(data.item);
-          } else {
-            self.submissionError(data.error, 'data');
-          }
-        },
-        error: function(jqXHR, textStatus) {
-          self.submissionError(jqXHR, textStatus);
-        }
-      });
+    var process = function(item) {
+      self.dataBrowser.updateItem(item);
+      self.setItem(item);
+      self._opCompleted('save');
+    };
+    
+    self.actionsHelper.saveItem(self.currentItemId, process);
+  },
+  _opCompleted: function(op) {
+    switch(op) {
+      case 'save':
+        this._setButton('cancel', 'enabled')
+        break;
+      case 'cancel':
+        this._setButton('cancel', 'disabled')
+        break;
+      default:
+        break;
+    }
+       
+    this._setButtons({
+      save: 'disabled',
+      saving: 'hidden'
     });
   },
-    
   
   saveData: function() {
     this._setButtons({
       save: 'hidden',
       saving: 'disabled',
-      saved: 'hidden'
+      saved: 'hidden',
+      cancel: 'enabled'
     });
-    this.submitData();
+    this.submitData('save');
   },
   newData: function() {
-    this.currentItem = null;
+    this.currentItemId = null;
+    
     this.clearDataIds();
     this.setModeEdit(false);
     this.dataBrowser.select(null);
   },
   deleteData: function() {
+    var self = this;
     
+    if (confirm('Are you sure you want to delete this data item?')) {
+      this.actionsHelper.deleteItem(self.currentItemId, function() {
+        self.dataBrowser.removeItem(self.currentItemId);
+        
+        self.newData();
+      });
+    }
   },
   
-  _userDataChanged: function(submit) {
-    console.log('change ' + (new Date()).getTime());
+  _smallDataChange: function() {
+    console.log('small change ' + (new Date()).getTime());
     this._setButtons({
       save: 'enabled',
       saving: 'hidden',
       saved: 'hidden',
       cancel: 'enabled'
     });
+  },
+  _bigDataChange: function() {
+    console.log('big change ' + (new Date()).getTime());
+    this.saveData();
   }
 };
 

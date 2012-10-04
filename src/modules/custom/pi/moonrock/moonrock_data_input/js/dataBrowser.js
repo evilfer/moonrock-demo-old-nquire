@@ -59,6 +59,9 @@ var MoonrockDataInputDataBrowser = {
   updateItem: function(item) {
     $('#moonrock-data-browser').itemBrowser('updateItem', item);
   },
+  removeItem: function(itemId) {
+    $('#moonrock-data-browser').itemBrowser('removeItem', itemId);
+  },
   
   repaint: function() {
     var items = [];
@@ -76,6 +79,10 @@ var MoonrockDataInputDataBrowser = {
     if (selected) {
       $('#moonrock-data-browser').itemBrowser('select', selected);
     }
+  },
+  
+  getItem: function(itemId) {
+    return $('#moonrock-data-browser').itemBrowser('getItem', itemId);
   }
 };
 

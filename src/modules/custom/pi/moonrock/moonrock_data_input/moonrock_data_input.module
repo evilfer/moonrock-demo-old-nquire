@@ -13,6 +13,11 @@ function moonrock_data_input_menu() {
           'access callback' => 'moonrock_data_input_data_submit_access',
           'type' => MENU_CALLBACK,
       ),
+      'moonrock_data_input/%/delete' => array(
+          'page callback' => 'moonrock_data_input_data_delete',
+          'access callback' => 'moonrock_data_input_data_delete_access',
+          'type' => MENU_CALLBACK,
+      ),
   );
 
   return $items;
@@ -24,6 +29,29 @@ function moonrock_data_input_data_search_access() {
 
 function moonrock_data_input_data_submit_access() {
   return true;
+}
+
+function moonrock_data_input_data_delete_access() {
+  return true;
+}
+
+function moonrock_data_input_data_delete() {
+  global $user;
+
+  if (strlen($_REQUEST['data_nid']) > 0) {
+    $nid = $_REQUEST['data_nid'];
+    $node = node_load($nid);
+    if ($node->type === 'pi_data' && $node->uid === $user->uid) {
+      node_delete($nid);
+      
+      
+      unset($_SESSION['messages']['status']);
+      $result = array(
+          'status' => TRUE,
+      );
+      drupal_json($result);
+    }
+  }
 }
 
 function moonrock_data_input_data_submit() {
@@ -44,14 +72,14 @@ function moonrock_data_input_data_submit() {
   $node->title = $_REQUEST['title'];
   $node->onepageprofile_categories = $_REQUEST['onepageprofile_categories'];
   node_save($node);
-  
+
   $saved_node = node_load($node->nid, NULL, TRUE);
-  
+
   $data = pi_sort_data_get_measure_information();
   $item = pi_sort_data_get_process_item($saved_node, $data);
   $data['items'] = array($saved_node->nid => $item);
   $processed_items = _moonrock_data_input_prepare_data_items($data);
-  
+
   $result = array(
       'status' => TRUE,
       'item' => $processed_items[0],
@@ -127,7 +155,7 @@ function _moonrock_data_input_find_data_for_sample($sample_filter) {
 }
 
 function moonrock_data_input_nodeapi(&$node, $op) {
-  if ($op === 'presave' && $node->form_id === 'pi_data_node_form') {
+  if (($op === 'presave' && $node->form_id === 'pi_data_node_form') || ($op === 'delete' && $node->type === 'pi_data')) {
     global $user;
     $node_details = get_inquiry_details_from_current_path();
     $measures_param = find_selected_measures_nid_for_uid_and_inquiry($user->uid, $node_details->inquiry_id);
@@ -153,19 +181,29 @@ function moonrock_data_input_nodeapi(&$node, $op) {
       $sample_nid = $node->onepageprofile_categories[$sample_key]['value'];
       $snapshot_nid = $node->onepageprofile_categories[$snapshot_key]['value'];
 
-      $snapshot = node_load($snapshot_nid);
-      if (!$snapshot) {
-        $snapshot = new stdClass();
-        $snapshot->uid = $user->uid;
-        $snapshot->type = 'moonrock_snapshot';
+      switch ($op) {
+        case 'presave':
+          $snapshot = node_load($snapshot_nid);
+          if (!$snapshot) {
+            $snapshot = new stdClass();
+            $snapshot->uid = $user->uid;
+            $snapshot->type = 'moonrock_snapshot';
+          }
+          $snapshot->notes = $node->onepageprofile_categories['moonrock_snapshot_notes']['value'];
+          $snapshot->vm_parameters = $node->onepageprofile_categories['moonrock_snapshot_notes']['value'];
+          $snapshot->sample_ref = $sample_nid;
+          node_save($snapshot);
+          $node->onepageprofile_categories[$snapshot_key]['value'] = $snapshot->nid;
+          moonrock_snapshot_images_savesnapshot($node->onepageprofile_categories['moonrock_snapshot_image']['value'], $snapshot->nid);
+          return;
+          break;
+        case 'delete':
+          $snapshot = node_load($snapshot_nid);
+          node_delete($snapshot_nid);
+          break;
+        default:
+          break;
       }
-      $snapshot->notes = $node->onepageprofile_categories['moonrock_snapshot_notes']['value'];
-      $snapshot->vm_parameters = $node->onepageprofile_categories['moonrock_snapshot_notes']['value'];
-      $snapshot->sample_ref = $sample_nid;
-      node_save($snapshot);
-      $node->onepageprofile_categories[$snapshot_key]['value'] = $snapshot->nid;
-      moonrock_snapshot_images_savesnapshot($node->onepageprofile_categories['moonrock_snapshot_image']['value'], $snapshot->nid);
-      return;
     }
   }
 }
@@ -200,11 +238,11 @@ function theme_moonrock_data_input_form_page($separator) {
 
   $content = '<div class="moonrock-data-input-button-menu">'
           . '<div class="moonrock-data-input-button moonrock-data-input-hidden" id="moonrock-data-input-button-save">' . t('[Save]') . '</div>'
-          . '<div class="moonrock-data-input-button moonrock-data-input-hidden" id="moonrock-data-input-button-saved">' . t('[Saved]') . '</div>'
           . '<div class="moonrock-data-input-button moonrock-data-input-hidden" id="moonrock-data-input-button-saving">' . t('[Saving...]') . '</div>'
           . '<div class="moonrock-data-input-button moonrock-data-input-hidden" id="moonrock-data-input-button-newdata">' . t('[New]') . '</div>'
           . '<div class="moonrock-data-input-button moonrock-data-input-hidden" id="moonrock-data-input-button-deletedata">' . t('[Delete]') . '</div>'
-          . '<div class="moonrock-data-input-button moonrock-data-input-hidden" id="moonrock-data-input-button-cancel">' . t('[Cancel]') . '</div>'
+          . '<div class="moonrock-data-input-button moonrock-data-input-hidden" id="moonrock-data-input-button-undo">' . t('[Undo]') . '</div>'
+          . '<div class="moonrock-data-input-button moonrock-data-input-hidden" id="moonrock-data-input-button-redo">' . t('[Redo]') . '</div>'
           . '</div>';
 
   $blocks = array(
@@ -238,6 +276,7 @@ function moonrock_data_input_form_pi_data_node_form_alter(&$form, &$form_state) 
     '#attributes' => array('onClick' => 'MoonrockDataFormData.submit();return false;'),
     ); */
 
+  drupal_add_js(drupal_get_path('module', 'moonrock_data_input') . '/js/actions.js');
   drupal_add_js(drupal_get_path('module', 'moonrock_data_input') . '/js/data.js');
   drupal_add_js(drupal_get_path('module', 'moonrock_data_input') . '/js/image.js');
   drupal_add_css(drupal_get_path('module', 'moonrock_data_input') . '/css/dataMenu.css');
