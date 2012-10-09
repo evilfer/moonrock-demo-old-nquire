@@ -119,6 +119,8 @@
           self.itemBrowser('_event', 'imgclick', _item);
         });
       }
+      
+      self.itemBrowser('_event', 'itemadded', item);
     },
     _event: function(type, item) {
       var options = this.data('options');

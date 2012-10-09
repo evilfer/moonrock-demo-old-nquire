@@ -18,7 +18,246 @@ function moonrock_forum_manager_form_alter(&$form, &$form_state, $form_id) {
   }
 }
 
-function moonrock_forum_manager_find_forum_topic($nid) {
-  
+function moonrock_forum_manager_menu() {
+  $items = array();
+
+  $items['moonrock_forum_manager/create/%'] = array(
+      'page callback' => 'moonrock_forum_manager_create',
+      'access callback' => 'moonrock_forum_manager_create_access',
+      'type' => MENU_CALLBACK,
+  );
+  return $items;
 }
 
+function moonrock_forum_manager_create_access() {
+  return TRUE;
+}
+
+function moonrock_forum_manager_create() {
+  global $user;
+
+  $question_nid = arg(2);
+  if (is_numeric($question_nid)) {
+    $question = node_load($question_nid);
+    if ($question && $question->uid === $user->uid && $question->type === 'pi_key_questions') {
+      $forum_nid = moonrock_forum_manager_find_forum_topic_for_key_question($question_nid);
+      if ($forum_nid) {
+        drupal_goto('node/' . $forum_nid);
+      } else {
+        $node = new stdClass();
+
+        $node->type = 'forum';
+        $node->uid = $user->uid;
+        $node->comment = '2';
+        $node->field_inquiry_item[]['nid'] = $question_nid;
+        $node->format = FILTER_HTML_ESCAPE;
+        /**
+         * FIX (eloy)
+         * Temporary link to taxonomy (to select the forum)...
+         */
+        $node->taxonomy = array(4);
+
+        _moonrock_forum_manager_update_forum($node, $question);
+
+        node_save($node);
+
+//        $node = node_load(2273);
+        drupal_goto('node/' . $node->nid);
+      }
+    }
+  }
+}
+
+function _moonrock_forum_manager_update_forum(&$node, $question) {
+  $node->title = theme('moonrock_forum_manager_question_forum_title', $question);
+  $node->body = theme('moonrock_forum_manager_question_forum_body', $question);
+}
+
+function moonrock_forum_manager_find_forum_topic_for_key_question($nid) {
+  $query = "SELECT nid FROM {content_type_forum} WHERE {content_type_forum}.field_inquiry_item_nid=%d";
+  $result = db_query($query, $nid);
+  $obj = db_fetch_object($result);
+  if ($obj) {
+    return $obj->nid;
+  } else {
+    return FALSE;
+  }
+}
+
+function moonrock_forum_manager_theme() {
+  return array(
+      'moonrock_forum_manager_question_social_info' => array(
+          'arguments' => array('nid'),
+      ),
+      'moonrock_forum_manager_question_forum_body' => array(
+          'arguments' => array('node'),
+      ),
+      'moonrock_forum_manager_question_forum_title' => array(
+          'arguments' => array('node'),
+      ),
+  );
+}
+
+function theme_moonrock_forum_manager_question_forum_title($node) {
+  return t('Key question: ') . check_plain($node->key_question);
+}
+
+function theme_moonrock_forum_manager_question_forum_body($node) {
+  global $user;
+  $node_details = get_inquiry_details_from_current_path();
+
+  $output = '';
+  $output .= '<div style="padding: 5px; width: 90%; border: 1px solid lightgray; background: #ffffd0">';
+
+  $output .= '<p><b>' . t('Key question:') . '</b><br/><span style="padding-left: 20px;">' . check_plain($node->key_question) . '</span></p>';
+
+  $method_nid = find_unique_node_type_for_uid_and_inquiry('moonrock_method', $user->uid, $node_details->inquiry_id);
+  $method = node_load($method_nid, NULL, TRUE);
+  $question_method = $method && isset($method->question_methods[$node->nid]) ? $method->question_methods[$node->nid] : NULL;
+
+  $output .= '<p>';
+  $output .= '<div><b>' . t('Method to answer the question:') . '</b></div><div style="padding-left: 20px;">';
+  if ($question_method && strlen($question_method->method) > 0) {
+    $output .= nl2br($question_method->method);
+  } else {
+    $output .= '<i>' . t('Not decided.') . '</i>';
+  }
+  $output .= '</div>';
+  $output .= '<div><b>' . t('Virtual Microscrope measures used:') . '</b></div><div style="padding-left: 20px;">';
+  if ($question_method && strlen($question_method->measures) > 0) {
+    $comma = FALSE;
+    foreach (explode(',', $question_method->measures) as $nid) {
+      $measure = node_load($nid);
+      if ($comma) {
+        $output .= ', ';
+      } else {
+        $comma = TRUE;
+      }
+      $output .= nl2br($measure->title);
+    }
+    $output .= '.';
+  } else {
+    $output .= '<i>' . t('Not decided.') . '</i>';
+  }
+  $output .= '</div>';
+  $output .= '<div><b>' . t('Additional information sources:') . '</b></div><div style="padding-left: 20px;">';
+  if ($question_method && strlen($question_method->external) > 0) {
+    $output .= nl2br($question_method->external);
+  } else {
+    $output .= '<i>' . t('Not decided.') . '</i>';
+  }
+  $output .= '</div></p>';
+
+
+  $query_answers = "SELECT DISTINCT {node}.nid FROM {pi_key_answers} LEFT JOIN {node} on {node}.nid={pi_key_answers}.nid WHERE {pi_key_answers}.key_question_id=%d";
+  $result_answers = db_query($query_answers, $node->nid);
+  while ($object = db_fetch_object($result_answers)) {
+    $answer_nid = $object->nid;
+    $answer = node_load($answer_nid);
+    $output .= '<p><b>' . t('Key answer:') . '</b><br/><span style="padding-left: 20px;">' . check_plain($answer->key_answer) . '</span></p>';
+  }
+
+  $query_charts = "SELECT DISTINCT {node}.nid FROM {pi_result_presentations} LEFT JOIN {node} on {node}.nid={pi_result_presentations}.nid WHERE {pi_result_presentations}.key_question_id=%d";
+  $result_charts = db_query($query_charts, $node->nid);
+  $heading = TRUE;
+  $output .= '<p>';
+  while ($object = db_fetch_object($result_charts)) {
+    $chart_nid = $object->nid;
+    if ($heading) {
+      $output .= '<b>' . t('Charts:') . '</b>';
+      $heading = FALSE;
+    }
+    $activity_id = get_activity_id_for_nid($chart_nid);
+    $output .= '<div><img style="padding-left: 20px;"> src="?q=activity/' . $activity_id . '/chart.png"></img></div>';
+  }
+  $output .= '</p>';
+
+  $output .= '</div>';
+  return $output;
+}
+
+function theme_moonrock_forum_manager_question_social_info($nid) {
+  $output = '<div><div style="display:inline-block;border:1px solid #ccc; padding: 10px; width: auto;">';
+  $forum_nid = moonrock_forum_manager_find_forum_topic_for_key_question($nid);
+
+  if ($forum_nid) {
+    $comment_data = _moonrock_forum_manager_forum_new_comments($forum_nid);
+    $output .= '<a href="?q=node/' . $forum_nid . '">' . t('Discuss in forum') . '</a><br/>';
+    $output .= '<small>'
+            . $comment_data['comments']
+            . ($comment_data['comments'] == 1 ? t(' comment') : t(' comments'));
+    if ($comment_data['new'] > 0) {
+      $output .= ' (<b>'
+              . $comment_data['new'] . t(' new')
+              . '</b>'
+              . ', '
+              . ($comment_data['new'] == 1 ? t('posted ') : t('last posted '))
+              . theme('moonrock_sample_utils_fuzzy_time_period', time() - $comment_data['last'])
+              . ')';
+    }
+    $output .= '</small>';
+  } else {
+    $output .= '<small><a href="?q=moonrock_forum_manager/create/' . $nid . '">' . t('Publish this question and discuss with other users.') . '</a></small>';
+  }
+
+  $output .= '</div></div>';
+  return $output;
+}
+
+function _moonrock_forum_manager_forum_new_comments($forum_nid) {
+  global $user;
+  $forum = node_load($forum_nid);
+
+  $output = array(
+      'comments' => $forum->comment_count,
+      'new' => 0,
+      'last' => 0,
+  );
+
+  $query = 'SELECT timestamp FROM {history} WHERE uid=%d and nid=%d';
+  $result = db_query($query, $user->uid, $forum_nid);
+  $obj = db_fetch_object($result);
+  $visited = $obj ? $obj->timestamp : 0;
+
+  $query2 = 'SELECT COUNT(cid) as n, MAX(timestamp) as t FROM {comments} WHERE nid=%d AND timestamp>%d';
+  $result2 = db_query($query2, $forum_nid, $visited);
+  $obj2 = db_fetch_object($result2);
+
+  if ($obj2) {
+    $output['new'] = (int) $obj2->n;
+    if ($obj2->n > 0) {
+      $output['last'] = (int) $obj2->t;
+    }
+  }
+  return $output;
+}
+
+function moonrock_forum_manager_nodeapi($node, $op) {
+  global $user;
+
+  $questions = array();
+
+  if ($node->type === 'pi_key_questions' && $op === 'update') {
+    $questions[] = $node;
+  } else if ($node->type === 'pi_key_answers' && ($op === 'update' || $op === 'insert' || $op === 'update')) {
+    if ($op === 'update') {
+      $node = node_load($node->nid, NULL, TRUE);
+    }
+    $questions[] = node_load($node->key_question_id);
+  } else if ($node->type === 'moonrock_method' && $op === 'update') {
+    foreach ($node->question_methods as $nid => $_) {
+      $questions[] = node_load($nid);
+    }
+  }
+
+  foreach ($questions as $question) {
+    if ($question->type === 'pi_key_questions' && $question->uid === $user->uid) {
+      $forum_nid = moonrock_forum_manager_find_forum_topic_for_key_question($question->nid);
+      if ($forum_nid !== FALSE) {
+        $forum = node_load($forum_nid);
+        _moonrock_forum_manager_update_forum($forum, $question);
+        node_save($forum);
+      }
+    }
+  }
+}

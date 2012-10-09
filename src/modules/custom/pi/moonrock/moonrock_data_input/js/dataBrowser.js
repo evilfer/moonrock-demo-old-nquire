@@ -10,6 +10,8 @@ var MoonrockDataInputDataBrowser = {
       eventCallback: function(type, item) {
         if (type === 'imgclick') {
           MoonrockDataInput.setItem(item);
+        } else if (type === 'itemadded') {
+          MoonrockDataInput.itemAdded(item);
         }
       },
       imageLink: true

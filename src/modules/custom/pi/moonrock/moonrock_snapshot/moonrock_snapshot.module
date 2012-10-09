@@ -164,7 +164,7 @@ function moonrock_snapshot_update($node) {
   if ($node->revision) {
     moonrock_snapshot_insert($node);
   } else {
-    db_query("UPDATE {moonrock_snapshot} SET notes='%s', sample_ref='%d', vm_parameters='%s' WHERE vid = %d", $node->notes, $node->sample_ref, $node->vm_parameteres, $node->vid);
+    db_query("UPDATE {moonrock_snapshot} SET notes='%s', sample_ref='%d', vm_parameters='%s' WHERE vid = %d", $node->notes, $node->sample_ref, $node->vm_parameters, $node->vid);
   }
 }
 

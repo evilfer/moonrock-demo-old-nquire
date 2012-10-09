@@ -8,6 +8,12 @@ Moonrock demonstators.
 Changes:
 
 -----------------
+09-10-2012
+
+- Added forum support for key questions.
+- Integrated nQuire/VM communication interface.
+
+-----------------
 04-10-2012
 
 - Data is saved automatically.

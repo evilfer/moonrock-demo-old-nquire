@@ -242,9 +242,12 @@ function get_inquiry_details_from_current_path() {
      * If a node is linked with an activity, go to activity.
      */
     if ($user->uid > 1) {
-      $activity_id = (int) get_activity_id_for_nid(arg(1));
-      if ($activity_id) {
-        drupal_goto('activity/' . $activity_id . '/view');
+      $nid = (int) arg(1);
+      if ($nid) {
+        $activity_id = (int) get_activity_id_for_nid($nid);
+        if ($activity_id) {
+          drupal_goto('activity/' . $activity_id . '/view');
+        }
       }
     }
   } else {
@@ -254,7 +257,6 @@ function get_inquiry_details_from_current_path() {
       $stage = get_current_stage_of_inquiry_and_user($result->inquiry_id, $uid);
       $result->stage_id = $stage->stage_id;
     }
-    
   }
 
 

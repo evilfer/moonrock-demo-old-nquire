@@ -1,12 +1,14 @@
 
 
 var MoonrockDataInput = {
+  initialItemId: false,
   currentItemId: false,
   
   init: function() {
     console.log('datainput');
     this.actionsHelper = ActionsManager;
     this.dataBrowser = MoonrockDataInputDataBrowser;
+    this.vmComm = MoonrockDataInputVMComm;
     
     var self = this;
     
@@ -18,6 +20,7 @@ var MoonrockDataInput = {
     if (data_nid) {
       MoonrockVmViewManager.openSample($('input[measure_content_type="moonrock_sample"]').attr('value'));
       MoonrockDataInputDataBrowser.select(data_nid);
+      this._initItemId(data_nid);
       this.setModeEdit(true);
     } else {
       this.setModeEdit(false);
@@ -60,6 +63,15 @@ var MoonrockDataInput = {
     });
   },
   
+  _initItemId: function(itemId) {
+    this.initialItemId = itemId;
+  },
+  itemAdded: function(item) {
+    if (item.id == this.initialItemId) {
+      this.initialItemId = false;
+      this.setItem(item);
+    }
+  },
   setModeEdit: function(editing) {
     if (editing) {
       $('#moonrock-data-input-header-new').hide();
@@ -109,13 +121,32 @@ var MoonrockDataInput = {
     if (sampleChanged) {
       this.clearForm();
       this.setModeEdit(false);
+      this.dataBrowser.select(null);
     }
     this.updateSampleData(sample);
     this.actionsHelper.setSample(sample.id);
   },
   
+  vmPositionChanged: function(position) {
+    console.log(position);
+    this._smallDataChange();
+  },
+  
   setItem: function(item) {
+    var self = this;
     this.currentItemId = item.id;
+    
+    this.vmComm.stopPositionMonitoring();
+    
+    if (item) {
+      var monitor = function() {
+        self.vmComm.monitorPositionChange(function(position) {
+          self.vmPositionChanged(position);
+        });
+      };
+      this.vmComm.setVMParams(item.data.snapshot_vm_parameters);
+      setTimeout(monitor, 1000);
+    }
     
     this.setModeEdit(true);
     this.clearForm();

@@ -6,7 +6,7 @@ var ActionsManager = {
   
   init: function() {
     console.log('actions manager');
-    this.imageHelper = MoonrockDataInputImage;
+    this.imageHelper = MoonrockDataInputVMComm;
     this.dataManager = MoonrockDataInput;
     this.dataBrowser = MoonrockDataInputDataBrowser;
   },

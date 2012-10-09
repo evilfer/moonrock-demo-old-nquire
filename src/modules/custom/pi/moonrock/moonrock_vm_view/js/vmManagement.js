@@ -7,6 +7,8 @@ var MoonrockVmViewManager = {
     next: false
   },
   sampleSelectionCallbacks: [],
+  vmLoadedCallbacks: [],
+  
   
   init: function() {
     console.log('vmmanager');
@@ -57,6 +59,9 @@ var MoonrockVmViewManager = {
   
   addSampleSelectionCallback: function(callback) {
     this.sampleSelectionCallbacks.push(callback);
+  },
+  addVMLoadedCallback: function(callback) {
+    this.vmLoadedCallbacks.push(callback);
   },
   
   browserHistoryChange: function(vm) {
@@ -123,7 +128,6 @@ var MoonrockVmViewManager = {
     
     //$('#moonrock-samples-page-vm-iframe-container').css('height', 680);
     $('#moonrock-samples-page-vm-iframe').remove();
-    $('#moonrock-samples-page-vm-iframe-container').append('<iframe id="moonrock-samples-page-vm-iframe" src="' + this.currentItem.vm + '"></iframe>');
     this._resizeVMPage();
     this._updateSampleBrowser();
   },
@@ -146,9 +150,29 @@ var MoonrockVmViewManager = {
     
     var vmSampleBrowserHeight = $('#moonrock-samples-page-vm-sample').height();
     
-    $('#moonrock-samples-page-vm-iframe-container').append('<iframe id="moonrock-samples-page-vm-iframe" src="' + this.currentItem.vm + '"></iframe>');
+    this._createVM();
     $('#moonrock-samples-page-vm-iframe-container').css('height', vmPageHeight - vmSampleBrowserHeight);
     $('#moonrock-samples-page-vm-iframe').css('height', vmPageHeight - vmSampleBrowserHeight);
+  },
+  _createVM: function() {
+    //var self = this;
+    var path = location.origin + location.pathname + this.currentItem.vm;
+    $('#moonrock-samples-page-vm-iframe-container').append('<iframe id="moonrock-samples-page-vm-iframe" src="' + path + '"></iframe>');
+    /*var window = this._iframe = $('#moonrock-samples-page-vm-iframe')[0].contentWindow;
+    var notify = function() {
+      for(var i in self.vmLoadedCallbacks) {
+        (self.vmLoadedCallbacks[i])(window);
+      }
+    };
+    $(window.document).ready(notify);
+/*    setTimeout(function() {
+      var iframe = $('#moonrock-samples-page-vm-iframe');
+      if (iframe[0].document.readyState !== 'complete') {
+        iframe.ready(notify, 50);
+      } else {
+        notify();
+      }
+    });*/
   },
   
   _closeVM: function() {

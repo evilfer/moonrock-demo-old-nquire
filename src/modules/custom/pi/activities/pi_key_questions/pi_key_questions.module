@@ -241,7 +241,8 @@ function pi_key_questions_theme() {
  * @return string HTML output
  */
 function theme_pi_key_questions($node, $teaser) {
-	$output = '<strong>' . t('Key question:') . '</strong> ' . nl2br($node->key_question);
+	$output = '<strong>' . t('Key question: ') . '</strong>' . nl2br($node->key_question);
+  $output .= theme('moonrock_forum_manager_question_social_info', $node->nid);
 	return $output;
 }
 
