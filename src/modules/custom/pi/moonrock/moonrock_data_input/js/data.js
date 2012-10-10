@@ -8,7 +8,7 @@ var MoonrockDataInput = {
     console.log('datainput');
     this.actionsHelper = ActionsManager;
     this.dataBrowser = MoonrockDataInputDataBrowser;
-    this.vmComm = MoonrockDataInputVMComm;
+    this.vmComm = MoonrockVMComm;
     
     var self = this;
     

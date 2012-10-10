@@ -185,6 +185,7 @@ function theme_moonrock_seesamples_table($node, $teaser, $linkVM) {
   module_load_include('inc', 'moonrock_seesamples_table', 'moonrock_seesamples.table');
   moonrock_seesamples_load_resources();
   moonrock_sample_utils_load_vmSample_format();
+  moonrock_vm_state_load_resources();
 
   $output = '';
 

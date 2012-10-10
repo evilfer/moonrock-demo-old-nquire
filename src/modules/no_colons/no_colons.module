@@ -1,0 +1,102 @@
+<?php
+
+/**
+ * @file
+ * Removes colons from input form elements.
+ *
+ * Removes colons from input form elements, including core forms and webforms.
+ *
+ */
+
+
+/**
+ * Implementation of hook_init().
+ */
+function no_colons_init() {
+	drupal_add_js(drupal_get_path('module', 'no_colons') .'/no_colons.js');
+	
+	// pass in settings to jquery
+	$js_settings = array(
+		'no_colons_mode' => variable_get('no_colons_mode', 'all_colons'),
+		'no_colons_use_cck_jquery' => variable_get('no_colons_use_cck_jquery', array('cck_jquery' => 0)),
+		'no_colons_use_views_jquery' => variable_get('no_colons_use_views_jquery', array('views_jquery' => 0)),
+	);
+	drupal_add_js(array('no_colons' => $js_settings), 'setting');
+}
+
+
+/**
+ * Implementation of hook_menu().
+ */
+function no_colons_menu() {	
+	$items['admin/settings/no_colons'] = array(
+		'title' => 'No Colons',
+		'description' => 'Remove colons from form labels and other elements.',
+		'page callback' => 'drupal_get_form',
+		'page arguments' => array('no_colons_settings'),
+		'access arguments' => array('administer No Colons configuration'),
+		'file' => 'no_colons.admin.inc',
+		'type' => MENU_NORMAL_ITEM,
+	);
+	return $items;
+}
+
+
+/**
+ * Theme registry override for the theme_form_element() function 
+ */
+function no_colons_theme_registry_alter(&$theme_registry) {
+  if (!empty($theme_registry['form_element'])) {
+  	$theme_registry['form_element']['function'] = 'no_colons_form_element';
+  }
+}
+
+
+// this is a copy of the theme_form_element() funciton from drupal core,
+// with the only change that the colon character is being removed from the
+// end of the title, based on certain criteria.
+
+function no_colons_form_element($element, $value) {
+	// This is also used in the installer, pre-database setup.
+  $t = get_t();
+
+  $output = '<div class="form-item"';
+  if (!empty($element['#id'])) {
+    $output .= ' id="' . $element['#id'] . '-wrapper"';
+  }
+  $output .= ">\n";
+  $required = !empty($element['#required']) ? '<span class="form-required" title="' . $t('This field is required.') . '">*</span>' : '';
+
+  if (!empty($element['#title'])) {
+    $title = $element['#title'];
+    $mode = variable_get('no_colons_mode', 'all_colons');
+    
+    switch ($mode) {
+    	case 'punctuation_colons':
+    		$colon = (preg_match('/[-%,!=+"\'\.\?]$/', $title) == 1) ? '' : ':';
+    		break;
+    		
+    	case 'all_colons':
+    	default:
+    		$colon = '';
+    		break;
+    }
+    
+    if (!empty($element['#id'])) {
+      $output .= ' <label for="' . $element['#id'] . '">' . $t('!title!colon !required', array('!title' => filter_xss_admin($title), '!colon' => $colon, '!required' => $required)) . "</label>\n";
+    }
+    else {
+      $output .= ' <label>' . $t('!title!colon !required', array('!title' => filter_xss_admin($title), '!colon' => $colon, '!required' => $required)) . "</label>\n";
+    }
+  }
+
+  $output .= " $value\n";
+
+  if (!empty($element['#description'])) {
+    $output .= ' <div class="description">' . $element['#description'] . "</div>\n";
+  }
+
+  $output .= "</div>\n";
+
+  return $output;
+}

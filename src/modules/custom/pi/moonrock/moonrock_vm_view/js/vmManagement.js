@@ -2,6 +2,7 @@
 
 var MoonrockVmViewManager = {
   currentItem: null,
+  snapshotItem: null,
   browseItems: {
     prev: false,
     next: false
@@ -22,8 +23,10 @@ var MoonrockVmViewManager = {
     
     MoonrockVmViewHistory.enable(function(vm) {
       if (vm) {
+        console.log('vm from history');
         self._openVM();
       } else {
+        console.log('browser from history');
         self._openBrowser();
       }
     });
@@ -64,16 +67,9 @@ var MoonrockVmViewManager = {
     this.vmLoadedCallbacks.push(callback);
   },
   
-  browserHistoryChange: function(vm) {
-    if (vm) {
-      this._openVM();
-    } else {
-      this._closeVM();
-    }
-  },
-  
   _sampleSelected: function(item, sampleChanged) {
     if (item) {
+      this.snapshotItem = this.currentItem;
       this.currentItem = item;
       MoonrockVmViewHistory.forward();
       for(var i in this.sampleSelectionCallbacks) {
@@ -93,10 +89,11 @@ var MoonrockVmViewManager = {
       }
     }
     return "0";
-    
   },
   
   _updateSampleBrowser: function() {
+    console.log('-update browser-');
+    
     var items = MoonrockSeeSamples.getItems();
     $('#moonrock-samples-page-vm-sample-title').html(this.currentItem.title);
     this.browseItems.prev = this.browseItems.next = false;
@@ -125,64 +122,78 @@ var MoonrockVmViewManager = {
     $('#moonrock-samples-page-browse').addClass('moonrock-samples-page-hidden');
     $('#moonrock-samples-page-vm-top').removeClass('moonrock-samples-page-hidden'); 
     
-    
-    //$('#moonrock-samples-page-vm-iframe-container').css('height', 680);
-    $('#moonrock-samples-page-vm-iframe').remove();
-    this._resizeVMPage();
-    this._updateSampleBrowser();
+    var self = this;
+    this._resizeVMPage(function() {
+      self._updateSampleBrowser();
+    });
   },
-  _resizeVMPage: function() {
-    var element = $('.moonrock-sample-utils-pageblock-page');
+  _resizeVMPage: function(callback) {
+    console.log('-resize-');
+    var element = $('#moonrock-samples-page-vm-top');
     var top = element.offset().top;
     var height = $(window).height();
     var pageblockHeight = height - top;
     element.css('height', pageblockHeight);
     console.log(pageblockHeight);
     
-    $('#moonrock-samples-page-vm-iframe').remove();
-    
-    $('.moonrock-samples-page-vm-and-browser').css('height', pageblockHeight);
-    
-    var dataContainerHeight = $('.moonrock-data-browser-container').height();
-    var vmPageHeight = pageblockHeight - dataContainerHeight - 20;
-    $('#moonrock-samples-page-vm').css('height', vmPageHeight);
-    
-    
-    var vmSampleBrowserHeight = $('#moonrock-samples-page-vm-sample').height();
-    
-    this._createVM();
-    $('#moonrock-samples-page-vm-iframe-container').css('height', vmPageHeight - vmSampleBrowserHeight);
-    $('#moonrock-samples-page-vm-iframe').css('height', vmPageHeight - vmSampleBrowserHeight);
-  },
-  _createVM: function() {
-    //var self = this;
-    var path = location.origin + location.pathname + this.currentItem.vm;
-    $('#moonrock-samples-page-vm-iframe-container').append('<iframe id="moonrock-samples-page-vm-iframe" src="' + path + '"></iframe>');
-    /*var window = this._iframe = $('#moonrock-samples-page-vm-iframe')[0].contentWindow;
-    var notify = function() {
-      for(var i in self.vmLoadedCallbacks) {
-        (self.vmLoadedCallbacks[i])(window);
+    var self = this;
+    var next = function() {
+      $('.moonrock-samples-page-vm-and-browser').css('height', pageblockHeight);
+      var dataContainerHeight = $('.moonrock-data-browser-container').height();
+      var vmPageHeight = pageblockHeight - dataContainerHeight - 20;
+      $('#moonrock-samples-page-vm').css('height', vmPageHeight);
+      var vmSampleBrowserHeight = $('#moonrock-samples-page-vm-sample').height();
+      self._createVM();
+      $('#moonrock-samples-page-vm-iframe-container').css('height', vmPageHeight - vmSampleBrowserHeight);
+      $('#moonrock-samples-page-vm-iframe').css('height', vmPageHeight - vmSampleBrowserHeight);
+      if (callback) {
+        callback();
       }
     };
-    $(window.document).ready(notify);
-/*    setTimeout(function() {
-      var iframe = $('#moonrock-samples-page-vm-iframe');
-      if (iframe[0].document.readyState !== 'complete') {
-        iframe.ready(notify, 50);
-      } else {
-        notify();
-      }
-    });*/
-  },
-  
-  _closeVM: function() {
+    
+    this._destroyVM(next);
     
   },
+  _destroyVM: function(callback) {
+    console.log('-destroy-');
+    var iframe = $('#moonrock-samples-page-vm-iframe');
+    var self = this;
+    if (iframe.length > 0) {
+      MoonrockVMComm.getVMSnapshot(function(snapshot) {
+        $('#moonrock-samples-page-vm-iframe').remove();
+        MoonrockVmState.set(self.snapshotItem.id, snapshot);
+        MoonrockSeeSamples.setSnapshot(self.snapshotItem.id, snapshot)
+        
+        if (callback) {
+          callback();
+        }
+      });
+    } else if (callback) {
+      callback();
+    }
+  },
+  _createVM: function() {
+    console.log('-create-');
+    this.snapshotItem = this.currentItem;
+    var path = location.origin + location.pathname + this.currentItem.vm;
+    $('#moonrock-samples-page-vm-iframe-container').append('<iframe id="moonrock-samples-page-vm-iframe" src="' + path + '"></iframe>');
+    if (this.currentItem.snapshot) {
+      var self = this;
+      $('#moonrock-samples-page-vm-iframe').load(function() {
+        setTimeout(function() {
+          MoonrockVMComm.setVMParams(self.currentItem.snapshot.vm_parameters);
+        }, 50);
+      });
+    }
+  },
+
   
   _openBrowser: function() {
-    $('#moonrock-activity-description').show();
-    $('#moonrock-samples-page-vm-top').addClass('moonrock-samples-page-hidden');
-    $('#moonrock-samples-page-browse').removeClass('moonrock-samples-page-hidden');
+    this._destroyVM(function() {
+      $('#moonrock-activity-description').show();
+      $('#moonrock-samples-page-vm-top').addClass('moonrock-samples-page-hidden');
+      $('#moonrock-samples-page-browse').removeClass('moonrock-samples-page-hidden');
+    });
   }
 };
 

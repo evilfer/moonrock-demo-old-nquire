@@ -29,10 +29,14 @@ var MoonrockVmViewHistory = {
   },
   
   forward: function() {
-    $.bbq.pushState({
-      vm: true
-    });
-    this.callback(true);
+    var vm = location.href.indexOf('#vm=true') >= 0;
+    if (vm) {
+      this.callback(true);
+    } else {
+      $.bbq.pushState({
+        vm: true
+      });
+    }
   }
 };
 

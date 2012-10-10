@@ -11,8 +11,6 @@ function moonrock_vm_view_theme() {
   );
 }
 
-
-
 function theme_moonrock_vm_view_page($node, $vm_view = FALSE) {
   moonrock_vm_view_load_resources();
 
@@ -52,8 +50,13 @@ function theme_moonrock_vm_view_vm() {
 }
 
 function moonrock_vm_view_load_resources() {
+  drupal_add_css(drupal_get_path('module', 'moonrock_vm_view') . '/css/vmMeasureField.css');
+  drupal_add_js(drupal_get_path('module', 'moonrock_vm_view') . '/js/jquery.vmMeasureField.js');
+ 
+  drupal_add_js(drupal_get_path('module', 'moonrock_vm_view') . '/js/vmComm.js');
   drupal_add_css(drupal_get_path('module', 'moonrock_vm_view') . '/css/vm_view.css');
   drupal_add_css(drupal_get_path('module', 'moonrock_vm_view') . '/css/vm_browse.css');
+
   drupal_add_js(drupal_get_path('module', 'moonrock_vm_view') . '/js/expand.js');
   drupal_add_js(drupal_get_path('module', 'moonrock_vm_view') . '/js/history.js');
   drupal_add_js(drupal_get_path('module', 'moonrock_vm_view') . '/js/vmManagement.js');

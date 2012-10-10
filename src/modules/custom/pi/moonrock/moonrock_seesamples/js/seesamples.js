@@ -21,6 +21,16 @@ var MoonrockSeeSamples = {
       });
       self.items.push($(this).vmSample('getItem'));
     });
+    
+    MoonrockVmState.get(function(data) {
+      for(var id in data) {
+        var sample = $('.vmSample[item-id="' + id + '"]');
+        if (sample.length > 0 && !sample.vmSample('getSnapshot')) {
+          sample.vmSample('setSnapshot', data[id]);
+        }
+      }
+      return;
+    });
   },  
   
   addCallback: function(callback) {
@@ -29,6 +39,12 @@ var MoonrockSeeSamples = {
   
   getItems: function() {
     return this.items;
+  },
+  
+  setSnapshot: function(sampleId, snapshot) {
+    console.log('set snapshot: ' + sampleId + JSON.stringify(snapshot.vm_parameters));
+    MoonrockVmState.set(sampleId, snapshot);
+    $('.vmSample[item-id="' + sampleId + '"]').vmSample('setSnapshot', snapshot);
   }
   
 };

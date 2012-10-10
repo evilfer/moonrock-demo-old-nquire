@@ -191,7 +191,13 @@ function pi_sort_key_questions_view($node, $teaser, $page = FALSE) {
   foreach (array_keys($sorted_key_questions) as $sorted_key_questions_nid) {
     $key_question_activity_id = get_activity_id_for_nid($sorted_key_questions_nid);
     if ($key_question_activity_id) {
-      $key_questions_to_show[] = array('data' => build_activity_link($details->inquiry_id, $details->stage_id, $details->phase_id, $key_question_activity_id, $user->uid, 'heading'), 'class' => 'activity');
+      /*
+       * FIX (eloy)
+       * include link to forum.
+       */
+      $data = build_activity_link($details->inquiry_id, $details->stage_id, $details->phase_id, $key_question_activity_id, $user->uid, 'heading');
+      $data .= theme('moonrock_forum_manager_question_social_info', $sorted_key_questions_nid);
+      $key_questions_to_show[] = array('data' => $data, 'class' => 'activity');
     }
   }
   if ($teaser) {

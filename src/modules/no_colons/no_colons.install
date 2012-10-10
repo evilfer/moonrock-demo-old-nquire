@@ -1,0 +1,8 @@
+<?php
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function no_colons_uninstall() {
+  db_query("DELETE FROM {variable} WHERE name LIKE 'no_colons%'");
+}

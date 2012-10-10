@@ -21,13 +21,13 @@ var MoonrockVmState = {
       }
     });
   },
-  set: function(sample, snapshot) {
+  set: function(sampleId, snapshot) {
     $.ajax({
       url: '?q=moonrock_vm_state/set',
       type: 'POST',
       dataType: 'json',
       data: {
-        sample_nid: sample,
+        sample_nid: sampleId,
         vm_parameters: snapshot.vm_parameters,
         image: snapshot.image
       }

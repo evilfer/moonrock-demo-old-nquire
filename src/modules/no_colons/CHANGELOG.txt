@@ -1,0 +1,9 @@
+No Colons 6.x-1.1
+================================================================================
+- by minorscience: Added additional selectors to no_colons.js so that module 
+also works for inline CCK fields (previously only worked when label display was 
+set to "Above").
+
+- Reformatted and edited README.txt
+
+- Removed old CVS tags; git doesn't need those!

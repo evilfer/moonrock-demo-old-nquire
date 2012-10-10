@@ -1,6 +1,6 @@
 
 
-var MoonrockDataInputVMComm = {
+var MoonrockVMComm = {
   _iframe: null,
   _activityId: null,
   _snapshotCallback: null,
@@ -32,6 +32,17 @@ var MoonrockDataInputVMComm = {
   stopPositionMonitoring: function() {
     this._vmPositionMonitor = null;
   },
+  
+  monitorMeasureValue: function(callback) {
+    this._post('set', 'FeatureState', {measure: true});
+    this._post('monitor', 'MeasureMM');
+    this._vmMeasureMonitor = callback;
+  },
+  stopMeasureValueMonitoring: function() {
+    this._vmMeasureMonitor = null;
+    this._post('set', 'FeatureState', {measure: false});
+  },
+  
   
   prepareForPositionUpdate: function() {
     this._vmUpdatingPosition = true;
@@ -74,6 +85,11 @@ var MoonrockDataInputVMComm = {
               this._vmPositionMessageValid = true;
             }
             break;
+          case 'MeasureMM':
+            if (self._vmMeasureMonitor) {
+              this._vmMeasureMonitor(msg.content);
+            }
+            break;
         }
         break;
       case 'get':
@@ -95,7 +111,9 @@ var MoonrockDataInputVMComm = {
 
               resizeCanvas.getContext("2d").drawImage(this, 0, 0, _width, height);
               self._snapshot.image = resizeCanvas.toDataURL();
-              self._snapshotCallback(self._snapshot);
+              var callback = self._snapshotCallback;
+              self._snapshotCallback = null;
+              callback(self._snapshot);
             };
     
             image.src = msg.content;
@@ -156,5 +174,5 @@ var MoonrockDataInputVMComm = {
 };
 
 $(function() {
-  MoonrockDataInputVMComm.init();
+  MoonrockVMComm.init();
 });

@@ -61,9 +61,9 @@ function pi_data_access($op, $node, $account) {
       /* FIX (eloy) 
        * Can remove data from any activity...
        */
-      /*$activity_id = (int) get_activity_id_for_nid($node->nid);
-      $access = check_node_function_of_activity($details->inquiry_id, activity_id, $user->uid, 'edit'); 
-      return $access;*/
+      /* $activity_id = (int) get_activity_id_for_nid($node->nid);
+        $access = check_node_function_of_activity($details->inquiry_id, activity_id, $user->uid, 'edit');
+        return $access; */
       return TRUE;
     }
   }
@@ -174,15 +174,28 @@ function pi_data_form(&$node) {
         switch ($measure_info->field_type) {
           // field_type = textfield
           case 'textfield':
-            //$prefix .= "textfield";
-            $tree[$key]['value'] = array(
-                '#type' => 'textfield',
-                '#title' => $measure_text,
-                '#required' => $required_value,
-                '#default_value' => $node->measures[$key]['#value'],
-                '#size' => $measure_info->textfield_size,
-                '#weight' => $measure_selection['#weight']
-            );
+            /* FIX (eloy)
+             * to enable VM automatic measures.
+             */
+            if ($measure_info->data_type === 'numeric') {
+              $div = '<div vm_measure="' . $key . '"></div>';
+              
+              $tree[$key]['value'] = array(
+                  '#type' => 'hidden',
+                  '#required' => false,
+                  '#attributes' => array('vm_measure' => $key),
+                  '#prefix' => $measure_text . $div,
+              );
+            } else {
+              $tree[$key]['value'] = array(
+                  '#type' => 'textfield',
+                  '#title' => $measure_text,
+                  '#required' => $required_value,
+                  '#default_value' => $node->measures[$key]['#value'],
+                  '#size' => $measure_info->textfield_size,
+                  '#weight' => $measure_selection['#weight']
+              );
+            }
             break;
           case 'textarea':
             //$prefix .= "textarea";

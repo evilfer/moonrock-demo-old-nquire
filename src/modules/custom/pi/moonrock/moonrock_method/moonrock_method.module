@@ -341,7 +341,7 @@ function theme_moonrock_method($node, $teaser) {
       $measures_text .= '</ul>';
 
       $values[] = array(
-          check_plain($method->title),
+          '<p><b>' . check_plain($method->title) . '</b></p>' . theme('moonrock_forum_manager_question_social_info', $method->question_id),
           check_plain($method->method),
           $measures_text,
           check_plain($method->external),

@@ -177,13 +177,13 @@ function theme_moonrock_forum_manager_question_forum_body($node) {
 }
 
 function theme_moonrock_forum_manager_question_social_info($nid) {
-  $output = '<div><div style="display:inline-block;border:1px solid #ccc; padding: 10px; width: auto;">';
+  $output = '<div><div style="display:inline-block;background:#ddf;padding: 0px 3px 0px 3px; width: auto;">';
   $forum_nid = moonrock_forum_manager_find_forum_topic_for_key_question($nid);
 
   if ($forum_nid) {
     $comment_data = _moonrock_forum_manager_forum_new_comments($forum_nid);
-    $output .= '<a href="?q=node/' . $forum_nid . '">' . t('Discuss in forum') . '</a><br/>';
-    $output .= '<small>'
+    $output .= '<a target="_blank" href="?q=node/' . $forum_nid . '">' . t('Discuss in forum') . '</a>';
+    $output .= '<small> - '
             . $comment_data['comments']
             . ($comment_data['comments'] == 1 ? t(' comment') : t(' comments'));
     if ($comment_data['new'] > 0) {
@@ -195,9 +195,9 @@ function theme_moonrock_forum_manager_question_social_info($nid) {
               . theme('moonrock_sample_utils_fuzzy_time_period', time() - $comment_data['last'])
               . ')';
     }
-    $output .= '</small>';
+    $output .= '.</small>';
   } else {
-    $output .= '<small><a href="?q=moonrock_forum_manager/create/' . $nid . '">' . t('Publish this question and discuss with other users.') . '</a></small>';
+    $output .= '<small><a target="_blank" href="?q=moonrock_forum_manager/create/' . $nid . '">' . t('Publish this question and discuss with other users.') . '</a></small>';
   }
 
   $output .= '</div></div>';

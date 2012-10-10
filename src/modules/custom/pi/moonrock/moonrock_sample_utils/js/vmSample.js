@@ -32,23 +32,27 @@
     setSnapshot: function(snapshot) {
       var item = this.data('item');
       item.snapshot = snapshot;
-      this.data('item'. item);
-      this.itemBrowserItem('_enableImageToggle');
+      this.data('item', item);
+      this.vmSample('_enableImageToggle');
       return this;
+    },
+    getSnapshot: function() {
+      var item = this.data('item');
+      return item.snapshot ? item.snapshot : false;
     },
     _enableImageToggle: function() {
       var self = this;
       if (self.find('.vmSample-img-toggle').length == 0) {
         self.find('.vmSample-img-container').append($("<div/>").addClass("vmSample-img-toggle"));
         self.find('.vmSample-img-toggle').click(function() {
-          self.itemBrowserItem('_toggleImage');
+          self.vmSample('_toggleImage');
         });
       }
-      this.itemBrowserItem('_setImage', 'snapshot');
+      this.vmSample('_setImage', 'snapshot');
       return this;
     },
     _toggleImage: function() {
-      this.itemBrowserItem('_setImage', this.data('item_image') === 'sample' ? 'snapshot' : 'sample');
+      this.vmSample('_setImage', this.data('item_image') === 'sample' ? 'snapshot' : 'sample');
       return this;
     },
     _setImage: function(type) {

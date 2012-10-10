@@ -8,6 +8,13 @@ Moonrock demonstators.
 Changes:
 
 -----------------
+10-10-2012
+
+- Improved forum presentation.
+- Started automatic VM measures.
+- Sample VM state working again (needs revision to use URLs instead of position when possible).
+
+-----------------
 09-10-2012
 
 - Added forum support for key questions.
