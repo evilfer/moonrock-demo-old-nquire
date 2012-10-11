@@ -34,13 +34,17 @@ var MoonrockVMComm = {
   },
   
   monitorMeasureValue: function(callback) {
-    this._post('set', 'FeatureState', {measure: true});
+    this._post('set', 'FeatureState', {
+      measure: true
+    });
     this._post('monitor', 'MeasureMM');
     this._vmMeasureMonitor = callback;
   },
   stopMeasureValueMonitoring: function() {
     this._vmMeasureMonitor = null;
-    this._post('set', 'FeatureState', {measure: false});
+    this._post('set', 'FeatureState', {
+      measure: false
+    });
   },
   
   
@@ -51,7 +55,7 @@ var MoonrockVMComm = {
   setVMParams: function(params) {
     this._vmUpdatingPosition = true;
     var value = JSON.parse(params);
-    value.zoom = Math.max(.0000001, value.zoom);
+    value.zoom = Math.max(0, value.zoom);
     this._post('set', 'PositionPixels', value);
   },
   
@@ -86,22 +90,26 @@ var MoonrockVMComm = {
             }
             break;
           case 'MeasureMM':
-            if (self._vmMeasureMonitor) {
-              this._vmMeasureMonitor(msg.content);
+            if (self._vmMeasureMonitor && msg.content && typeof msg.content.distance !== 'undefined') {
+              this._vmMeasureMonitor(msg.content.distance);
             }
             break;
         }
         break;
       case 'get':
         switch (msg.param) {
+          case 'viewURL':
+            self._snapshot.viewurl = msg.content;
+            self._post('get', 'PositionPixels');
+            break;
           case 'PositionPixels':
-            self._snapshot.vm_parameters = JSON.stringify(msg.content);
+            self._snapshot.position = JSON.stringify(msg.content);
             self._post('get', 'Snapshot', {});
             break;
           case 'Snapshot':
             var image = new Image();
             image.onload = function() {
-              var _width = 200;
+              var _width = 300;
               var ratio = parseFloat(this.height) / this.width;
               var height = ratio * _width;
       
@@ -115,6 +123,10 @@ var MoonrockVMComm = {
               self._snapshotCallback = null;
               callback(self._snapshot);
             };
+            
+            if (self._otherStuffCallback) {
+              self._otherStuffCallback();
+            }
     
             image.src = msg.content;
             break;
@@ -164,12 +176,24 @@ var MoonrockVMComm = {
   
   getVMSnapshot: function(callback) {
     this._snapshotCallback = callback;
+    this._otherStuffCallback = null;
     this._snapshot = {
       vm_parameters: null,
       image: null
     };
     
-    this._post('get', 'PositionPixels');
+    this._post('get', 'viewURL');
+  },
+  
+  getVMSnapshotAndDoOtherStuffQuick: function(snapshotCallback, otherStuffCallback) {
+    this._snapshotCallback = snapshotCallback;
+    this._otherStuffCallback = otherStuffCallback;
+    this._snapshot = {
+      vm_parameters: null,
+      image: null
+    };
+    
+    this._post('get', 'viewURL');
   }
 };
 

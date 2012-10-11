@@ -130,7 +130,8 @@ function _moonrock_data_input_prepare_data_items($data, $sample_filter = FALSE) 
               'content_measures' => $data['content_measures'],
               'measures_content' => $measures_content,
               'values' => $datum,
-              'snapshot_vm_parameters' => $snapshot->vm_parameters,
+              'snapshot_vm_position' => $snapshot->position,
+              'snapshot_vm_viewurl' => $snapshot->url,
           ),
           'metadata' => array(
               'title' => t('Data'),
@@ -190,7 +191,8 @@ function moonrock_data_input_nodeapi(&$node, $op) {
             $snapshot->type = 'moonrock_snapshot';
           }
           $snapshot->notes = $node->onepageprofile_categories['moonrock_snapshot_notes']['value'];
-          $snapshot->vm_parameters = $node->onepageprofile_categories['moonrock_snapshot_parameters']['value'];
+          $snapshot->position = $node->onepageprofile_categories['moonrock_snapshot_position']['value'];
+          $snapshot->url = $node->onepageprofile_categories['moonrock_snapshot_viewurl']['value'];
           $snapshot->sample_ref = $sample_nid;
           node_save($snapshot);
           $node->onepageprofile_categories[$snapshot_key]['value'] = $snapshot->nid;

@@ -61,6 +61,19 @@ var MoonrockDataInput = {
     $('body').rockColorPicker('addUserSelectionCallback', function() {
       self._bigDataChange();
     });
+    
+    
+    $('div[vm_measure]').each(function() {
+      $(this).vmMeasureField({
+        changeCallback: function(complete) {
+          if (complete) {
+            self._bigDataChange();
+          } else {
+            self._smallDataChange();
+          }
+        }
+      });
+    })
   },
   
   _initItemId: function(itemId) {
@@ -128,8 +141,11 @@ var MoonrockDataInput = {
   },
   
   vmPositionChanged: function(position) {
-    console.log(position);
-    this._smallDataChange();
+    var newPosition = JSON.stringify(position);
+    if (newPosition != this.currentPosition) {
+      this.currentPosition = newPosition;
+      this._smallDataChange();
+    }
   },
   
   setItem: function(item) {
@@ -144,7 +160,8 @@ var MoonrockDataInput = {
           self.vmPositionChanged(position);
         });
       };
-      this.vmComm.setVMParams(item.data.snapshot_vm_parameters);
+      this.currentPosition = item.data.snapshot_vm_position;
+      this.vmComm.setVMParams(item.data.snapshot_vm_position);
       setTimeout(monitor, 1000);
     }
     
@@ -178,6 +195,8 @@ var MoonrockDataInput = {
           break;
       }
     }
+    
+    $('.moonrock-measure-field').vmMeasureField('fieldValueUpdated');
   },
   
   clearForm: function() {
@@ -189,6 +208,7 @@ var MoonrockDataInput = {
       $('body').rockColorPicker('clearSelection');
     }
     $('input[measure_content_type="moonrock_color"]').attr('value', '');
+    $('.moonrock-measure-field').vmMeasureField('setValue', '');
     $('input[type="text"], textarea').val('');
     $('select').val(null);
   },
@@ -277,6 +297,8 @@ var MoonrockDataInput = {
       saved: 'hidden',
       cancel: 'enabled'
     });
+    $('.moonrock-measure-field').vmMeasureField('acceptCurrentMeasure');
+    
     this.submitData('save');
   },
   newData: function() {
@@ -299,7 +321,6 @@ var MoonrockDataInput = {
   },
   
   _smallDataChange: function() {
-    console.log('small change ' + (new Date()).getTime());
     this._setButtons({
       save: 'enabled',
       saving: 'hidden',
@@ -308,7 +329,6 @@ var MoonrockDataInput = {
     });
   },
   _bigDataChange: function() {
-    console.log('big change ' + (new Date()).getTime());
     this.saveData();
   }
 };

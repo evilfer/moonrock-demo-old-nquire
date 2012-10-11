@@ -42,7 +42,6 @@ var MoonrockSeeSamples = {
   },
   
   setSnapshot: function(sampleId, snapshot) {
-    console.log('set snapshot: ' + sampleId + JSON.stringify(snapshot.vm_parameters));
     MoonrockVmState.set(sampleId, snapshot);
     $('.vmSample[item-id="' + sampleId + '"]').vmSample('setSnapshot', snapshot);
   }

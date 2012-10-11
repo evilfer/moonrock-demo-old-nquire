@@ -48,8 +48,14 @@ function moonrock_vm_state_schema() {
               'size' => 'normal',
               'default' => 0,
           ),
-          'vm_parameters' => array(
-              'description' => t('VM state'),
+          'position' => array(
+              'description' => t('VM position'),
+              'type' => 'text',
+              'size' => 'normal',
+              'not null' => TRUE,
+          ),
+          'url' => array(
+              'description' => t('VM view URL'),
               'type' => 'text',
               'size' => 'normal',
               'not null' => TRUE,

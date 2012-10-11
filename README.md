@@ -8,6 +8,14 @@ Moonrock demonstators.
 Changes:
 
 -----------------
+11-10-2012
+
+- Added hexagon inquiry layout.
+- Changed Moonrock demo inquiry structure to six phases.
+- Changed moonrock_snapshot and moonrock_vm_state modules to record VM view URL as well as VM position.
+- Reviewed VM open/close cycles, reducing AJAX calls.
+
+-----------------
 10-10-2012
 
 - Improved forum presentation.

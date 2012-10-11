@@ -72,8 +72,15 @@ function moonrock_snapshot_schema() {
               'size' => 'small',
               'default' => 0,
           ),
-          'vm_parameters' => array(
-              'decription' => t('parameters to load the VM'),
+          'position' => array(
+              'decription' => t('VM position'),
+              'type' => 'text',
+              'size' => 'small',
+              'not null' => TRUE,
+              'default' => ''
+          ),
+          'url' => array(
+              'decription' => t('VM view URL'),
               'type' => 'text',
               'size' => 'small',
               'not null' => TRUE,

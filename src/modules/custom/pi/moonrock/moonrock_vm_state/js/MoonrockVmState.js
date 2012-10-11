@@ -28,8 +28,9 @@ var MoonrockVmState = {
       dataType: 'json',
       data: {
         sample_nid: sampleId,
-        vm_parameters: snapshot.vm_parameters,
-        image: snapshot.image
+        position: snapshot.position,
+        image: snapshot.image,
+        viewurl: snapshot.viewurl
       }
     });
   }  

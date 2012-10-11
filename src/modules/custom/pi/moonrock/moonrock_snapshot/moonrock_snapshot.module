@@ -100,12 +100,18 @@ function moonrock_snapshot_form(&$node) {
   );
 
 
-  $form['vm_parameters'] = array(
+  $form['position'] = array(
       '#type' => 'hidden',
-      '#title' => t('VM parameters'),
+      '#title' => t('VM position'),
       '#required' => TRUE,
-      '#default_value' => $node->vm_parameters,
-      '#description' => t('Parameters to load the snapshot in the VM'),
+      '#default_value' => $node->position,
+      '#weight' => 4
+  );
+  $form['viewurl'] = array(
+      '#type' => 'hidden',
+      '#title' => t('VM view URL'),
+      '#required' => TRUE,
+      '#default_value' => $node->url,
       '#weight' => 4
   );
 
@@ -131,6 +137,7 @@ function moonrock_snapshot_form(&$node) {
   return $form;
 }
 
+/*
 function moonrock_snapshot_form_moonrock_snapshot_form_alter(&$form, &$form_state) {
   if (isset($form['#parameters'][2])) {
     $sample_ref = $form['#parameters'][2]['sample_ref'];
@@ -149,12 +156,13 @@ function moonrock_snapshot_form_moonrock_snapshot_form_alter(&$form, &$form_stat
 
   return;
 }
+ */
 
 /**
  * Implementation of hook_insert().
  */
 function moonrock_snapshot_insert($node) {
-  db_query("INSERT INTO {moonrock_snapshot} (nid, vid, notes, sample_ref, vm_parameters) VALUES ('%d', '%d', '%s', '%d', '%s')", $node->nid, $node->vid, $node->notes, $node->sample_ref, $node->vm_parameters);
+  db_query("INSERT INTO {moonrock_snapshot} (nid, vid, notes, sample_ref, position, url) VALUES ('%d', '%d', '%s', '%d', '%s', '%s')", $node->nid, $node->vid, $node->notes, $node->sample_ref, $node->position, $node->url);
 }
 
 /**
@@ -164,7 +172,7 @@ function moonrock_snapshot_update($node) {
   if ($node->revision) {
     moonrock_snapshot_insert($node);
   } else {
-    db_query("UPDATE {moonrock_snapshot} SET notes='%s', sample_ref='%d', vm_parameters='%s' WHERE vid = %d", $node->notes, $node->sample_ref, $node->vm_parameters, $node->vid);
+    db_query("UPDATE {moonrock_snapshot} SET notes='%s', sample_ref='%d', position='%s', url='%s' WHERE vid = %d", $node->notes, $node->sample_ref, $node->position, $node->url, $node->vid);
   }
 }
 
@@ -173,7 +181,7 @@ function moonrock_snapshot_update($node) {
  */
 function moonrock_snapshot_delete(&$node) {
   // Delete the related information we were saving for this node.
-  db_query('DELETE FROM {moonrock_snapshot} WHERE nid = %d', $node->nid);
+  db_query('DELETE FROM {moonrock_snapshot} WHERE nid=%d', $node->nid);
 }
 
 /**
@@ -281,9 +289,11 @@ function moonrock_snapshot_nquire_data_form_elements($value) {
 
   $snapshot = node_load($value);
   if ($snapshot) {
-    $default_params = $snapshot->vm_parameters;
+    $default_position = $snapshot->position;
+    $default_url = $snapshot->url;
   } else {
-    $default_params = '';
+    $default_position = '';
+    $default_url = '';
   }
 
   return array(
@@ -293,12 +303,19 @@ function moonrock_snapshot_nquire_data_form_elements($value) {
           '#required' => FALSE,
           '#attributes' => array("measure_content_type" => 'moonrock_snapshot_image'),
       ),
-      'moonrock_snapshot_parameters' => array(
+      'moonrock_snapshot_position' => array(
           '#type' => 'hidden',
-          '#title' => t('Snapshot parameters'),
+          '#title' => t('Snapshot position'),
           '#required' => FALSE,
-          '#attributes' => array("measure_content_type" => 'moonrock_snapshot_parameters'),
-          '#default_value' => $default_params,
+          '#attributes' => array("measure_content_type" => 'moonrock_snapshot_position'),
+          '#default_value' => $default_position,
+      ),
+      'moonrock_snapshot_viewurl' => array(
+          '#type' => 'hidden',
+          '#title' => t('Snapshot URL'),
+          '#required' => FALSE,
+          '#attributes' => array("measure_content_type" => 'moonrock_snapshot_viewurl'),
+          '#default_value' => $default_url,
       ),
       'moonrock_snapshot_notes' => array(
           '#type' => 'hidden',

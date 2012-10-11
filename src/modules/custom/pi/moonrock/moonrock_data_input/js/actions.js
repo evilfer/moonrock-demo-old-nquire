@@ -38,7 +38,6 @@ var ActionsManager = {
       if (item && item.id == oldId) {
         item.id = newData.id;
         item.data.values[snapshotMeasure] = newSnapshot;
-        console.log('updated')
       }
     };
     
@@ -212,7 +211,8 @@ var ActionsManager = {
      */
     this.imageHelper.getVMSnapshot(function(snapshot) {
       $('input[measure_content_type="moonrock_snapshot_image"]').attr('value', snapshot.image);
-      $('input[measure_content_type="moonrock_snapshot_parameters"]').attr('value', snapshot.vm_parameters);
+      $('input[measure_content_type="moonrock_snapshot_position"]').attr('value', snapshot.position);
+      $('input[measure_content_type="moonrock_snapshot_viewurl"]').attr('value', snapshot.viewurl);
       $('input[measure_content_type="moonrock_snapshot_notes"]').attr('value', $('form#node-form').find('.form-textarea').val());
       
       $.ajax({

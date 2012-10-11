@@ -23,10 +23,8 @@ var MoonrockVmViewManager = {
     
     MoonrockVmViewHistory.enable(function(vm) {
       if (vm) {
-        console.log('vm from history');
         self._openVM();
       } else {
-        console.log('browser from history');
         self._openBrowser();
       }
     });
@@ -92,8 +90,6 @@ var MoonrockVmViewManager = {
   },
   
   _updateSampleBrowser: function() {
-    console.log('-update browser-');
-    
     var items = MoonrockSeeSamples.getItems();
     $('#moonrock-samples-page-vm-sample-title').html(this.currentItem.title);
     this.browseItems.prev = this.browseItems.next = false;
@@ -128,13 +124,11 @@ var MoonrockVmViewManager = {
     });
   },
   _resizeVMPage: function(callback) {
-    console.log('-resize-');
     var element = $('#moonrock-samples-page-vm-top');
     var top = element.offset().top;
     var height = $(window).height();
     var pageblockHeight = height - top;
     element.css('height', pageblockHeight);
-    console.log(pageblockHeight);
     
     var self = this;
     var next = function() {
@@ -151,42 +145,36 @@ var MoonrockVmViewManager = {
       }
     };
     
-    this._destroyVM(next);
-    
+    this._destroyVM(next);    
   },
   _destroyVM: function(callback) {
-    console.log('-destroy-');
     var iframe = $('#moonrock-samples-page-vm-iframe');
     var self = this;
-    if (iframe.length > 0) {
-      MoonrockVMComm.getVMSnapshot(function(snapshot) {
-        $('#moonrock-samples-page-vm-iframe').remove();
-        MoonrockVmState.set(self.snapshotItem.id, snapshot);
-        MoonrockSeeSamples.setSnapshot(self.snapshotItem.id, snapshot)
-        
-        if (callback) {
-          callback();
-        }
-      });
-    } else if (callback) {
+    
+    var otherStuffCallback = function() {
+      $('#moonrock-samples-page-vm-iframe').remove();
       callback();
+    }
+
+    if (iframe.length > 0) {
+      var id = self.snapshotItem.id;
+      var snapshotCallback = function(snapshot) {
+        MoonrockSeeSamples.setSnapshot(id, snapshot)
+      };
+      MoonrockVMComm.getVMSnapshotAndDoOtherStuffQuick(snapshotCallback, otherStuffCallback);
+    } else {
+      otherStuffCallback();
     }
   },
   _createVM: function() {
-    console.log('-create-');
     this.snapshotItem = this.currentItem;
-    var path = location.origin + location.pathname + this.currentItem.vm;
+    
+    var path = this.currentItem.snapshot ? 
+    this.currentItem.snapshot.viewurl :
+    (location.origin + location.pathname + this.currentItem.vm);
+    
     $('#moonrock-samples-page-vm-iframe-container').append('<iframe id="moonrock-samples-page-vm-iframe" src="' + path + '"></iframe>');
-    if (this.currentItem.snapshot) {
-      var self = this;
-      $('#moonrock-samples-page-vm-iframe').load(function() {
-        setTimeout(function() {
-          MoonrockVMComm.setVMParams(self.currentItem.snapshot.vm_parameters);
-        }, 50);
-      });
-    }
   },
-
   
   _openBrowser: function() {
     this._destroyVM(function() {

@@ -25,7 +25,8 @@ function moonrock_vm_state_set() {
   global $user;
   $sample_nid = $_REQUEST['sample_nid'];
   $image = $_REQUEST['image'];
-  $vm_parameters = $_REQUEST['vm_parameters'];
+  $position = $_REQUEST['position'];
+  $view_url = $_REQUEST['viewurl'];
   
   $exists = FALSE;
   $select_query = "SELECT sample_nid FROM {moonrock_vm_state} WHERE uid='%d' AND sample_nid='%d'";
@@ -35,23 +36,24 @@ function moonrock_vm_state_set() {
   }
   
   if ($exists) {
-    $update_query = "UPDATE {moonrock_vm_state} SET vm_parameters='%s', image='%s' WHERE uid='%d' AND sample_nid='%d'";
-    db_query($update_query, $vm_parameters, $image, $user->uid, $sample_nid);
+    $update_query = "UPDATE {moonrock_vm_state} SET position='%s', url='%s', image='%s' WHERE uid='%d' AND sample_nid='%d'";
+    db_query($update_query, $position, $view_url, $image, $user->uid, $sample_nid);
   } else {
-    $insert_query = "INSERT INTO {moonrock_vm_state} (uid, sample_nid, vm_parameters, image) values ('%d', '%d', '%s', '%s')";
-    db_query($insert_query, $user->uid, $sample_nid, $vm_parameters, $image);
+    $insert_query = "INSERT INTO {moonrock_vm_state} (uid, sample_nid, position, url, image) values ('%d', '%d', '%s', '%s', '%s')";
+    db_query($insert_query, $user->uid, $sample_nid, $position, $view_url, $image);
   }
 }
 
 function moonrock_vm_state_get() {
   global $user;
-  $query = "SELECT sample_nid, vm_parameters, image FROM {moonrock_vm_state} WHERE uid='%d'";
+  $query = "SELECT sample_nid, position, url, image FROM {moonrock_vm_state} WHERE uid='%d'";
   $result = db_query($query, $user->uid);
   $data = array();
   while ($obj = db_fetch_object($result)) {
     $data[$obj->sample_nid] = array(
-        'vm_parameters' => $obj->vm_parameters,
+        'position' => $obj->position,
         'image' => $obj->image,
+        'viewurl' => $obj->url,
     );
   }
 

@@ -94,32 +94,32 @@ tr.odd, tr.info { background-color:#edf5fa; }
 /** ----------------------------- cti-flex TABLES ---------------------------------- **/
 
 table  {
-    border-collapse: collapse;
-    width: 100%; 
-    margin-bottom:15px;  
+  border-collapse: collapse;
+  width: 100%; 
+  margin-bottom:15px;  
 }
 
 th,
 thead th,
 tbody th {
-    text-align: left;
-    padding-right: 0;
-    border-bottom: none;
+  text-align: left;
+  padding-right: 0;
+  border-bottom: none;
 }
 
 tbody {
-    border-top: none;
+  border-top: none;
 }
 
 thead th {
-	background: #DDD;
-	border: 1px solid #cccccc;
-	padding: 6px 5px;
+  background: #DDD;
+  border: 1px solid #cccccc;
+  padding: 6px 5px;
 }
 
 tr.odd td, tr.even td {
-	padding:8px 5px;
-	border:1px solid #cccccc;
+  padding:8px 5px;
+  border:1px solid #cccccc;
 }
 
 tr.odd td { background:#FFFFFF; }
@@ -144,25 +144,25 @@ div.attachments { display: none; }
 /* PI view layout - hide meta info
 ----------------------------------*/
 div.meta, span.submitted {
-	display: none;
+  display: none;
 }
 input#edit-preview {
-	display: none;	
+  display: none;	
 }
 
 /* PI view layout - inquiries
 ----------------------------------*/
 ul.inquiry {
-    margin: 0.8em auto;
+  margin: 0.8em auto;
 }
 
 ul.inquiry li.inquiry {
-	display: block;
-    border: solid 1px #FFFFFF;
-    background: #dee7ea;
-    padding: 0.8em 0.4em;
-    margin: 1px;
-    line-height: inherit;
+  display: block;
+  border: solid 1px #FFFFFF;
+  background: #dee7ea;
+  padding: 0.8em 0.4em;
+  margin: 1px;
+  line-height: inherit;
 }
 ul.inquiry li.inquiry a.heading { display: block; clear: both; font-weight: normal; }
 div.item-list { margin: 0; padding: 0; }
@@ -170,27 +170,27 @@ div.item-list { margin: 0; padding: 0; }
 /* PI view layout - phases
 ----------------------------------*/
 ul.phase{
-    margin: 0.8em auto;
+  margin: 0.8em auto;
 }
 ul.phase li.phase {
-    clear: both;
-    list-style: none;
-    border-top: solid 1px grey;
-    padding: 0.8em 0 1.2em 0;
-    margin: 0;
-    line-height: inherit;
+  clear: both;
+  list-style: none;
+  border-top: solid 1px grey;
+  padding: 0.8em 0 1.2em 0;
+  margin: 0;
+  line-height: inherit;
 }
 a.heading { clear: both; }
 
 ul.phase li.phase ul.activity {
-    margin: 0 auto;
+  margin: 0 auto;
 }
 ul.phase li.phase ul.activity  li.activity {
-    clear: both;
-    list-style: none;
-    border-top: none;
-    padding: 0.8em 0 1.2em 0;
-    margin: 0;
+  clear: both;
+  list-style: none;
+  border-top: none;
+  padding: 0.8em 0 1.2em 0;
+  margin: 0;
 }
 
 div.octagon-phasearea, div.pentagon-phasearea, div.list-phasearea { display: block; clear: both; line-height: 120%;}
@@ -202,23 +202,23 @@ li.octagon-phasebox-6, li.octagon-phasebox-8,
 li.pentagon-phasebox-1, li.pentagon-phasebox-2, 
 li.pentagon-phasebox-3, li.pentagon-phasebox-4, 
 li.pentagon-phasebox-5,
-li.list-phasebox-1,
- {
-	display: block;
-    list-style: none;
+li.list-phasebox-1
+{
+  display: block;
+  list-style: none;
 }
 
-div.octagon-textcontnoicon, div.pentagon-textcontnoicon, div.list-textcontnoicon {
-	display: block;
-    border: solid 1px #FFFFFF;
-    background: #dee7ea;
-    color: #FFFFFF;
-    padding: 0.8em 0.4em;
-    margin: 1px;
+div.octagon-textcontnoicon, div.pentagon-textcontnoicon, div.list-textcontnoicon, div.hexagon-textcontnoicon {
+  display: block;
+  border: solid 1px #FFFFFF;
+  background: #dee7ea;
+  color: #FFFFFF;
+  padding: 0.8em 0.4em;
+  margin: 1px;
 }
 
 div.titleboxnoiconnoact {
-	display: block;
+  display: block;
 }
 
 /* PI view layout - activities
@@ -226,38 +226,38 @@ div.titleboxnoiconnoact {
 ul.activity, ul.region { list-style: none; }
 
 ul.activity li.activity, ul.region li.activity {
-	display: block;
-    border: solid 1px #FFFFFF;
-    background: #dee7ea;
-    padding: 0.8em 0.4em;
-    margin: 1px;
-    line-height: inherit;
+  display: block;
+  border: solid 1px #FFFFFF;
+  background: #dee7ea;
+  padding: 0.8em 0.4em;
+  margin: 1px;
+  line-height: inherit;
 }
 
 ul.activity li.activity ul.activity li.activity, ul.region li.activity ul.activity li.activity {
-    margin: 1px;
-    padding: 0.6em 0.4em;
+  margin: 1px;
+  padding: 0.6em 0.4em;
 }
 
 ul.activity li.activity ul.activity li.activity ul.activity li.activity,
 ul.region li.activity ul.activity li.activity ul.activity li.activity {
-    margin: 0.4em 0;
-    padding: 0.6em 0.4em;
+  margin: 0.4em 0;
+  padding: 0.6em 0.4em;
 }
 
 ul.activity li.activity a.heading,
 ul.activity li.activity a.heading { 
-	display: block; clear: both; font-weight: normal; 
+  display: block; clear: both; font-weight: normal; 
 }
 
 div.add_activity_link { display: block; clear: both; float: right; margin: 0 1px 0.6em 0.6em; }
 
 span.heading {
-	font-weight: bold;
+  font-weight: bold;
 }
 
 /* PI view layout - chart images
 ----------------------------------*/
 img.chart_image {
-	width: 100%;	
+  width: 100%;	
 }
