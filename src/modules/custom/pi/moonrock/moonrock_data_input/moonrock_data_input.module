@@ -232,16 +232,16 @@ function moonrock_data_input_theme() {
 }
 
 function theme_moonrock_data_input_form_page($separator) {
-  $sample_view = moonrock_sample_utils_find_unique_seesamples_activity();
+  $sample_view = moonrock_sample_utils_find_unique_seesamples_node();
   $vm = '<div class="moonrock-samples-page-vm-and-browser">' . theme('moonrock_vm_view_vm') . theme('moonrock_data_input_data_browser') . '</div>';
 
   $titles = '<div id="moonrock-data-input-header-new" style="display:none;">' . t('Add new data') . '</div>'
           . '<div id="moonrock-data-input-header-edit" style="display:none;">' . t('Edit data') . '</div>';
 
   $content = '<div class="moonrock-data-input-button-menu">'
+          . '<div class="moonrock-data-input-button moonrock-data-input-hidden" id="moonrock-data-input-button-newdata">' . t('[New]') . '</div>'
           . '<div class="moonrock-data-input-button moonrock-data-input-hidden" id="moonrock-data-input-button-save">' . t('[Save]') . '</div>'
           . '<div class="moonrock-data-input-button moonrock-data-input-hidden" id="moonrock-data-input-button-saving">' . t('[Saving...]') . '</div>'
-          . '<div class="moonrock-data-input-button moonrock-data-input-hidden" id="moonrock-data-input-button-newdata">' . t('[New]') . '</div>'
           . '<div class="moonrock-data-input-button moonrock-data-input-hidden" id="moonrock-data-input-button-deletedata">' . t('[Delete]') . '</div>'
           . '<div class="moonrock-data-input-button moonrock-data-input-hidden" id="moonrock-data-input-button-undo">' . t('[Undo]') . '</div>'
           . '<div class="moonrock-data-input-button moonrock-data-input-hidden" id="moonrock-data-input-button-redo">' . t('[Redo]') . '</div>'

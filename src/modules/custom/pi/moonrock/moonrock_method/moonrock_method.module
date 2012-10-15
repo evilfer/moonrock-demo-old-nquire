@@ -293,34 +293,20 @@ function moonrock_method_theme() {
 function theme_moonrock_method($node, $teaser) {
   moonrock_method_load_resources();
 
+  $activity_id = get_activity_id_for_nid($node->nid);
+  $activity = load_activity($activity_id);
+
   $output = '';
 
-  $output .= '<div>'
-          . '<p>' . t('Plan how to answer your questions.') . '</p>'
-          . '<p>' . t('Here you can describe the method to investigate your questions. '
-                  . 'The objective of this inquiry is to proposse and answer questions using data collected with the Virtual Microscope. '
-                  . 'Therefore, you must select the measures that are relevant for each question. '
-                  . 'Additionally, you can indicate external sources of data that can help you answer them.') . '</p>'
-          . '<p>' . t('Take into account that some questions may not be answerable using the Virtual Microcope alone. '
+  if ($activity->description) {
+    $output .= '<p>' . nl2br(check_plain($activity->description)) . '</p>';
+  }
+
+  $output .= '<p>' . t('Take into account that some questions may not be answerable using the Virtual Microcope alone. '
                   . 'Therefore, you may want to review your questions (in activity ')
-          . moonrock_sample_utils_activity_link('pi_sort_key_questions') . t(') as you define your investigation method.') . '</p>'
-          . '</div>';
+          . moonrock_sample_utils_activity_link('pi_sort_key_questions') . t(') as you define your investigation method.') . '</p>';
 
-  if ($teaser) {
-    /*    global $user;
-
-      $details = get_inquiry_details_from_current_path();
-      $sample_view_activity_id = get_activity_id_for_nid($node->nid);
-
-
-      $samples = moonrock_method_get_main_samples($node);
-      $output .= '<div style="width: 100%; text-align: center:">';
-      foreach ($samples as $sample) {
-      $img = '<img style="padding:10px; width: 200px;" src="' . moonrock_snapshot_images_get_sample_url($sample->nid) . '"></img>';
-      $output .= build_activity_link_alternative_text($details->inquiry_id, $details->stage_id, $details->phase_id, $sample_view_activity_id, $user->uid, $img, '', 'view');
-      }
-      $output .= '</div>'; */
-  } //else {
+  if (count($node->question_methods) > 0) {
     $headers = array(
         t('Key question'),
         t('Method'),
@@ -331,6 +317,7 @@ function theme_moonrock_method($node, $teaser) {
     $measures = _moonrock_method_get_measure_options();
 
     $values = array();
+
     foreach ($node->question_methods as $method) {
       $measures_text = '<ul>';
       if (strlen($method->measures > 0)) {
@@ -347,10 +334,15 @@ function theme_moonrock_method($node, $teaser) {
           check_plain($method->external),
       );
     }
-
-
     $output .= theme('table', $headers, $values, array('class' => 'moonrock-method'));
- // }
+  } else {
+    $output .= '<b>' . t('You have no key questions.') . '</b> '
+            . t('You can create them in activity ')
+          . moonrock_sample_utils_activity_link('pi_sort_key_questions')
+            . '.</p>';
+  }
+
+
   return $output;
 }
 

@@ -17,6 +17,9 @@
   cursor: pointer;
   color: blue;
 }
+.moonrock-data-input-button.enabled:hover {
+  color:#33f;
+}
 
 
 .moonrock-data-input-hidden {

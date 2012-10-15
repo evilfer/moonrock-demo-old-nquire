@@ -184,7 +184,9 @@ function pi_wiki_notes_theme() {
  * @return string
  */
 function theme_pi_wiki_notes($node, $teaser) {
-  	$node_details = get_inquiry_details_from_current_path();
+  global $user;
+  
+  $node_details = get_inquiry_details_from_current_path();
   	if (is_numeric($node_details->activity_id)) {
   		$current_activity = load_activity($node_details->activity_id);
   	}
@@ -197,6 +199,8 @@ function theme_pi_wiki_notes($node, $teaser) {
 		$break_position = strpos($node->notes, '<!--break-->');
 		if($break_position) {
 			$output = substr($node->notes, 0, $break_position);
+      $activity_id = get_activity_id_for_nid($node->nid);
+      $output .= '<p>' . build_activity_link_alternative_text($node_details->inquiry_id, $node_details->stage_id, $node_details->phase_id, $activity_id, $user->uid, t('Read more'));
 		}
 		else {
 			$output = $node->notes;

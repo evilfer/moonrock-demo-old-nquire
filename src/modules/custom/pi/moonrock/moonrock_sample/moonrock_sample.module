@@ -173,7 +173,7 @@ function moonrock_sample_delete(&$node) {
  */
 function moonrock_sample_load($node) {
   $obj = db_fetch_object(db_query('SELECT * FROM {moonrock_sample} WHERE vid = %d', $node->vid));
-  $sample_view = moonrock_sample_utils_find_unique_seesamples_activity();
+  $sample_view = moonrock_sample_utils_find_unique_seesamples_node();
   if ($sample_view) {
     $obj->title = moonrock_seesamples_get_alternative_sample_title($sample_view, $node->title);
   }

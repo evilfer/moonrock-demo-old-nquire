@@ -5,7 +5,7 @@ function _moonrock_sample_utils_sample_dialog_button($buttonClassSufix, $label) 
           . "<div class='moonrock-sample-dlg-menu-item-buttom'></div><div class='moonrock-sample-dlg-menu-item-label'>$label</div></div>";
 }
 
-function moonrock_sample_utils_find_unique_seesamples_activity() {
+function moonrock_sample_utils_find_unique_seesamples_node() {
   global $user;
   $node_details = get_inquiry_details_from_current_path();
   $sample_view_nid = find_unique_node_type_for_uid_and_inquiry('moonrock_seesamples', $user->uid, $node_details->inquiry_id);
@@ -44,7 +44,7 @@ function moonrock_sample_utils_prepare_object($nid) {
       "title" => $sample->title,
       "sample" => array(
           "nid" => $sample->nid,
-          "image" => moonrock_snapshot_images_get_sample_url($sample->nid),
+          "image" => 'moonrock_snapshots/' . $sample->snapshot,
       ),
       "snapshot" => $snapshot ? array(
           "image" => moonrock_snapshot_images_get_snapshot_url($snapshot->nid),

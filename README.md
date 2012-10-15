@@ -8,6 +8,13 @@ Moonrock demonstators.
 Changes:
 
 -----------------
+15-10-2012
+
+- Fixed see samples activity.
+- Fixed several inquiry activities (working version in SQL dump).
+- Made [clear] button in VM measure field appear only when there is a value.
+
+-----------------
 11-10-2012
 
 - Added hexagon inquiry layout.

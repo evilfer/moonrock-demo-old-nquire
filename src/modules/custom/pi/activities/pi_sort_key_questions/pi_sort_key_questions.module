@@ -224,18 +224,16 @@ function theme_pi_sort_key_questions($node, $teaser, $key_questions_to_show) {
   /* FIX (eloy)
    * This will need to be changed!
    */
-  $output .= '<p>Your goal is to compare three different samples of Moon rock. '
-          . 'To guide your investigation, you should write your own key questions.<br />'
-          . 'An example of a key question is: <i>Does the average size of the rock grains differ across the three samples?</i>'
-          . 'As you can see, it\'s a specific question that can be tested using the measures you have available. </p>'
-          . '<p>To help you form the questions, you can select the <a href="?q=activity/1182/view">Explore</a> activity to view, '
-          . 'pan and zoom into the three samples of moon rock using the Virtual Microscope. '
-          . 'Also try clicking the <img src="' . drupal_get_path('module', 'moonrock_data_form') . '/css/icons/info.png"> icon '
-          . 'beside each sample to get extra information, including where on the moon the sample was found, it density and the overall size of the rock sample.</p>' 
-          . '<p>We have proposed some measures that geologists use. Read about them in activity '
-          .' <a href="?q=activity/1266/view">Moon rock measures</a>.</p>'
+  $output .= '<p>The goal of this inquiry is to compare three different samples of Moon rock ('
+          . moonrock_sample_utils_activity_link('moonrock_seesamples') . ').</p>'
+          . '<p><b>Can you think scientific questions about the samples?</b></p>'
           . '<p>Asking interesting questions that can be answered using scientific tools is one of the most important (and challeging) steps '
-          . 'in the work of any scientist.</p>';
+          . 'in the work of any scientist. '
+          . 'An example of a key question is: "<i>Does the average size of the crystals differ across the three samples?</i>" '
+          . 'As you can see, it\'s a specific question that can be tested using the measures you have available ('
+          . 'read about measures in activity ' 
+          . '<a href="?q=activity/1266/view">Moon rock measures</a>).</p>' 
+          . '<p>After you create a question, you can share and discuss it with other users.</p>';
 
   $output .= theme('item_list', $key_questions_to_show, NULL, 'ul', array('title' => t('Your questions'), 'class' => 'activity'));
 

@@ -51,7 +51,9 @@
     setValue: function(value) {
       this
       .vmMeasureField('_setDisplayValue', value)
-      .vmMeasureField('_setFieldValue', value);
+      .vmMeasureField('_setFieldValue', value)
+      .vmMeasureField('_setButtonsIdle');
+      
       return this;
     },
     fieldValueUpdated: function() {
@@ -65,6 +67,9 @@
       .vmMeasureField('_display2fieldValue');
       return this;
     },
+    hasValue: function() {
+      return this.vmMeasureField('getDisplayValue').length > 0;
+    },
 
     _setDisplayValue: function(value) {
       this.find('.moonrock-measure-field-value').html(value);
@@ -76,6 +81,8 @@
     },
     _field2displayValue: function() {
       this.vmMeasureField('_setDisplayValue', this.vmMeasureField('_getFieldValue'));
+      this.vmMeasureField('_setButtonsIdle');
+
       return this;
     },
     _setFieldValue: function(value) {
@@ -110,7 +117,13 @@
     
     _setButtonsIdle: function() {
       $('[action="done"], [action="cancel"]').addClass('moonrock-measure-field-button-hidden');
-      $('[action="measure"], [action="clear"]').removeClass('moonrock-measure-field-button-hidden');
+      $('[action="measure"]').removeClass('moonrock-measure-field-button-hidden');
+      
+      if (this.vmMeasureField('hasValue')) {
+        $('[action="clear"]').removeClass('moonrock-measure-field-button-hidden');
+      } else {
+        $('[action="clear"]').addClass('moonrock-measure-field-button-hidden');
+      }      
       return this;
     },
     _setButtonsEdit: function() {
