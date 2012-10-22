@@ -37,17 +37,6 @@
   display: inline-block;
 }
 
-#moonrockColorPickerSelectionNameClear {
-  display: inline-block;
-  color: blue;
-  cursor: pointer;
-  padding-left: 5px;
-}
-#moonrockColorPickerSelectionNameClear.hidden {
-  display: none;
-}
-
-
 
 #moonrockColorPickerSelectionNoName {
   font-style: italic;

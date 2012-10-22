@@ -167,8 +167,8 @@ var MoonrockVMComm = {
     }
     
     if(iframe && iframe.postMessage) {
-      //      this._iframe.postMessage(msg, this._iframe.location.href);
-      iframe.postMessage(msg, location.origin);
+      iframe.postMessage(msg, iframe.location.href);
+//      iframe.postMessage(msg, location.origin);
     } else {
       console.log('ERROR: Messaging is not available');
     }

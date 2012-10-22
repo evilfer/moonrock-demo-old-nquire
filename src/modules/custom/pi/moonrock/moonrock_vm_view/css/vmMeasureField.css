@@ -1,28 +1,56 @@
 
 
 .moonrock-measure-field {
-  
+
 }
 
 .moonrock-measure-field-value {
-  height: 14px;
+  height: 16px;
+  font-size: 14px;
   padding: 1px 3px 1px 3px;
   border: 1px solid #aaa;
   background: #ddd;
   vertical-align: middle;
   font-weight: bold;
+  margin-bottom: 2px;
 }
 
+
+
 .moonrock-measure-field-button {
-  display: inline-block;
-  cursor: pointer;
   font-size: 10px;
-  color: blue;
-  padding-right: 5px;
+
+  display: inline-block;
+  padding: 0px 2px 0px 2px;
+  margin: 0px 3px 1px 0px;
+
+  border-width: 1px;
+  border-style: solid;
+  border-radius: 2px;
+  border-color: black;
+
+  cursor: pointer;
+  color: black;
+
+  background-image: -moz-linear-gradient(top, #E6E6E6 0%, #B3B3B3 100%);
+  background-image: -o-linear-gradient(top, #E6E6E6 0%, #B3B3B3 100%);
+  background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0, #E6E6E6), color-stop(1, #B3B3B3));
+  background-image: -webkit-linear-gradient(top, #E6E6E6 0%, #B3B3B3 100%);
 }
 .moonrock-measure-field-button:hover {
-  color:#33f;
+  background-image: -moz-linear-gradient(top, #F0F0F0 0%, #C2C2C2 100%);
+  background-image: -o-linear-gradient(top, #F0F0F0 0%, #C2C2C2 100%);
+  background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0, #F0F0F0), color-stop(1, #C2C2C2));
+  background-image: -webkit-linear-gradient(top, #F0F0F0 0%, #C2C2C2 100%);
 }
+.moonrock-measure-field-button:active {
+  background-image: -moz-linear-gradient(top, #C2C2C2 0%, #F0F0F0 100%);
+  background-image: -o-linear-gradient(top, #C2C2C2 0%, #F0F0F0 100%);
+  background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0, #C2C2C2), color-stop(1, #F0F0F0));
+  background-image: -webkit-linear-gradient(top, #C2C2C2 0%, #F0F0F0 100%);
+}
+
+
 
 .moonrock-measure-field-button-hidden {
   display: none;

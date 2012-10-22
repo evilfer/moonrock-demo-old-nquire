@@ -26,9 +26,9 @@ var MoonrockDataInput = {
       this.setModeEdit(false);
     }
     
-    $('#moonrock-data-input-button-newdata').click(function() {
+    $('#moonrock-data-input-button-createdata').click(function() {
       if ($(this).hasClass('enabled')) {
-        self.newData();
+        self.createData();
       }
     });    
     $('#moonrock-data-input-button-save').click(function() {
@@ -76,6 +76,14 @@ var MoonrockDataInput = {
     })
   },
   
+  _enableOverlay: function(enabled) {
+    if (enabled) {
+      $('.moonrock-sample-utils-pageblock-falseblock > .overlay').show();
+    } else {
+      $('.moonrock-sample-utils-pageblock-falseblock > .overlay').hide();
+    }
+  },
+  
   _initItemId: function(itemId) {
     this.initialItemId = itemId;
   },
@@ -89,24 +97,42 @@ var MoonrockDataInput = {
     if (editing) {
       $('#moonrock-data-input-header-new').hide();
       $('#moonrock-data-input-header-edit').show();
-      
-      this._setButtons({
-        save: 'disabled',
-        saving: 'hidden',
-        newdata: 'enabled',
-        deletedata: 'enabled'
-      });
+      this._setSaveButtons('saved');
+      this._setChangesButtons(false);
+      this._setDataManagementButtons(true);
     } else {
       $('#moonrock-data-input-header-edit').hide();
       $('#moonrock-data-input-header-new').show();
-      
-      this._setButtons({
-        save: 'enabled',
-        saving: 'hidden',
-        newdata: 'hidden',
-        deletedata: 'hidden'
-      });
+      this._setSaveButtons('save');
+      this._setChangesButtons(true);
+      this._setDataManagementButtons(false);
     }
+  },
+  _setChangesButtons: function(enabled) {
+    this._setButtons({
+      newitem: enabled && ! this.currentItemId ? 'enabled' : 'hidden',
+      modified: enabled && this.currentItemId ? 'enabled' : 'hidden'
+    });
+  },
+  _setDataManagementButtons : function(enabled) {
+    var mode = enabled ? 'enabled' : 'hidden';
+    this._setButtons({
+      createdata: mode,
+      deletedata: mode
+    });
+  },
+  _setSaveButtons: function(savemode) {
+    var buttons = {};
+    
+    var f = function(button) {
+      buttons[button] = button === savemode ? 'enabled' : 'hidden';
+    };
+    
+    f('save');
+    f('saving');
+    f('saved');
+    
+    this._setButtons(buttons);
   },
   _setButtons: function(modes) {
     for(var button in modes) {
@@ -171,28 +197,29 @@ var MoonrockDataInput = {
     
     $('input[name="data_nid"]').val(item.id);
     
-    
-    for (var measure_nid in item.data.values) {
-      var content = item.data.measures_content[measure_nid];
-      switch (content) {
-        case 'moonrock_color':
-          if (item.data.values[measure_nid]) {
-            $('body').rockColorPicker('select', item.data.values[measure_nid]);
-          } else {
-            $('body').rockColorPicker('clearSelection'); 
-          }
-          break;
-        case 'moonrock_snapshot':
-          /* load params */
-          $('input[measure_content_type="moonrock_snapshot"]').attr('value', item.data.values[measure_nid]);
-          break;
-        case 'moonrock_sample':
-          $('input[measure_content_type="moonrock_sample"]').attr('value', item.data.values[measure_nid]);
-          break;
-        default:
-          var name = 'onepageprofile_categories[' + item.data.selected_measures_nid + '-' + measure_nid + '][value]';
-          $('[name="' + name + '"]').val(item.data.values[measure_nid]);
-          break;
+    if (item) {
+      for (var measure_nid in item.data.values) {
+        var content = item.data.measures_content[measure_nid];
+        switch (content) {
+          case 'moonrock_color':
+            if (item.data.values[measure_nid]) {
+              $('body').rockColorPicker('select', item.data.values[measure_nid]);
+            } else {
+              $('body').rockColorPicker('clearSelection'); 
+            }
+            break;
+          case 'moonrock_snapshot':
+            /* load params */
+            $('input[measure_content_type="moonrock_snapshot"]').attr('value', item.data.values[measure_nid]);
+            break;
+          case 'moonrock_sample':
+            $('input[measure_content_type="moonrock_sample"]').attr('value', item.data.values[measure_nid]);
+            break;
+          default:
+            var name = 'onepageprofile_categories[' + item.data.selected_measures_nid + '-' + measure_nid + '][value]';
+            $('[name="' + name + '"]').val(item.data.values[measure_nid]);
+            break;
+        }
       }
     }
     
@@ -229,17 +256,23 @@ var MoonrockDataInput = {
         break;
       case 'delete':
         this.dataBrowser.removeItem(data);
-        this.newData();
+        this.createData();
         break;
       default:
         break;
     }
+    this._opCompleted(op);
   },
   undoRedoData: function(action) {
+    this._enableOverlay(true);
+    
     var self = this;
     var callback = function(op, data) {
       self._processUndoRedoResult(op, data);
     };
+    
+    this.setUndoRedoButtons('');
+    
     if (action === 'undo') {
       this.actionsHelper.undo(callback);
     } else {
@@ -273,35 +306,25 @@ var MoonrockDataInput = {
     self.actionsHelper.saveItem(self.currentItemId, process);
   },
   _opCompleted: function(op) {
-    switch(op) {
-      case 'save':
-        this._setButton('cancel', 'enabled')
-        break;
-      case 'cancel':
-        this._setButton('cancel', 'disabled')
-        break;
-      default:
-        break;
+    this._enableOverlay(false);
+    if (op === 'delete') {
+      this._setChangesButtons(true);
+      this._setSaveButtons('save');
+    } else {
+      this._setSaveButtons('saved');
     }
-       
-    this._setButtons({
-      save: 'disabled',
-      saving: 'hidden'
-    });
   },
   
   saveData: function() {
-    this._setButtons({
-      save: 'hidden',
-      saving: 'disabled',
-      saved: 'hidden',
-      cancel: 'enabled'
-    });
+    this._setSaveButtons('saving');
+    this._setChangesButtons(false);
+    this._enableOverlay(true);
+
     $('.moonrock-measure-field').vmMeasureField('acceptCurrentMeasure');
     
     this.submitData('save');
   },
-  newData: function() {
+  createData: function() {
     this.currentItemId = null;
     
     this.clearDataIds();
@@ -313,20 +336,15 @@ var MoonrockDataInput = {
     
     if (confirm('Are you sure you want to delete this data item?')) {
       this.actionsHelper.deleteItem(self.currentItemId, function() {
-        self.dataBrowser.removeItem(self.currentItemId);
-        
-        self.newData();
+        self.dataBrowser.removeItem(self.currentItemId);        
+        self.createData();
       });
     }
   },
   
   _smallDataChange: function() {
-    this._setButtons({
-      save: 'enabled',
-      saving: 'hidden',
-      saved: 'hidden',
-      cancel: 'enabled'
-    });
+    this._setSaveButtons('save');
+    this._setChangesButtons(true);
   },
   _bigDataChange: function() {
     this.saveData();

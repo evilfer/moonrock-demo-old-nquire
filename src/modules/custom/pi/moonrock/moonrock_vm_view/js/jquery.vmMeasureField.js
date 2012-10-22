@@ -21,10 +21,10 @@
       self.vmMeasureField('_field2displayValue');
       
       var buttons = [
-      ['[Measure]', 'measure'],
-      ['[Clear]', 'clear'],
-      ['[Done]', 'done'],
-      ['[Cancel]', 'cancel']
+      ['Measure', 'measure'],
+      ['Clear', 'clear'],
+      ['Done', 'done'],
+      ['Cancel', 'cancel']
       ];
       
       var click = function() {

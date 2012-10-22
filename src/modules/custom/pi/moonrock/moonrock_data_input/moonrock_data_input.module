@@ -43,8 +43,8 @@ function moonrock_data_input_data_delete() {
     $node = node_load($nid);
     if ($node->type === 'pi_data' && $node->uid === $user->uid) {
       node_delete($nid);
-      
-      
+
+
       unset($_SESSION['messages']['status']);
       $result = array(
           'status' => TRUE,
@@ -239,12 +239,19 @@ function theme_moonrock_data_input_form_page($separator) {
           . '<div id="moonrock-data-input-header-edit" style="display:none;">' . t('Edit data') . '</div>';
 
   $content = '<div class="moonrock-data-input-button-menu">'
-          . '<div class="moonrock-data-input-button moonrock-data-input-hidden" id="moonrock-data-input-button-newdata">' . t('[New]') . '</div>'
-          . '<div class="moonrock-data-input-button moonrock-data-input-hidden" id="moonrock-data-input-button-save">' . t('[Save]') . '</div>'
-          . '<div class="moonrock-data-input-button moonrock-data-input-hidden" id="moonrock-data-input-button-saving">' . t('[Saving...]') . '</div>'
-          . '<div class="moonrock-data-input-button moonrock-data-input-hidden" id="moonrock-data-input-button-deletedata">' . t('[Delete]') . '</div>'
-          . '<div class="moonrock-data-input-button moonrock-data-input-hidden" id="moonrock-data-input-button-undo">' . t('[Undo]') . '</div>'
-          . '<div class="moonrock-data-input-button moonrock-data-input-hidden" id="moonrock-data-input-button-redo">' . t('[Redo]') . '</div>'
+          . '  <div class="moonrock-data-input-button-row">'
+          . '    <div class="moonrock-data-input-message moonrock-data-input-hidden" id="moonrock-data-input-button-newitem">' . t('New data ') . '</div> '
+          . '    <div class="moonrock-data-input-message moonrock-data-input-hidden" id="moonrock-data-input-button-modified">' . t('Modified ') . '</div> '
+          . '    <div class="moonrock-data-input-button moonrock-data-input-hidden" id="moonrock-data-input-button-save">' . t('Save') . '</div> '
+          . '    <div class="moonrock-data-input-message moonrock-data-input-hidden" id="moonrock-data-input-button-saving">' . t('Saving data... ') . '</div> '
+          . '    <div class="moonrock-data-input-message moonrock-data-input-hidden" id="moonrock-data-input-button-saved">' . t('Data saved ') . '</div> '
+          . '    <div class="moonrock-data-input-icon moonrock-data-input-hidden" id="moonrock-data-input-button-undo"></div> '
+          . '    <div class="moonrock-data-input-icon moonrock-data-input-hidden" id="moonrock-data-input-button-redo"></div>'
+          . '  </div>'
+          . '  <div class="moonrock-data-input-button-row">'
+          . '    <div class="moonrock-data-input-button moonrock-data-input-hidden" id="moonrock-data-input-button-createdata">' . t('New data') . '</div>'
+          . '    <div class="moonrock-data-input-button moonrock-data-input-hidden" id="moonrock-data-input-button-deletedata">' . t('Delete data') . '</div>'
+          . '  </div>'
           . '</div>';
 
   $blocks = array(
@@ -295,9 +302,7 @@ function theme_moonrock_data_input_data_browser() {
   moonrock_sample_utils_load_item_browser_resources();
 
   $output = '<div class="moonrock-data-browser-container">'
-          . ' <div class="moonrock-data-browser-heading">' . t('Your data for this sample: ') . '</div>'
-          . ' <div id="moonrock-data-browser-throbber" class="moonrock-data-browser-throbber"></div>'
-          . ' <div id="moonrock-data-browser" class="moonrock-data-browser"></div>'
+          . ' <div id="moonrock-data-browser" class="moonrock-data-browser">' . t('Your data for this sample:') . '</div>'
           . '</div>';
 
   return $output;

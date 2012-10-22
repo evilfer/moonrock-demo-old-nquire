@@ -117,7 +117,7 @@ function pi_key_questions_form(&$node) {
 		'#title' => t('Key question'),
 		'#required' => TRUE,
 		'#default_value' => $node->key_question,
-		'#description' => t('A key question is asked in order to test all or part of a hypothesis. Write your key question here.'),
+		'#description' => t('A key question is asked in order to define a concrete investigation objective. Write your key question here.'),
 		'#resizable' => FALSE,
 		'#rows' => 4,
 		'#cols' => 40,

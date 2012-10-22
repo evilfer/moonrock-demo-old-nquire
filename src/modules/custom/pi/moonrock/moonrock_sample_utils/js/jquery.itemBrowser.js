@@ -14,12 +14,15 @@
       var self = this;
       self.data('options', _options);
       
+      var title = self.html();
       
       self.html('').addClass('item-browser');
-      var left = $('<div/>').addClass('item-browser-left').appendTo(self);
-      var container = $('<div/>').addClass('item-browser-container').appendTo(self);
+      $('<div/>').addClass('item-browser-heading').html(title).appendTo(self);
+      var content = $('<div/>').addClass('item-browser-content').appendTo(self);
+      var left = $('<div/>').addClass('item-browser-left').appendTo(content);
+      var container = $('<div/>').addClass('item-browser-container').appendTo(content);
       var slider = $('<div/>').addClass('item-browser-slider').appendTo(container);
-      var right = $('<div/>').addClass('item-browser-right').appendTo(self);
+      var right = $('<div/>').addClass('item-browser-right').appendTo(content);
       
       slider.customMouseInput('move', function(deltaX) {
         self.data('item-browser-center-on', false);

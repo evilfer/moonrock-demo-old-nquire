@@ -127,6 +127,15 @@ var PiResultPresentations = {
       type = 'histogram';
     }
     
+    if (type === 'histogram') {
+      $("input[value='histogram']").attr('checked', 'checked');
+      $("input[value='line-bar']").attr('checked', false);
+    } else {
+      $("input[value='line-bar']").attr('checked', 'checked');
+      $("input[value='histogram']").attr('checked', false);
+    }
+    
+    
     this._updateExplanation(type);
     
     var abscissa = $('#edit-abscissa').attr('value');

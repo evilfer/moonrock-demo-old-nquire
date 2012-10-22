@@ -224,12 +224,12 @@ function theme_pi_sort_key_questions($node, $teaser, $key_questions_to_show) {
   /* FIX (eloy)
    * This will need to be changed!
    */
-  $output .= '<p>The goal of this inquiry is to compare three different samples of Moon rock ('
+  $output .= '<p>The goal of this inquiry is to compare four different samples of Moon rock ('
           . moonrock_sample_utils_activity_link('moonrock_seesamples') . ').</p>'
-          . '<p><b>Can you think scientific questions about the samples?</b></p>'
+          . '<p><b>Can you think of scientific questions about the samples?</b></p>'
           . '<p>Asking interesting questions that can be answered using scientific tools is one of the most important (and challeging) steps '
           . 'in the work of any scientist. '
-          . 'An example of a key question is: "<i>Does the average size of the crystals differ across the three samples?</i>" '
+          . 'An example of a key question is: "<i>Does the average size of the crystals differ across the four samples?</i>" '
           . 'As you can see, it\'s a specific question that can be tested using the measures you have available ('
           . 'read about measures in activity ' 
           . '<a href="?q=activity/1266/view">Moon rock measures</a>).</p>' 

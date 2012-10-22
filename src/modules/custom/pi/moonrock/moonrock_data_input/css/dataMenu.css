@@ -8,20 +8,86 @@
 
 .moonrock-data-input-button {
   display: inline-block;
-  font-weight: bold;
+  padding: 0px 2px 0px 2px;
+  margin: 0px 3px 1px 0px;
+
+  border-width: 1px;
+  border-style: solid;
+  border-radius: 2px;
+  border-color: black;
+
+  background: gray;
   color: darkgray;
-  margin-right: 5px;
+}
+
+.moonrock-data-input-message {
+  display: inline-block;
 }
 
 .moonrock-data-input-button.enabled {
   cursor: pointer;
-  color: blue;
+  color: black;
+
+  background-image: -moz-linear-gradient(top, #E6E6E6 0%, #B3B3B3 100%);
+  background-image: -o-linear-gradient(top, #E6E6E6 0%, #B3B3B3 100%);
+  background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0, #E6E6E6), color-stop(1, #B3B3B3));
+  background-image: -webkit-linear-gradient(top, #E6E6E6 0%, #B3B3B3 100%);
 }
 .moonrock-data-input-button.enabled:hover {
-  color:#33f;
+  background-image: -moz-linear-gradient(top, #F0F0F0 0%, #C2C2C2 100%);
+  background-image: -o-linear-gradient(top, #F0F0F0 0%, #C2C2C2 100%);
+  background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0, #F0F0F0), color-stop(1, #C2C2C2));
+  background-image: -webkit-linear-gradient(top, #F0F0F0 0%, #C2C2C2 100%);
+}
+.moonrock-data-input-button.enabled:active {
+  background-image: -moz-linear-gradient(top, #C2C2C2 0%, #F0F0F0 100%);
+  background-image: -o-linear-gradient(top, #C2C2C2 0%, #F0F0F0 100%);
+  background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0, #C2C2C2), color-stop(1, #F0F0F0));
+  background-image: -webkit-linear-gradient(top, #C2C2C2 0%, #F0F0F0 100%);
 }
 
+.moonrock-data-input-icon {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  position: absolute;
+  background-position: center;
+  background-repeat: no-repeat; 
+}
+.moonrock-data-input-icon.enabled {
+  cursor: pointer;
+}
+
+#moonrock-data-input-button-undo {
+  right: 20px;
+  background-image: url(icons/undo_disabled.png);
+}
+#moonrock-data-input-button-redo {
+  right: 0px;
+  background-image: url(icons/redo_disabled.png);
+}
+#moonrock-data-input-button-undo.enabled {
+  background-image: url(icons/undo.png);
+}
+#moonrock-data-input-button-redo.enabled {
+  background-image: url(icons/redo.png);
+}
+#moonrock-data-input-button-undo.enabled:hover {
+  background-image: url(icons/undo_hover.png);
+}
+#moonrock-data-input-button-redo.enabled:hover {
+  background-image: url(icons/redo_hover.png);
+}
 
 .moonrock-data-input-hidden {
   display: none;
 }
+
+.moonrock-data-input-button-row {
+  height: 20px;
+  position: relative;
+}
+
+
+
+

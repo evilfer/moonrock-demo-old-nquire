@@ -21,11 +21,11 @@ var MoonrockColorSelect = {
   colorSelected: function(value, color, name) {
     $('[measure_content_type="moonrock_color"]').attr('value', value);
     if (color) {
-      $('#moonrockColorPickerSelectionNameClear').removeClass('hidden');
+      $('#moonrockColorPickerSelectionNameClear').removeClass('moonrock-measure-field-button-hidden');
       $('#moonrockColorPickerSelectionColor').removeClass('moonrockColorPickerSelectionNoColor');
       $('#moonrockColorPickerSelectionColor').css('background', color);
     } else {
-      $('#moonrockColorPickerSelectionNameClear').addClass('hidden');
+      $('#moonrockColorPickerSelectionNameClear').addClass('moonrock-measure-field-button-hidden');
       $('#moonrockColorPickerSelectionColor').addClass('moonrockColorPickerSelectionNoColor');
     }
 

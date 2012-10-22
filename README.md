@@ -8,6 +8,14 @@ Moonrock demonstators.
 Changes:
 
 -----------------
+22-10-2012
+
+- Improved data items management menu.
+- Improved data browser (title included in black box)
+- Fixed texts.
+- Fixed chart creation.
+
+-----------------
 15-10-2012
 
 - Fixed see samples activity.

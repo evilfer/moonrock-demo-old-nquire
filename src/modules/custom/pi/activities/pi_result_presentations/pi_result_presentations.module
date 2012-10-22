@@ -133,7 +133,7 @@ function pi_result_presentations_form(&$node) {
       '#type' => 'select',
       '#options' => $variable_measures,
       '#required' => TRUE,
-      '#title' => 'Y axis variable variable',
+      '#title' => 'Y axis variable',
       '#default_value' => $node->ordinate,
       '#description' => t('Select the variable that will be used in the Y asis of the graph'),
   );

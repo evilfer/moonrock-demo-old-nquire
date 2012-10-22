@@ -95,7 +95,7 @@ function moonrock_color_form(&$node) {
 
   $form['body_filter']['color'] = array(
       '#type' => 'textfield',
-      '#title' => t('Color'),
+      '#title' => t('Colour'),
       '#required' => TRUE,
       '#default_value' => $node->color,
       '#description' => t('Specify colour in format: #rgb'),
@@ -222,9 +222,9 @@ function moonrock_color_nquire_data_form_prefix($measure) {
           . "</div>";
 
   $output .= "<div id='moonrockColorPickerSelection'>";
-  $output .= "<div id='moonrockColorPickerSelectionColor' class='moonrockColorPickerSelectionNoColor'>" . t('Click here to select a color!') . '</div>';
-  $output .= "<div><div id='moonrockColorPickerSelectionName'></div><div id='moonrockColorPickerSelectionNameClear'>" . t('[clear]') . "</div></div>";
-  $output .= "<div id='moonrockColorPickerSelectionNoName'>" . t('No color selected.') . "</div>";
+  $output .= "<div id='moonrockColorPickerSelectionColor' class='moonrockColorPickerSelectionNoColor'>" . t('Click here to select a colour!') . '</div>';
+  $output .= "<div><div id='moonrockColorPickerSelectionName'></div><div class='moonrock-measure-field-button moonrock-measure-field-button-hidden' id='moonrockColorPickerSelectionNameClear'>" . t('Clear') . "</div></div>";
+  $output .= "<div id='moonrockColorPickerSelectionNoName'>" . t('No colour selected.') . "</div>";
   $output .= "</div>";
   $output .= "</div>";
 
@@ -328,8 +328,8 @@ function _moonrock_color_create_color_picker_image() {
   $pos2 = $pos + 12;
   $text_style = "text-anchor='start' font-family='sans-serif' font-size='10' fill='#333'";
 
-  $output .= "<text x='$pos' y='$pos' $text_style>" . t("Drag and zoom in/out this color chart to match a color you see in the sample.") . "</text>"
-          . "<text x='$pos' y='$pos2' $text_style>" . t("Click on a color to select it.") . "</text>";
+  $output .= "<text x='$pos' y='$pos' $text_style>" . t("Drag and zoom in/out this chart to match a colour you see in the sample.") . "</text>"
+          . "<text x='$pos' y='$pos2' $text_style>" . t("Click on a colour to select it.") . "</text>";
 
   $size = 24;
   $y = 5;
@@ -345,7 +345,7 @@ function _moonrock_color_create_color_picker_image() {
 }
 
 function moonrock_color_nquire_measure_choose_explanation() {
-  return t("Choose from the list one relevant color identified in a sample");
+  return t("Choose from the chart one relevant colour identified in a sample");
 }
 
 function _moonrock_color_load_form_resources() {

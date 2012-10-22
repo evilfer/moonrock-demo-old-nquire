@@ -152,6 +152,7 @@ function theme_moonrock_sample_utils_page_with_block($page, $blocks) {
     $output .= '  <div class="moonrock-sample-utils-pageblock-falseblock" id="' . $block['id'] . '">'
             . '   <h2 class="title">' . $block['title'] . '</h2>'
             . '   <div class="content">' . $block['content'] . '</div>'
+            . '   <div class="overlay"></div>'
             . '  </div>';
   }
   $output .= ' </div>'

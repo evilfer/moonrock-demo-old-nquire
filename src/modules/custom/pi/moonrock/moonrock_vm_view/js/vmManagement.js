@@ -171,7 +171,8 @@ var MoonrockVmViewManager = {
     
     var path = this.currentItem.snapshot ? 
     this.currentItem.snapshot.viewurl :
-    (location.origin + location.pathname + this.currentItem.vm);
+//    (location.origin + location.pathname + this.currentItem.vm);
+    (location.protocol + '//' + location.host + location.pathname + this.currentItem.vm);
     
     $('#moonrock-samples-page-vm-iframe-container').append('<iframe id="moonrock-samples-page-vm-iframe" src="' + path + '"></iframe>');
   },
