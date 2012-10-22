@@ -1,0 +1,83 @@
+<?php
+
+function moonrock_layout_theme() {
+  return array(
+      'moonrock_layout_vertical' => array(
+          'arguments' => array('elements', 'flex', 'isRoot'),
+      ),
+      'moonrock_layout_horizontal' => array(
+          'arguments' => array('elements', 'flex', 'isRoot'),
+      ),
+      'moonrock_layout_tabs' => array(
+          'arguments' => array('titles', 'content'),
+      ),
+  );
+}
+
+function theme_moonrock_layout_vertical($elements, $flex, $isRoot) {
+  return _moonrock_layout_direction($elements, $flex, 'vertical', $isRoot);
+}
+
+function theme_moonrock_layout_horizontal($elements, $flex, $isRoot) {
+  return _moonrock_layout_direction($elements, $flex, 'horizontal', $isRoot);
+}
+
+function theme_moonrock_layout_tabs($titles, $content) {
+  _moonrock_layout_load_resources();
+
+  $output = '<div class="layout-tabbed-container">';
+
+  $output .= '<div class="layout-tabbed-container-tabs">';
+  foreach ($titles as $i => $title) {
+    $output .= '<div class="layout-tabbed-container-tab" tab="' . $i . '">'
+            . $title
+            . '</div>';
+  }
+  $output .= '</div>';
+
+  $output .= '<div class="layout-tabbed-container-contents">';
+  foreach ($content as $i => $content) {
+    $output .= '<div class="layout-tabbed-container-content" tab="' . $i . '">'
+            . $content
+            . '</div>';
+  }
+  $output .= '</div>';
+
+  $output .= '</div>';
+
+  return $output;
+}
+
+function _moonrock_layout_direction($elements, $flex, $direction, $isRoot) {
+  _moonrock_layout_load_resources();
+
+  $output = '';
+  $boxclass = 'layout-box layout-box-' . $direction;
+  if ($isRoot) {
+    $boxclass .= ' layout-root';
+  }
+
+  $output .= '<div class="' . $boxclass . '">';
+
+  foreach ($elements as $i => $element) {
+    $classname = 'layout-block layout-block-' . $direction;
+    if ($flex[$i]) {
+      $classname .= ' layout-block-flex';
+    } else {
+      $classname .= ' layout-block-fixed';
+    }
+
+    $output .= '<div class="' . $classname . '">'
+            . $element
+            . '</div>';
+  }
+
+  $output .= '</div>';
+
+  return $output;
+}
+
+function _moonrock_layout_load_resources() {
+  drupal_add_css(drupal_get_path('module', 'moonrock_layout') . '/css/layout.css');
+  drupal_add_js(drupal_get_path('module', 'moonrock_layout') . '/js/layout.js');
+}

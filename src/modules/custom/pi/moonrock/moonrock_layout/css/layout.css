@@ -1,16 +1,23 @@
 
 
 .layout-tabbed-container {
-  width: 100%;
 }
 
 .layout-tabbed-container-tabs {
+  border-bottom: 1px solid gray;
+  height: 20px;
+  margin-bottom: 10px;
 }
 
 .layout-tabbed-container-tab {
+  background: #ddd;
   display: inline-block;
   border: 1px solid gray;
+  border-radius: 2px;
   padding: 2px;
+  height: 15px;
+  margin: 0px 3px 0px 3px;
+  cursor: pointer;
 }
 
 .layout-tabbed-container-contents {
@@ -28,7 +35,8 @@
 
 
 .layout-tabbed-container-tab.layout-tabbed-container-selected{
-  border-bottom: 1px solid transparent;
+  background: white;
+  border-bottom: 1px solid white;
 }
 
 .layout-root {
@@ -42,37 +50,4 @@
 }
 .layout-block {
   position: absolute;
-}
-
-.a {
-  background: darkblue;
-  border: 10px solid blue;
-}
-
-.b {
-  width: 200px;
-  background: darkgreen;
-  border: 10px solid green;
-}
-
-.c {
-  width: 30px;
-  background: darkgoldenrod;
-  border: 10px solid goldenrod;
-}
-
-.d {
-  height: 60px;
-  background: darkred;
-  border: 10px solid red;
-  margin: 3px;
-}
-
-
-html, body {
-  padding: 0;
-  border: 0;
-  margin: 0;
-  width: 100%;
-  height: 100%;
 }

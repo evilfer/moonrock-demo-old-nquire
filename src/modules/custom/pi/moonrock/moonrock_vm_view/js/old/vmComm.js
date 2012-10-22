@@ -1,18 +1,27 @@
 
 
 var MoonrockVMComm = {
+  _iframe: null,
   _activityId: null,
   _snapshotCallback: null,
   _snapshot: null,
   _vmPositionMonitor: null,
   _vmPositionMessageValid: false,
   _vmUpdatingPosition: false,
-    
+  
+ 
+  
   init: function() {
+    console.log('MoonrockDataInputVM');
+    
     var self = this;
     window.addEventListener("message", function(event) {
       self._receiveMessage(event);
     }, false);
+    
+    MoonrockVmViewManager.addVMLoadedCallback(function() {
+      self.iframeLoaded();
+    });
   },
   
   monitorPositionChange: function(callback) {
@@ -50,7 +59,12 @@ var MoonrockVMComm = {
     this._post('set', 'PositionPixels', value);
   },
   
-
+  /*  iframeLoaded: function(window) {
+    this._activityId = null;
+    this._iframe = window;
+    this._post('list');
+    this._post('monitor', 'PositionPixels');
+  },*/
   _fire: function(event, params) {
     if (this._vmListener && this._vmListener[event]) {
       (this._vmListener[event])(params);
@@ -85,13 +99,7 @@ var MoonrockVMComm = {
       case 'get':
         switch (msg.param) {
           case 'viewURL':
-            var url = msg.content;
-            var a = url.indexOf('?');
-            var b = url.lastIndexOf('?');
-            if (a >0 && b > 0) {
-              url = url.substr(0, a) + url.substr(b);
-            }
-            self._snapshot.viewurl = url;
+            self._snapshot.viewurl = msg.content;
             self._post('get', 'PositionPixels');
             break;
           case 'PositionPixels':
@@ -105,7 +113,7 @@ var MoonrockVMComm = {
               var ratio = parseFloat(this.height) / this.width;
               var height = ratio * _width;
       
-              var resizeCanvas = $('#moonrock-vm-resize-canvas')[0];
+              var resizeCanvas = $('#moonrock-samples-page-vm-resize-canvas')[0];
               resizeCanvas.width = _width;
               resizeCanvas.height = height;
 
@@ -139,7 +147,7 @@ var MoonrockVMComm = {
   },
   
   _post: function(action, param, value) {
-    var iframe = $('#moonrock-vm-iframe')[0].contentWindow;
+    var iframe = $('#moonrock-samples-page-vm-iframe')[0].contentWindow;
     var msg = {
       action: action
     };

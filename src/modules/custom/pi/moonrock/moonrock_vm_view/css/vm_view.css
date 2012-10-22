@@ -1,8 +1,19 @@
 
 
+.moonrock-vm-iframe-container {
+  width: 100%;
+  height: 100%;
+}
+
+.moonrock-vm-iframe-container > iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: black;
+}
+
 
 .moonrock-samples-vm-page {
-  /*position: relative;*/
 }
 
 .moonrock-samples-page {

@@ -8,6 +8,11 @@ Moonrock demonstators.
 Changes:
 
 -----------------
+22-10-2012 b
+
+- Started refactoring of VM layout (incomplete).
+
+-----------------
 22-10-2012
 
 - Improved data items management menu.
