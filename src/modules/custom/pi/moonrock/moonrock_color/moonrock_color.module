@@ -218,7 +218,6 @@ function moonrock_color_nquire_data_form_prefix($measure) {
   $output = '<div class="form-item">'
           . "<div class='moonrock-measure'>"
           . theme('moonrock_sample_utils_measure_info', $measure)
-          . "<div class='moonrock-measure-fixedvalue' id='moonrock-measure-fixedvalue-sample'></div>"
           . "</div>";
 
   $output .= "<div id='moonrockColorPickerSelection'>";

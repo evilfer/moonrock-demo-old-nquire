@@ -2,6 +2,7 @@
 
 .moonrock-measure-title {
   display: inline-block;
+  font-size: 12px;
   font-weight: bold;
 }
 
@@ -9,12 +10,32 @@
   font-weight: bold;
   color: orange;
   display: inline-block;
-  height: 16px;
-  width: 20px;
+  height: 12px;
+  width: 15px;
   background: url(icons/info.png) no-repeat right;
+  background-size: 12px 12px;
 }
 
 .qtip-link {
   border: none !important;
 }
 
+
+.form-item select {
+  margin-left: 10px;
+}
+
+.form-item .resizable-textarea {
+  padding-left: 10px;  
+  box-sizing: border-box;
+}
+
+.moonrock-measure-field {
+  padding-left: 10px;
+  box-sizing: border-box;
+}
+
+#moonrockColorPickerSelection {
+  padding-left: 10px;
+  box-sizing: border-box;
+}

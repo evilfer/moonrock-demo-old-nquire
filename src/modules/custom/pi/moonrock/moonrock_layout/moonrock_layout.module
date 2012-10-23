@@ -3,10 +3,10 @@
 function moonrock_layout_theme() {
   return array(
       'moonrock_layout_vertical' => array(
-          'arguments' => array('elements', 'flex', 'isRoot'),
+          'arguments' => array('elements', 'isRoot'),
       ),
       'moonrock_layout_horizontal' => array(
-          'arguments' => array('elements', 'flex', 'isRoot'),
+          'arguments' => array('elements', 'isRoot'),
       ),
       'moonrock_layout_tabs' => array(
           'arguments' => array('tabs', 'content'),
@@ -14,12 +14,12 @@ function moonrock_layout_theme() {
   );
 }
 
-function theme_moonrock_layout_vertical($elements, $flex, $isRoot) {
-  return _moonrock_layout_direction($elements, $flex, 'vertical', $isRoot);
+function theme_moonrock_layout_vertical($elements, $isRoot) {
+  return _moonrock_layout_direction($elements, 'vertical', $isRoot);
 }
 
-function theme_moonrock_layout_horizontal($elements, $flex, $isRoot) {
-  return _moonrock_layout_direction($elements, $flex, 'horizontal', $isRoot);
+function theme_moonrock_layout_horizontal($elements, $isRoot) {
+  return _moonrock_layout_direction($elements, 'horizontal', $isRoot);
 }
 
 function theme_moonrock_layout_tabs($tabs, $content) {
@@ -53,7 +53,7 @@ function theme_moonrock_layout_tabs($tabs, $content) {
   return $output;
 }
 
-function _moonrock_layout_direction($elements, $flex, $direction, $isRoot) {
+function _moonrock_layout_direction($elements, $direction, $isRoot) {
   _moonrock_layout_load_resources();
 
   $output = '';
@@ -64,16 +64,24 @@ function _moonrock_layout_direction($elements, $flex, $direction, $isRoot) {
 
   $output .= '<div class="' . $boxclass . '">';
 
-  foreach ($elements as $i => $element) {
+  foreach ($elements as $element) {
     $classname = 'layout-block layout-block-' . $direction;
-    if ($flex[$i]) {
+    if ($element['flex']) {
       $classname .= ' layout-block-flex';
     } else {
       $classname .= ' layout-block-fixed';
     }
+    
+    $style = '';
+    if (isset($element['width'])) {
+      $style .= 'width:' . $element['width'] . 'px;';
+    }
+    if (isset($element['height'])) {
+      $style .= 'height:' . $element['height'] . 'px;';
+    }
 
-    $output .= '<div class="' . $classname . '">'
-            . $element
+    $output .= '<div class="' . $classname . '" style="' . $style . '">'
+            . $element['content']
             . '</div>';
   }
 
