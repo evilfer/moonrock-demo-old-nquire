@@ -13,6 +13,14 @@
 }
 
 
+.moonrock-vm-resize-container {
+  display: none;
+  width: 0px;
+  height: 0px;
+}
+
+
+
 .moonrock-samples-vm-page {
 }
 
@@ -104,12 +112,6 @@
   width: 100%;
 }
 
-
-.moonrock-samples-page-vm-resize {
-  display: none;
-  width: 0px;
-  height: 0px;
-}
 
 
 

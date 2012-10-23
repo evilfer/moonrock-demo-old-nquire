@@ -102,10 +102,10 @@ function theme_moonrock_vm_view_vm() {
 }
 
 function theme_moonrock_vm_view_vm_simple_page() {
-  $navigator = theme('moonrock_vm_view_vm_top_navigator');
+  //$navigator = theme('moonrock_vm_view_vm_top_navigator');
   $vm = theme('moonrock_vm_view_vm');
 
-  return theme('moonrock_layout_vertical', array($navigator, $vm), array(false, TRUE), TRUE);
-//  return theme('moonrock_layout_vertical', array('a', $vm), array(FALSE, TRUE), TRUE);
+//  return theme('moonrock_layout_vertical', array($navigator, $vm), array(false, TRUE), TRUE);
+  return theme('moonrock_layout_vertical', array($vm), array(TRUE), TRUE);
 }
 

@@ -9,7 +9,7 @@ function moonrock_layout_theme() {
           'arguments' => array('elements', 'flex', 'isRoot'),
       ),
       'moonrock_layout_tabs' => array(
-          'arguments' => array('titles', 'content'),
+          'arguments' => array('tabs', 'content'),
       ),
   );
 }
@@ -22,23 +22,28 @@ function theme_moonrock_layout_horizontal($elements, $flex, $isRoot) {
   return _moonrock_layout_direction($elements, $flex, 'horizontal', $isRoot);
 }
 
-function theme_moonrock_layout_tabs($titles, $content) {
+function theme_moonrock_layout_tabs($tabs, $content) {
   _moonrock_layout_load_resources();
 
   $output = '<div class="layout-tabbed-container">';
 
   $output .= '<div class="layout-tabbed-container-tabs">';
-  foreach ($titles as $i => $title) {
-    $output .= '<div class="layout-tabbed-container-tab" tab="' . $i . '">'
-            . $title
+  foreach ($tabs as $tab) {
+    $classname = 'layout-tabbed-container-tab';
+    if ($tab['hidden']) {
+      $classname .= ' layout-tabbed-container-hidden';
+    }
+    
+    $output .= '<div class="' . $classname  . '" tab="' . $tab['tabId'] . '" content="' . $tab['contentId'] . '">'
+            . $tab['title']
             . '</div>';
   }
   $output .= '</div>';
 
   $output .= '<div class="layout-tabbed-container-contents">';
   foreach ($content as $i => $content) {
-    $output .= '<div class="layout-tabbed-container-content" tab="' . $i . '">'
-            . $content
+    $output .= '<div class="layout-tabbed-container-content" content="' . $content['contentId'] . '">'
+            . $content['content']
             . '</div>';
   }
   $output .= '</div>';

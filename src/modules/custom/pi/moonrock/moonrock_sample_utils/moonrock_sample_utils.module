@@ -121,14 +121,11 @@ function moonrock_sample_utils_load_vmSample_format() {
   drupal_add_js(drupal_get_path('module', 'moonrock_sample_utils') . '/js/vmSample.js');
 }
 
-function moonrock_sample_utils_load_falseblock_format() {
-  drupal_add_css(drupal_get_path('module', 'moonrock_sample_utils') . '/css/falseblock.css');
-}
 
 function moonrock_sample_utils_theme() {
   return array(
-      'moonrock_sample_utils_page_with_block' => array(
-          'arguments' => array('page', 'blocks'),
+      'moonrock_sample_utils_false_block' => array(
+          'arguments' => array('title', 'content'),
       ),
       'moonrock_sample_utils_measure_info' => array(
           'arguments' => array('measure_info'),
@@ -139,27 +136,44 @@ function moonrock_sample_utils_theme() {
   );
 }
 
-function theme_moonrock_sample_utils_page_with_block($page, $blocks) {
-
-  moonrock_sample_utils_load_falseblock_format();
-
-  $output = '<div class="moonrock-sample-utils-pageblock-container">'
-          . ' <div class="moonrock-sample-utils-pageblock-page">'
-          . $page
-          . ' </div>'
-          . ' <div class="moonrock-sample-utils-pageblock-blocks">';
-  foreach ($blocks as $block) {
-    $output .= '  <div class="moonrock-sample-utils-pageblock-falseblock" id="' . $block['id'] . '">'
-            . '   <h2 class="title">' . $block['title'] . '</h2>'
-            . '   <div class="content">' . $block['content'] . '</div>'
-            . '   <div class="overlay"></div>'
-            . '  </div>';
-  }
-  $output .= ' </div>'
+function theme_moonrock_sample_utils_false_block($title, $content) {
+  drupal_add_css(drupal_get_path('module', 'moonrock_sample_utils') . '/css/falseblock.css');
+  
+  $output = '<div class="moonrock-block-column">'
+          . '  <div class="moonrock-block">'
+          . '    <h2 class="title">' . $title . '</h2>'
+          . '    <div class="content">' . $content . '</div>'
+          . '    <div class="overlay"></div>'
+          . '  </div>'
           . '</div>';
 
   return $output;
 }
+
+/*
+  function theme_moonrock_sample_utils_page_with_block($page, $blocks) {
+
+  moonrock_sample_utils_load_falseblock_format();
+
+  $output = '<div class="moonrock-sample-utils-pageblock-container">'
+  . ' <div class="moonrock-sample-utils-pageblock-page">'
+  . $page
+  . ' </div>'
+  . ' <div class="moonrock-sample-utils-pageblock-blocks">';
+  foreach ($blocks as $block) {
+  $output .= '  <div class="moonrock-sample-utils-pageblock-falseblock" id="' . $block['id'] . '">'
+  . '   <h2 class="title">' . $block['title'] . '</h2>'
+  . '   <div class="content">' . $block['content'] . '</div>'
+  . '   <div class="overlay"></div>'
+  . '  </div>';
+  }
+  $output .= ' </div>'
+  . '</div>';
+
+  return $output;
+  }
+
+ */
 
 function theme_moonrock_sample_utils_measure_info($measure_info) {
   moonrock_sample_utils_load_measure_format();
@@ -229,18 +243,18 @@ function theme_moonrock_sample_utils_fuzzy_time_period($time) {
           'p' => t('years'),
       ),
   );
-  
+
   $time = (int) ($time / 60);
-  
-  for($i = 0; $i < count($periods); $i++) {
+
+  for ($i = 0; $i < count($periods); $i++) {
     if ($time < 2) {
       return $periods[$i]['s'] . t(' ago');
-    } 
-    if (!isset($periods[$i]['m']) || $time <  $periods[$i]['m']) {
+    }
+    if (!isset($periods[$i]['m']) || $time < $periods[$i]['m']) {
       return $time . ' ' . $periods[$i]['p'] . t(' ago');
     }
     $time = (int) ($time / $periods[$i]['m']);
   }
-  
+
   return 'unknown time!';
 }

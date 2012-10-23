@@ -2,6 +2,8 @@
 
 var VmManager = {
   _sample: null,
+  _sampleSelectionCallbacks: [],
+  _vmVisible: false,
   
   init: function() {
     var self = this;
@@ -14,13 +16,33 @@ var VmManager = {
   
   sampleSelected: function(sample) {
     this._setSample(sample);
-    TabsManager.selectTab(1);
+    TabsManager.selectTab(sample.id);
   },
   
-  vmTabOpened: function() {
-    if (! this._sample) {
-      this._openFirstSample();
+  vmTabOpened: function(id) {
+    if (id == 'samples') {
+      this._vmVisible = false;
+    } else {
+      this._setSample(MoonrockSeeSamples.getItem(id));
+      this._vmVisible = true;
     }
+  },
+  
+  addSampleSelectionCallback: function(callback) {
+    this._sampleSelectionCallbacks.push(callback);
+  },
+  
+  getActivityId : function() {
+    var currentpath = window.location.search;
+    var pos = currentpath.indexOf("activity/");
+    if (pos >= 0) {
+      pos += "activity/".length;
+      var pos2 = currentpath.indexOf("/", pos + 1);
+      if (pos >= 0 && pos2 >= 0) {
+        return currentpath.substr(pos, pos2 - pos);
+      }
+    }
+    return "0";
   },
   
   _openFirstSample: function() {
@@ -29,31 +51,33 @@ var VmManager = {
   },
   
   _setSample: function(sample) {
-    var self = this;
-    var updateCallback = function() {
-      self._sample = sample;
-      VmNavigator.update(sample);
+    if (sample != this._sample) {
+      var self = this;
+      var updateCallback = function() {
+        self._sample = sample;
+        //VmNavigator.update(sample);
       
-      var url = sample.snapshot ? sample.snapshot.viewurl :
-      (location.protocol + '//' + location.host + location.pathname + sample.vm);
+        var url = sample.snapshot ? sample.snapshot.viewurl :
+        (location.protocol + '//' + location.host + location.pathname + sample.vm);
       
-      $('#moonrock-vm-iframe').attr('src', url);
-    };
-    
-    if (this._sample) {
-      var oldId = this._sample.id;
-
-      var snapshotCallback = function(snapshot) {
-        MoonrockSeeSamples.setSnapshot(oldId, snapshot)
+        $('#moonrock-vm-iframe').attr('src', url);
+        
+        for(var i in self._sampleSelectionCallbacks) {
+          (self._sampleSelectionCallbacks[i])(self._sample);
+        }
       };
-      MoonrockVMComm.getVMSnapshotAndDoOtherStuffQuick(snapshotCallback, updateCallback);
-    } else {
-      updateCallback();
-    } 
-  },
-  
-  _saveCurrentSampleState: function() {
     
+      if (this._sample && this._vmVisible) {
+        var oldId = this._sample.id;
+
+        var snapshotCallback = function(snapshot) {
+          MoonrockSeeSamples.setSnapshot(oldId, snapshot)
+        };
+        MoonrockVMComm.getVMSnapshotAndDoOtherStuffQuick(snapshotCallback, updateCallback);
+      } else {
+        updateCallback();
+      } 
+    }
   }
 };
 

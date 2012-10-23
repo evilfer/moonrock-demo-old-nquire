@@ -1,38 +1,17 @@
-/* 
-    Document   : falseblock
-    Created on : 27-Sep-2012, 09:48:31
-    Author     : edvf2
-    Description:
-        Purpose of the stylesheet follows.
-*/
 
-.moonrock-sample-utils-pageblock-container {
-  width: 100%;
-  height: 100%;
 
-  display: -moz-inline-box;
-  display: -webkit-inline-box;
-
-  -webkit-box-orient: horizontal;
-  -moz-box-orient: horizontal;
-}
-
-.moonrock-sample-utils-pageblock-page {
-  -webkit-box-flex: 1;
-  -moz-box-flex: 1;
-}
-
-.moonrock-sample-utils-pageblock-blocks {
+.moonrock-block-column {
   width: 175px;
   padding-left: 10px;
   position: relative;
 }
 
-.moonrock-sample-utils-pageblock-falseblock {
+.moonrock-block {
   position: relative;
+  height: 100%;
 }
 
-.moonrock-sample-utils-pageblock-falseblock .overlay {
+.moonrock-block .overlay {
   position: absolute;
   left: 0px;
   top: 0px;
@@ -42,7 +21,7 @@
   display: none;
 }
 
-.moonrock-sample-utils-pageblock-falseblock h2.title {
+.moonrock-block h2.title {
   color: #fff;
   padding: 4px 10px;
   -moz-border-radius-topleft: 7px;
@@ -53,7 +32,7 @@
   background-color: #1348A1;
 }
 
-.moonrock-sample-utils-pageblock-falseblock .content {
+.moonrock-block .content {
   margin: 0;
   -moz-border-radius-bottomleft: 7px;
   -moz-border-radius-bottomright: 7px;

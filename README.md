@@ -8,6 +8,12 @@ Moonrock demonstators.
 Changes:
 
 -----------------
+23-10-2012
+
+- Completed VM layour.
+- Implemented tabbed VM/sample navigation.
+
+-----------------
 22-10-2012 b
 
 - Started refactoring of VM layout (incomplete).

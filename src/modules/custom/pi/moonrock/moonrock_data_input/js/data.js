@@ -12,8 +12,8 @@ var MoonrockDataInput = {
     
     var self = this;
     
-    MoonrockVmViewManager.addSampleSelectionCallback(function(sample, sampleChanged) {
-      self.setSample(sample, sampleChanged);
+    VmManager.addSampleSelectionCallback(function(sample) {
+      self.setSample(sample);
     });
     
     var data_nid = $('input[name="data_nid"]').attr('value');
@@ -78,9 +78,9 @@ var MoonrockDataInput = {
   
   _enableOverlay: function(enabled) {
     if (enabled) {
-      $('.moonrock-sample-utils-pageblock-falseblock > .overlay').show();
+      $('.moonrock-block > .overlay').show();
     } else {
-      $('.moonrock-sample-utils-pageblock-falseblock > .overlay').hide();
+      $('.moonrock-block > .overlay').hide();
     }
   },
   
@@ -156,12 +156,11 @@ var MoonrockDataInput = {
     }
   },
   
-  setSample: function(sample, sampleChanged) {
-    if (sampleChanged) {
-      this.clearForm();
-      this.setModeEdit(false);
-      this.dataBrowser.select(null);
-    }
+  setSample: function(sample) {
+    this.clearForm();
+    this.setModeEdit(false);
+    this.dataBrowser.select(null);
+      
     this.updateSampleData(sample);
     this.actionsHelper.setSample(sample.id);
   },

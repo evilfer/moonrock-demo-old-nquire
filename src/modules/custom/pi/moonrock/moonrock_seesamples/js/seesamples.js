@@ -4,6 +4,7 @@
 var MoonrockSeeSamples = {
   eventCallbacks: [],
   items : [],
+  byId: {},
   
   init: function() {
     console.log('seesamples');
@@ -19,7 +20,9 @@ var MoonrockSeeSamples = {
           }
         }
       });
-      self.items.push($(this).vmSample('getItem'));
+      var item = $(this).vmSample('getItem');
+      self.items.push(item);
+      self.byId[item.id] = item;
     });
     
     MoonrockVmState.get(function(data) {
@@ -39,6 +42,10 @@ var MoonrockSeeSamples = {
   
   getItems: function() {
     return this.items;
+  },
+  
+  getItem: function(id) {
+    return this.byId[id];
   },
   
   setSnapshot: function(sampleId, snapshot) {

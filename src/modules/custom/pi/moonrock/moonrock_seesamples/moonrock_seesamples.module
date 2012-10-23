@@ -193,8 +193,35 @@ function theme_moonrock_seesamples($node, $teaser) {
 }
 
 function theme_moonrock_seesamples_tabs($node, $vm_tab) {
-  $samples = theme('moonrock_seesamples_table', $node, FALSE, TRUE);
-  $output = theme('moonrock_layout_tabs', array(t('Samples'), t('Virtual Microscope')), array($samples, $vm_tab));
+  $sample_table = theme('moonrock_seesamples_table', $node, FALSE, TRUE);
+  $content = array(
+      array(
+          'content' => $sample_table,
+          'contentId' => 'samples',
+      ),
+      array(
+          'content' => $vm_tab,
+          'contentId' => 'vm',
+      ),
+  );
+  $tabs = array(
+      array(
+          'title' => t('Samples'),
+          'contentId' => 'samples',
+          'tabId' => 'samples',
+      ),
+  );
+  $samples = moonrock_seesamples_get_main_samples($node);
+  foreach ($samples as $sample) {
+    $tabs[] = array(
+        'title' => $sample['title'],
+        'tabId' => $sample['id'],
+        'contentId' => 'vm',
+        'hidden' => TRUE,
+    );
+  }
+
+  $output = theme('moonrock_layout_tabs', $tabs, $content);
   return $output;
 }
 

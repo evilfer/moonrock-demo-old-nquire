@@ -24,7 +24,7 @@ var ActionsManager = {
   
     
   getBaseURL: function() {
-    return '?q=moonrock_data_input/' + MoonrockVmViewManager.getActivityId();
+    return '?q=moonrock_data_input/' + VmManager.getActivityId();
   },
   
   _copy: function(item) {

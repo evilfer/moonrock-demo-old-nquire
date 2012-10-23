@@ -228,23 +228,29 @@ function moonrock_data_input_theme() {
       'moonrock_data_input_data_browser' => array(
           'arguments' => array(),
       ),
+      'moonrock_data_input_form_block' => array(
+          'arguments' => array('separtor'),
+      ),
   );
 }
 
-function theme_moonrock_data_input_form_page($separator) {
-  $sample_view = moonrock_sample_utils_find_unique_seesamples_node();
-  $vm = '<div class="moonrock-samples-page-vm-and-browser">' . theme('moonrock_vm_view_vm') . theme('moonrock_data_input_data_browser') . '</div>';
+function theme_moonrock_data_input_form_block($separator) {
+  drupal_add_css(drupal_get_path('module', 'moonrock_data_input') . '/css/dataMenu.css');
+  drupal_add_css(drupal_get_path('module', 'moonrock_data_input') . '/css/vmMeasureField.css');
+  drupal_add_js(drupal_get_path('module', 'moonrock_data_input') . '/js/data.js');
+  drupal_add_js(drupal_get_path('module', 'moonrock_data_input') . '/js/actions.js');
+  drupal_add_js(drupal_get_path('module', 'moonrock_data_input') . '/js/jquery.vmMeasureField.js');
+
 
   $titles = '<div id="moonrock-data-input-header-new" style="display:none;">' . t('Add new data') . '</div>'
           . '<div id="moonrock-data-input-header-edit" style="display:none;">' . t('Edit data') . '</div>';
-
-  $content = '<div class="moonrock-data-input-button-menu">'
+  $menu = '<div class="moonrock-data-input-button-menu">'
           . '  <div class="moonrock-data-input-button-row">'
           . '    <div class="moonrock-data-input-message moonrock-data-input-hidden" id="moonrock-data-input-button-newitem">' . t('New data ') . '</div> '
-          . '    <div class="moonrock-data-input-message moonrock-data-input-hidden" id="moonrock-data-input-button-modified">' . t('Modified ') . '</div> '
+          . '    <div class="moonrock-data-input-message moonrock-data-input-hidden" id="moonrock-data-input-button-modified">' . t('Data modified ') . '</div> '
           . '    <div class="moonrock-data-input-button moonrock-data-input-hidden" id="moonrock-data-input-button-save">' . t('Save') . '</div> '
           . '    <div class="moonrock-data-input-message moonrock-data-input-hidden" id="moonrock-data-input-button-saving">' . t('Saving data... ') . '</div> '
-          . '    <div class="moonrock-data-input-message moonrock-data-input-hidden" id="moonrock-data-input-button-saved">' . t('Data saved ') . '</div> '
+          . '    <div class="moonrock-data-input-message moonrock-data-input-hidden" id="moonrock-data-input-button-saved">' . t('Changes saved ') . '</div> '
           . '    <div class="moonrock-data-input-icon moonrock-data-input-hidden" id="moonrock-data-input-button-undo"></div> '
           . '    <div class="moonrock-data-input-icon moonrock-data-input-hidden" id="moonrock-data-input-button-redo"></div>'
           . '  </div>'
@@ -253,18 +259,26 @@ function theme_moonrock_data_input_form_page($separator) {
           . '    <div class="moonrock-data-input-button moonrock-data-input-hidden" id="moonrock-data-input-button-deletedata">' . t('Delete data') . '</div>'
           . '  </div>'
           . '</div>';
+  
+  $content = $separator . $menu;  
 
-  $blocks = array(
-      array(
-          'id' => 'moonrock-data-input',
-          'title' => $titles,
-          'content' => $content . $separator,
-      ),
-  );
+  return theme('moonrock_sample_utils_false_block', $titles, $content);
+}
 
-  $vm_view = theme('moonrock_sample_utils_page_with_block', $vm, $blocks);
-  $page = theme('moonrock_vm_view_page', $sample_view, $vm_view);
-  return $page;
+function theme_moonrock_data_input_form_page($separator) {
+  $sample_view = moonrock_sample_utils_find_unique_seesamples_node();
+  //$vm_page = theme('moonrock_vm_view_vm_simple_page');
+
+  //$navigator = theme('moonrock_vm_view_vm_top_navigator');
+  $vm = theme('moonrock_vm_view_vm');
+  $data_browser = theme('moonrock_data_input_data_browser');
+  $left = theme('moonrock_layout_vertical', array(/*$navigator, */$vm, $data_browser), array(/*FALSE, */TRUE, FALSE), FALSE);
+
+  $form = theme('moonrock_data_input_form_block', $separator);
+  $vm_page = theme('moonrock_layout_horizontal', array($left, $form), array(TRUE, FALSE), TRUE);
+
+  $output = theme('moonrock_seesamples_tabs', $sample_view, $vm_page);
+  return $output;
 }
 
 function moonrock_data_input_form_pi_data_node_form_alter(&$form, &$form_state) {
@@ -277,17 +291,6 @@ function moonrock_data_input_form_pi_data_node_form_alter(&$form, &$form_state) 
       '#type' => 'hidden',
       '#default_value' => isset($form['#node']->nid) ? $form['#node']->nid : '',
   );
-
-  /* $form['submit_data'] = array(
-    '#type' => 'button',
-    '#value' => t('Save'),
-    '#weight' => 5,
-    '#attributes' => array('onClick' => 'MoonrockDataFormData.submit();return false;'),
-    ); */
-
-  drupal_add_js(drupal_get_path('module', 'moonrock_data_input') . '/js/actions.js');
-  drupal_add_js(drupal_get_path('module', 'moonrock_data_input') . '/js/data.js');
-  drupal_add_css(drupal_get_path('module', 'moonrock_data_input') . '/css/dataMenu.css');
 
 
   unset($form['buttons']);

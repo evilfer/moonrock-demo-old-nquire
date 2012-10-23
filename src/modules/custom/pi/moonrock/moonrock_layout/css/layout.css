@@ -14,10 +14,16 @@
   display: inline-block;
   border: 1px solid gray;
   border-radius: 2px;
-  padding: 2px;
+  padding: 2px 8px 2px 8px;
   height: 15px;
-  margin: 0px 3px 0px 3px;
+  margin: 0px 0px 0px 5px;
   cursor: pointer;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.layout-tabbed-container-hidden {
+  display: none;
 }
 
 .layout-tabbed-container-contents {

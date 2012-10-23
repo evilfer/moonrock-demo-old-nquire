@@ -17,7 +17,7 @@ var MoonrockDataInputDataBrowser = {
       imageLink: true
     });
     
-    MoonrockVmViewManager.addSampleSelectionCallback(function(sample) {
+    VmManager.addSampleSelectionCallback(function(sample) {
       self.refresh(sample.id);
     });
   },
@@ -36,7 +36,7 @@ var MoonrockDataInputDataBrowser = {
     $('#moonrock-data-browser-throbber').itemBrowserThrobber("on");
 
     $.ajax({
-      url: '?q=moonrock_data_input/' + MoonrockVmViewManager.getActivityId() + '/search',
+      url: '?q=moonrock_data_input/' + VmManager.getActivityId() + '/search',
       type: 'POST',
       dataType: 'json',
       data: {
