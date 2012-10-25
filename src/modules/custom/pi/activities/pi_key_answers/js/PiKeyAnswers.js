@@ -17,7 +17,7 @@ var PiKeyAnswers = {
 };
 
 $(function() {
-  PiKeyAnswers.init();
+  MoonrockModules.register('PiKeyAnswers', PiKeyAnswers);
 });
 
 

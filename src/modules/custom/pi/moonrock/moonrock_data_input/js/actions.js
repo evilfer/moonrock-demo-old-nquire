@@ -5,7 +5,6 @@ var ActionsManager = {
   currentActionData: null,
   
   init: function() {
-    console.log('actions manager');
     this.imageHelper = MoonrockVMComm;
     this.dataManager = MoonrockDataInput;
     this.dataBrowser = MoonrockDataInputDataBrowser;
@@ -236,7 +235,7 @@ var ActionsManager = {
 };
 
 $(function() {
-  ActionsManager.init();
+  MoonrockModules.register('ActionsManager', ActionsManager);
 });
 
 

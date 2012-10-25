@@ -250,10 +250,14 @@ function moonrock_sample_nquire_data_get_text_value($nid) {
 }
 
 function moonrock_sample_nquire_data_get_html_value($nid) {
-  return moonrock_sample_utils_format_html_data($nid);
+  $node = node_load($nid);
+  return check_plain($node->title);
 }
 
 function moonrock_sample_nquire_measure_choose_explanation() {
   return t("Choose one rock sample from the list");
 }
 
+function moonrock_sample_nquire_data_suitable_for_method_planning() {
+  return FALSE;
+}

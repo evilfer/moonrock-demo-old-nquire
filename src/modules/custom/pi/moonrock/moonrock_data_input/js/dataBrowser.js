@@ -89,7 +89,7 @@ var MoonrockDataInputDataBrowser = {
 };
 
 $(function() {
-  MoonrockDataInputDataBrowser.init(); 
+  MoonrockModules.register('MoonrockDataInputDataBrowser', MoonrockDataInputDataBrowser); 
 });
 
 

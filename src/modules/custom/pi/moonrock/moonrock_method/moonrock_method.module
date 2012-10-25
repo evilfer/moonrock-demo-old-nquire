@@ -20,7 +20,6 @@ function moonrock_method_node_info() {
           'has_title' => TRUE,
           'title_label' => t('Title'),
           'has_body' => FALSE,
-//          'body_label' => t('Body'),
           'locked' => TRUE)
   );
 }
@@ -49,6 +48,16 @@ function moonrock_method_access($op, $node, $account) {
   if ($op == 'update') {// || $op == 'delete') {
     return check_node_function_of_activity($details->inquiry_id, $details->activity_id, $user->uid, 'edit');
   }
+}
+
+function moonrock_method_selected_measures($node) {
+  $selected = array();
+  foreach($node->question_methods as $method) {
+    foreach(explode(',', $method->measures) as $measure) {
+      $selected[$measure] = TRUE;
+    }
+  }
+  return $selected;
 }
 
 /**
@@ -95,7 +104,7 @@ function moonrock_method_form(&$node) {
         '#description' => t('Describe how you plan to answer this question.'),
         '#resizable' => TRUE,
         '#rows' => 8,
-        '#cols' => 40,
+        '#cols' => 20,
         '#weight' => 1
     );
 
@@ -113,10 +122,10 @@ function moonrock_method_form(&$node) {
         '#title' => t('External information'),
         '#required' => FALSE,
         '#default_value' => $method->external,
-        '#description' => t('Indicate external sources of information (e.g., web pages, that can help in answering this question.'),
+        '#description' => t('Indicate external sources of information (e.g., web pages),<br/>that can help in answering this question.'),
         '#resizable' => TRUE,
         '#rows' => 8,
-        '#cols' => 40,
+        '#cols' => 20,
         '#weight' => 3
     );
   }
@@ -338,7 +347,7 @@ function theme_moonrock_method($node, $teaser) {
   } else {
     $output .= '<b>' . t('You have no key questions.') . '</b> '
             . t('You can create them in activity ')
-          . moonrock_sample_utils_activity_link('pi_sort_key_questions')
+            . moonrock_sample_utils_activity_link('pi_sort_key_questions')
             . '.</p>';
   }
 

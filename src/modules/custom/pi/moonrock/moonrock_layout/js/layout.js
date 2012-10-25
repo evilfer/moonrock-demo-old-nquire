@@ -155,5 +155,5 @@ var TabsManager = {
 };
 
 $(function() {
-  TabsManager.init();
+  MoonrockModules.register('TabsManager', TabsManager);
 });

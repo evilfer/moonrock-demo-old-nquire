@@ -295,7 +295,7 @@ function pi_sort_data_get_unsorted_items() {
     $node = node_load($item_nid);
     $items[$item_nid] = pi_sort_data_get_process_item($node, $data);
   }
-  
+
   $data['items'] = $items;
 
   return $data;
@@ -323,20 +323,23 @@ function pi_sort_data_view($node, $teaser, $page = FALSE) {
 
   $node->key_measures = array();
 
-  $measure_headers = array();
+  $measure_headers = array(t('Data'));
 
   $selected_measure_nid = find_selected_measures_nid_for_uid_and_inquiry($user->uid, $node_details->inquiry_id);
   if ($selected_measure_nid) {
     $selected_measures_node = node_load($selected_measure_nid);
     if ($selected_measures_node) {
       $selected_measures = $selected_measures_node->measures_list;
+      $use_measure = moonrock_sample_utils_filter_visible_measures($selected_measures);
       foreach ($selected_measures as $key => $measure) {
-        $measure_node = node_load($key);
-        $measure_text = check_plain($measure_node->title);
-        if (strlen($measure_node->units_short) > 0) {
-          $measure_text .= " ({$measure_node->units_short})";
+        if ($use_measure[$key]) {
+          $measure_node = node_load($key);
+          $measure_text = check_plain($measure_node->title);
+          if (strlen($measure_node->units_short) > 0) {
+            $measure_text .= " ({$measure_node->units_short})";
+          }
+          $measure_headers[] = $measure_text;
         }
-        $measure_headers[] = $measure_text;
       }
     }
   }
@@ -349,18 +352,26 @@ function pi_sort_data_view($node, $teaser, $page = FALSE) {
 
   $data_values = array();
 
+
+
   foreach (array_keys($sorted_data_items) as $sorted_data_items_nid) {
     $data_item_activity_id = get_activity_id_for_nid($sorted_data_items_nid);
     if ($data_item_activity_id) {
       $data_item_node = node_load($sorted_data_items_nid);
-      $values = pi_data_table_row_values($data_item_node, $node_details, $data_item_activity_id);
+      $values = pi_data_table_row_values($data_item_node, $node_details, $data_item_activity_id, $use_measure);
+      $created = t('Created: ') . '<br />' . format_date($data_item_node->created, 'custom', 'Y/m/d H:i');
 
+      $created .= '<br/>'
+              . l('edit', 'activity/' . $data_item_activity_id) . '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'
+              . l('delete', 'node/' . $sorted_data_items_nid . '/delete', array('query' => 'destination=phase/' . $node_details->phase_id));
+
+      array_unshift($values, $created);
       $data_values[] = $values;
     }
   }
 
   if ($teaser) {
-    //Link to add a new key question
+//Link to add a new key question
     //cannot get activity id from $node_details when viewing a list of activity teasers
     $activity_id_for_this_node = get_activity_id_for_nid($node->nid);
     $link_output = make_add_activity_link($node_details->inquiry_id, $node_details->stage_id, $node_details->phase_id, $activity_id_for_this_node, $user->uid);

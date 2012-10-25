@@ -315,7 +315,7 @@ function theme_pi_sort_key_answers($node, $teaser, $key_questions_to_show, $key_
     $list[] = array('data' => t('No key questions are available to answer.'), 'class' => 'activity');
   } else {
     if ($teaser) {
-      $output .= '<p>' . t('These are my key answers. Click on <b>Add key answer</b> add a new one.') . '</p>';
+      $output .= '<p>' . t('These are the answers to your key questions.') . '</p>';
     }
   }
 

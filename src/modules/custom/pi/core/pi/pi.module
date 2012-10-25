@@ -239,14 +239,16 @@ function get_inquiry_details_from_current_path() {
   } else if (arg(0) == 'node') {
     /*
      * FIX (eloy)
-     * If a node is linked with an activity, go to activity.
+     * If a node is linked with an activity, go to activity (unless to delete).
      */
-    if ($user->uid > 1) {
-      $nid = (int) arg(1);
-      if ($nid) {
-        $activity_id = (int) get_activity_id_for_nid($nid);
-        if ($activity_id) {
-          drupal_goto('activity/' . $activity_id . '/view');
+    if (arg(3) == 'delete') {
+      if ($user->uid > 1) {
+        $nid = (int) arg(1);
+        if ($nid) {
+          $activity_id = (int) get_activity_id_for_nid($nid);
+          if ($activity_id) {
+            drupal_goto('activity/' . $activity_id . '/view');
+          }
         }
       }
     }

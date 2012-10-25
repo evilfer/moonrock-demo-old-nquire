@@ -164,5 +164,5 @@ var PiResultPresentations = {
 };
 
 $(function() {
-  PiResultPresentations.init();
+  MoonrockModules.register('PiResultPresentations', PiResultPresentations);
 });

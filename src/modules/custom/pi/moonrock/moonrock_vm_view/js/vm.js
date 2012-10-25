@@ -61,6 +61,7 @@ var VmManager = {
         (location.protocol + '//' + location.host + location.pathname + sample.vm);
       
         $('#moonrock-vm-iframe').attr('src', url);
+        MoonrockVMComm.saluteVm();
         
         for(var i in self._sampleSelectionCallbacks) {
           (self._sampleSelectionCallbacks[i])(self._sample);
@@ -79,8 +80,9 @@ var VmManager = {
       } 
     }
   }
+  
 };
 
 $(function() {
-  VmManager.init();
+  MoonrockModules.register('VmManager', VmManager);
 });

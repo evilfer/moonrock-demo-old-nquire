@@ -115,46 +115,49 @@ function theme_moonrock_forum_manager_question_forum_body($node) {
   $method = node_load($method_nid, NULL, TRUE);
   $question_method = $method && isset($method->question_methods[$node->nid]) ? $method->question_methods[$node->nid] : NULL;
 
+  $method = '';
+
   $output .= '<p>';
-  $output .= '<div><b>' . t('Method to answer the question:') . '</b></div><div style="padding-left: 20px;">';
   if ($question_method && strlen($question_method->method) > 0) {
-    $output .= nl2br($question_method->method);
-  } else {
-    $output .= '<i>' . t('Not decided.') . '</i>';
+    $method .= '<div><b>' . t('Method to answer the question:') . '</b></div><div style="padding-left: 20px;">'
+            . nl2br($question_method->method)
+            . '</div>';
   }
-  $output .= '</div>';
-  $output .= '<div><b>' . t('Virtual Microscrope measures used:') . '</b></div><div style="padding-left: 20px;">';
   if ($question_method && strlen($question_method->measures) > 0) {
+    $method .= '<div><b>' . t('Virtual Microscrope measures used:') . '</b></div><div style="padding-left: 20px;">';
     $comma = FALSE;
     foreach (explode(',', $question_method->measures) as $nid) {
       $measure = node_load($nid);
       if ($comma) {
-        $output .= ', ';
+        $method .= ', ';
       } else {
         $comma = TRUE;
       }
-      $output .= nl2br($measure->title);
+      $method .= nl2br($measure->title);
     }
-    $output .= '.';
-  } else {
-    $output .= '<i>' . t('Not decided.') . '</i>';
+    $method .= '.</div>';
   }
-  $output .= '</div>';
-  $output .= '<div><b>' . t('Additional information sources:') . '</b></div><div style="padding-left: 20px;">';
   if ($question_method && strlen($question_method->external) > 0) {
-    $output .= nl2br($question_method->external);
-  } else {
-    $output .= '<i>' . t('Not decided.') . '</i>';
+    $method .= '<div><b>' . t('Additional information sources:') . '</b></div><div style="padding-left: 20px;">'
+            . nl2br($question_method->external)
+            . '</div>';
   }
-  $output .= '</div></p>';
+  
+  if (strlen($method) > 0) {
+    $output .= '<p>' . $method . '</p>';
+  }
 
-
+  
+  $answers = '';
   $query_answers = "SELECT DISTINCT {node}.nid FROM {pi_key_answers} LEFT JOIN {node} on {node}.nid={pi_key_answers}.nid WHERE {pi_key_answers}.key_question_id=%d";
   $result_answers = db_query($query_answers, $node->nid);
   while ($object = db_fetch_object($result_answers)) {
     $answer_nid = $object->nid;
     $answer = node_load($answer_nid);
-    $output .= '<p><b>' . t('Key answer:') . '</b><br/><span style="padding-left: 20px;">' . check_plain($answer->key_answer) . '</span></p>';
+    $answers .= '<li>' . check_plain($answer->key_answer) . '</li>';
+  }
+  if (strlen($answers) > 0) {
+    $output .= '<p><b>' . t('Key answers:') . '</b><ul>' . $answers . '</ul></p>';
   }
 
   $query_charts = "SELECT DISTINCT {node}.nid FROM {pi_result_presentations} LEFT JOIN {node} on {node}.nid={pi_result_presentations}.nid WHERE {pi_result_presentations}.key_question_id=%d";
@@ -168,7 +171,7 @@ function theme_moonrock_forum_manager_question_forum_body($node) {
       $heading = FALSE;
     }
     $activity_id = get_activity_id_for_nid($chart_nid);
-    $output .= '<div><img style="padding-left: 20px;"> src="?q=activity/' . $activity_id . '/chart.png"></img></div>';
+    $output .= '<div><img style="padding-left: 20px; width: 500px;" src="?q=activity/' . $activity_id . '/chart.png"></img></div>';
   }
   $output .= '</p>';
 

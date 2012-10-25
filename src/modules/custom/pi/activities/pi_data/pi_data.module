@@ -127,6 +127,7 @@ function pi_data_form(&$node) {
   $tree = &$form['onepageprofile_categories'];
 
   if (is_array($measure_rows)) {
+    $use_measure = moonrock_sample_utils_filter_visible_measures($measure_rows);
 
     /**
      * Check whether they have custom forms
@@ -134,7 +135,7 @@ function pi_data_form(&$node) {
     $custom_forms = array();
 
     foreach ($measure_rows as $measure_info_nid => $measure_selection) {
-      if ($measure_selection['#status'] == 'key' || $measure_selection['#status'] == 'selected') {
+      if ($use_measure[$measure_info_nid]) {
         $measure_info = node_load($measure_info_nid);
         if ($measure_info->content_options) {
           $custom_form_function = "{$measure_info->content_options}_nquire_data_form_prefix";
@@ -156,187 +157,189 @@ function pi_data_form(&$node) {
      * We know all about custom forms now...
      */
     foreach ($measure_rows as $measure_info_nid => $measure_selection) {
-      if ($measure_selection['#status'] == 'key' || $measure_selection['#status'] == 'selected') {
-        //$key = t($measures_param . "-" . $measure_info_nid);
-        $key = $measures_param . '-' . $measure_info_nid;
-        $measure_info = node_load($measure_info_nid);
+      if ($use_measure[$measure_info_nid]) {
+        if ($measure_selection['#status'] == 'key' || $measure_selection['#status'] == 'selected') {
+          //$key = t($measures_param . "-" . $measure_info_nid);
+          $key = $measures_param . '-' . $measure_info_nid;
+          $measure_info = node_load($measure_info_nid);
 
-        //format the measure units
-        //set as required field if a key measure
-        if ($measure_selection['#status'] == 'key') {
-          $required_value = TRUE;
-        } else {
-          $required_value = FALSE;
-        }
+          //format the measure units
+          //set as required field if a key measure
+          if ($measure_selection['#status'] == 'key') {
+            $required_value = TRUE;
+          } else {
+            $required_value = FALSE;
+          }
 
-        $measure_text = theme('moonrock_sample_utils_measure_info', $measure_info);
+          $measure_text = theme('moonrock_sample_utils_measure_info', $measure_info);
 
-        switch ($measure_info->field_type) {
-          // field_type = textfield
-          case 'textfield':
-            /* FIX (eloy)
-             * to enable VM automatic measures.
-             */
-            if ($measure_info->data_type === 'numeric') {
-              $div = '<div vm_measure="' . $key . '"></div>';
-              
+          switch ($measure_info->field_type) {
+            // field_type = textfield
+            case 'textfield':
+              /* FIX (eloy)
+               * to enable VM automatic measures.
+               */
+              if ($measure_info->data_type === 'numeric') {
+                $div = '<div vm_measure="' . $key . '"></div>';
+
+                $tree[$key]['value'] = array(
+                    '#type' => 'hidden',
+                    '#required' => false,
+                    '#attributes' => array('vm_measure' => $key),
+                    '#prefix' => $measure_text . $div,
+                );
+              } else {
+                $tree[$key]['value'] = array(
+                    '#type' => 'textfield',
+                    '#title' => $measure_text,
+                    '#required' => $required_value,
+                    '#default_value' => $node->measures[$key]['#value'],
+                    '#size' => $measure_info->textfield_size,
+                    '#weight' => $measure_selection['#weight']
+                );
+              }
+              break;
+            case 'textarea':
+              //$prefix .= "textarea";
               $tree[$key]['value'] = array(
-                  '#type' => 'hidden',
-                  '#required' => false,
-                  '#attributes' => array('vm_measure' => $key),
-                  '#prefix' => $measure_text . $div,
-              );
-            } else {
-              $tree[$key]['value'] = array(
-                  '#type' => 'textfield',
+                  '#type' => 'textarea',
                   '#title' => $measure_text,
                   '#required' => $required_value,
                   '#default_value' => $node->measures[$key]['#value'],
-                  '#size' => $measure_info->textfield_size,
+                  '#resizable' => TRUE,
+                  '#cols' => $measure_info->textarea_cols,
+                  '#rows' => $measure_info->textarea_rows,
                   '#weight' => $measure_selection['#weight']
               );
-            }
-            break;
-          case 'textarea':
-            //$prefix .= "textarea";
-            $tree[$key]['value'] = array(
-                '#type' => 'textarea',
-                '#title' => $measure_text,
-                '#required' => $required_value,
-                '#default_value' => $node->measures[$key]['#value'],
-                '#resizable' => TRUE,
-                '#cols' => $measure_info->textarea_cols,
-                '#rows' => $measure_info->textarea_rows,
-                '#weight' => $measure_selection['#weight']
-            );
-            break;
-          // field_type = select or radios
-          case 'select':
-          case 'radios':
-            $custom_form = FALSE;
-            if ($measure_info->list_options) {
-              $options = array();
-              foreach (explode("\n", $measure_info->list_options) as $opt) {
-                //trim added around item to prevent the following error:
-                //An illegal choice has been detected. Please contact the site administrator.
-                $item = trim(substr($opt, 0, 64)); //**now use value as key
-                $options[$item] = $item;
-              };
-            } else if ($measure_info->content_options) {
-              if (isset($custom_forms[$measure_info->content_options])) {
-                $custom_form = TRUE;
-              } else {
+              break;
+            // field_type = select or radios
+            case 'select':
+            case 'radios':
+              $custom_form = FALSE;
+              if ($measure_info->list_options) {
                 $options = array();
-                $query = "SELECT nid, title FROM {node} WHERE type = '%s'";
-                $results = db_query($query, $measure_info->content_options);
+                foreach (explode("\n", $measure_info->list_options) as $opt) {
+                  //trim added around item to prevent the following error:
+                  //An illegal choice has been detected. Please contact the site administrator.
+                  $item = trim(substr($opt, 0, 64)); //**now use value as key
+                  $options[$item] = $item;
+                };
+              } else if ($measure_info->content_options) {
+                if (isset($custom_forms[$measure_info->content_options])) {
+                  $custom_form = TRUE;
+                } else {
+                  $options = array();
+                  $query = "SELECT nid, title FROM {node} WHERE type = '%s'";
+                  $results = db_query($query, $measure_info->content_options);
 
-                while ($result = db_fetch_object($results)) {
-                  $options[$result->title] = $result->title;
+                  while ($result = db_fetch_object($results)) {
+                    $options[$result->title] = $result->title;
+                  }
                 }
-              }
-            };
+              };
 
-            if ($custom_form) {
-              $input_function = "{$measure_info->content_options}_nquire_data_form_elements";
-              if (function_exists($input_function)) {
-                $elements = $input_function($node->measures[$key]['#value']);
-                foreach ($elements as $subkey => $value) {
-                  $tree[$subkey]['value'] = $value;
+              if ($custom_form) {
+                $input_function = "{$measure_info->content_options}_nquire_data_form_elements";
+                if (function_exists($input_function)) {
+                  $elements = $input_function($node->measures[$key]['#value']);
+                  foreach ($elements as $subkey => $value) {
+                    $tree[$subkey]['value'] = $value;
+                  }
                 }
+
+                $tree[$key]['value'] = array(
+                    '#type' => 'hidden',
+                    '#title' => $measure_text,
+                    '#required' => $required_value,
+                    '#default_value' => $node->measures[$key]['#value'],
+                    '#weight' => $measure_selection['#weight'],
+                    '#attributes' => array("measure_content_type" => $measure_info->content_options),
+                );
+
+
+                $after_build_function = "{$measure_info->content_options}_nquire_data_form_after_build";
+                if (function_exists($after_build_function)) {
+                  $tree[$key]['value']['#after_build'][] = $after_build_function;
+                }
+              } else {
+                $tree[$key]['value'] = array(
+                    '#type' => $measure_info->field_type,
+                    '#title' => $measure_text,
+                    '#required' => $required_value,
+                    '#default_value' => $node->measures[$key]['#value'],
+                    '#options' => $options,
+                    '#weight' => $measure_selection['#weight']
+                );
               }
+
+              break;
+            // field_type = checkboxes
+            case 'checkboxes':
+              $options = array();
+              if ($measure_info->list_options) {
+                foreach (explode("\n", $measure_info->list_options) as $opt) {
+                  $option_item = substr($opt, 0, 16);
+                  $options[$option_item] = $option_item;
+                };
+              };
+
+              $select = array();
+              if ($node->form_key) {
+                foreach (explode(",", $node->$form_key) as $sel) {
+                  $select[] = substr($sel, 0, 16);
+                };
+              };
 
               $tree[$key]['value'] = array(
-                  '#type' => 'hidden',
-                  '#title' => $measure_text,
-                  '#required' => $required_value,
-                  '#default_value' => $node->measures[$key]['#value'],
-                  '#weight' => $measure_selection['#weight'],
-                  '#attributes' => array("measure_content_type" => $measure_info->content_options),
-              );
-
-
-              $after_build_function = "{$measure_info->content_options}_nquire_data_form_after_build";
-              if (function_exists($after_build_function)) {
-                $tree[$key]['value']['#after_build'][] = $after_build_function;
-              }
-            } else {
-              $tree[$key]['value'] = array(
-                  '#type' => $measure_info->field_type,
-                  '#title' => $measure_text,
+                  '#type' => 'checkboxes',
+                  '#title' => t($measure_info->title . $units),
                   '#required' => $required_value,
                   '#default_value' => $node->measures[$key]['#value'],
                   '#options' => $options,
                   '#weight' => $measure_selection['#weight']
               );
-            }
-
-            break;
-          // field_type = checkboxes
-          case 'checkboxes':
-            $options = array();
-            if ($measure_info->list_options) {
-              foreach (explode("\n", $measure_info->list_options) as $opt) {
-                $option_item = substr($opt, 0, 16);
-                $options[$option_item] = $option_item;
-              };
-            };
-
-            $select = array();
-            if ($node->form_key) {
-              foreach (explode(",", $node->$form_key) as $sel) {
-                $select[] = substr($sel, 0, 16);
-              };
-            };
-
-            $tree[$key]['value'] = array(
-                '#type' => 'checkboxes',
-                '#title' => t($measure_info->title . $units),
-                '#required' => $required_value,
-                '#default_value' => $node->measures[$key]['#value'],
-                '#options' => $options,
-                '#weight' => $measure_selection['#weight']
-            );
-            break;
-          case 'upload-file':
-            $form['#attributes'] = array('enctype' => "multipart/form-data");
-            $tree[$key]['value'] = array(
-                '#type' => 'file',
-                '#title' => t($measure_info->title),
-                '#options' => $options,
-                '#weight' => $measure_selection['#weight'],
-                '#default_value' => $node->measures[$key]['#value']
-            );
-            if (isset($node->measures[$key]['#value'])) {
-              $tree[$key]['value']['#suffix'] = "<a href='" . file_download_url($node->measures[$key]['#value']) . "'>" . $measure['#value'] . "'</a>";
-              $form[$key] = array(
-                  '#type' => 'hidden',
+              break;
+            case 'upload-file':
+              $form['#attributes'] = array('enctype' => "multipart/form-data");
+              $tree[$key]['value'] = array(
+                  '#type' => 'file',
+                  '#title' => t($measure_info->title),
+                  '#options' => $options,
                   '#weight' => $measure_selection['#weight'],
                   '#default_value' => $node->measures[$key]['#value']
               );
-            }
-            break;
-          case 'upload-image':
-            $form['#attributes'] = array('enctype' => "multipart/form-data");
-            $tree[$key]['value'] = array(
-                '#type' => 'file',
-                '#title' => t($measure_info->title),
-                '#options' => $options,
-                '#weight' => $measure_selection['#weight'],
-                '#default_value' => $node->measures[$key]['#value']
-            );
-            if (isset($node->measures[$key]['#value'])) {
-              $image_node = node_load($node->measures[$key]['#value']);
-              $tree[$key]['value']['#suffix'] = '<div>' . image_display($image_node) . '</div>';
-              $form[$key] = array(
-                  '#type' => 'hidden',
+              if (isset($node->measures[$key]['#value'])) {
+                $tree[$key]['value']['#suffix'] = "<a href='" . file_download_url($node->measures[$key]['#value']) . "'>" . $measure['#value'] . "'</a>";
+                $form[$key] = array(
+                    '#type' => 'hidden',
+                    '#weight' => $measure_selection['#weight'],
+                    '#default_value' => $node->measures[$key]['#value']
+                );
+              }
+              break;
+            case 'upload-image':
+              $form['#attributes'] = array('enctype' => "multipart/form-data");
+              $tree[$key]['value'] = array(
+                  '#type' => 'file',
+                  '#title' => t($measure_info->title),
+                  '#options' => $options,
                   '#weight' => $measure_selection['#weight'],
                   '#default_value' => $node->measures[$key]['#value']
               );
-            }
-            break;
+              if (isset($node->measures[$key]['#value'])) {
+                $image_node = node_load($node->measures[$key]['#value']);
+                $tree[$key]['value']['#suffix'] = '<div>' . image_display($image_node) . '</div>';
+                $form[$key] = array(
+                    '#type' => 'hidden',
+                    '#weight' => $measure_selection['#weight'],
+                    '#default_value' => $node->measures[$key]['#value']
+                );
+              }
+              break;
+          }
         }
-      };
-    };
+      }
+    }
   }
 
 
@@ -587,7 +590,7 @@ function pi_data_return_results($node) {
  * FIX (eloy)
  * to show data table instead of activity list.
  */
-function pi_data_table_row_values($node, $node_details, $data_item_activity_id) {
+function pi_data_table_row_values($node, $node_details, $data_item_activity_id, $use_measure) {
   global $user;
   $values = array();
 
@@ -601,21 +604,18 @@ function pi_data_table_row_values($node, $node_details, $data_item_activity_id) 
     $selected_measures_node = node_load($selected_measures_nid);
     if ($selected_measures_node) {
       $selected_measures_to_show = $selected_measures_node->measures_list;
-      $measures_to_show = $node->measures;
+
       if (is_array($selected_measures_to_show)) {
         foreach ($selected_measures_to_show as $measure_nid => $measure) {
-          $key = check_plain($selected_measures_nid . "-" . $measure_nid);
-          $measure_type = node_load($measure_nid);
-          if (array_key_exists($key, $measures_to_show)) {
+          if ($use_measure[$measure_nid]) {
+            $key = check_plain($selected_measures_nid . "-" . $measure_nid);
+            $measure_type = node_load($measure_nid);
+
             $measure_value = $node->measures[$key]['#value'];
-          } else {
-            $measure_value = NULL;
+
+            $formatted_value = pi_chart_get_html_value($measure_value, $measure_type);            
+            $values[] = $formatted_value;
           }
-          $formatted_value = pi_chart_get_html_value($measure_value, $measure_type);
-          if ($measure['#status'] === 'key') {
-            $formatted_value = build_activity_link_alternative_text($node_details->inquiry_id, $node_details->stage_id, $node_details->phase_id, $data_item_activity_id, $user->uid, $formatted_value, 'heading', 'edit');
-          }
-          $values[] = $formatted_value;
         }
       }
     }

@@ -1337,7 +1337,7 @@ function make_add_activity_link($inquiry_id, $stage_id, $phase_id, $activity_id,
   $add_activity_link = '';
 
   $add_activity_id = pi_activity_get_add_activity_for_sort_activity($inquiry_id, $activity_id, $uid);
-
+  
   if ($add_activity_id) {
     $activity_link = build_activity_link($inquiry_id, $stage_id, $phase_id, $add_activity_id, $uid);
     $add_activity_link = '<div class="add_activity_link">' . $activity_link . '</div>';

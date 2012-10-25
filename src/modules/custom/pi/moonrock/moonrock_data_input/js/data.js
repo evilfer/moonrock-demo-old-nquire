@@ -5,7 +5,6 @@ var MoonrockDataInput = {
   currentItemId: false,
   
   init: function() {
-    console.log('datainput');
     this.actionsHelper = ActionsManager;
     this.dataBrowser = MoonrockDataInputDataBrowser;
     this.vmComm = MoonrockVMComm;
@@ -18,7 +17,8 @@ var MoonrockDataInput = {
     
     var data_nid = $('input[name="data_nid"]').attr('value');
     if (data_nid) {
-      MoonrockVmViewManager.openSample($('input[measure_content_type="moonrock_sample"]').attr('value'));
+      var sample = MoonrockSeeSamples.getItem($('input[measure_content_type="moonrock_sample"]').attr('value'));
+      VmManager.sampleSelected(sample);
       MoonrockDataInputDataBrowser.select(data_nid);
       this._initItemId(data_nid);
       this.setModeEdit(true);
@@ -58,9 +58,12 @@ var MoonrockDataInput = {
     $('form').find('select, input[type="text"], textarea').change(function() {
       self._bigDataChange();
     });
-    $('body').rockColorPicker('addUserSelectionCallback', function() {
-      self._bigDataChange();
-    });
+    
+    if ($.fn.rockColorPicker) {
+      $('body').rockColorPicker('addUserSelectionCallback', function() {
+        self._bigDataChange();
+      });
+    }
     
     
     $('div[vm_measure]').each(function() {
@@ -177,11 +180,11 @@ var MoonrockDataInput = {
     var self = this;
     this.currentItemId = item.id;
     
-    this.vmComm.stopPositionMonitoring();
+    this.vmComm.removePositionChangeListener('dataform');
     
     if (item) {
       var monitor = function() {
-        self.vmComm.monitorPositionChange(function(position) {
+        self.vmComm.addPositionChangeListener('dataform', function(position) {
           self.vmPositionChanged(position);
         });
       };
@@ -201,10 +204,12 @@ var MoonrockDataInput = {
         var content = item.data.measures_content[measure_nid];
         switch (content) {
           case 'moonrock_color':
-            if (item.data.values[measure_nid]) {
-              $('body').rockColorPicker('select', item.data.values[measure_nid]);
-            } else {
-              $('body').rockColorPicker('clearSelection'); 
+            if ($.fn.rockColorPicker) {
+              if (item.data.values[measure_nid]) {
+                $('body').rockColorPicker('select', item.data.values[measure_nid]);
+              } else {
+                $('body').rockColorPicker('clearSelection'); 
+              }
             }
             break;
           case 'moonrock_snapshot':
@@ -351,6 +356,6 @@ var MoonrockDataInput = {
 };
 
 $(function() {
-  MoonrockDataInput.init();
+  MoonrockModules.register('MoonrockDataInput', MoonrockDataInput, ['MoonrockColorSelect']);
 });
 

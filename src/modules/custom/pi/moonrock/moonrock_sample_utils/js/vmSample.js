@@ -5,7 +5,8 @@
   var methods = {
     init : function(options) {
       var _options = $.extend({
-        eventCallback: null
+        eventCallback: null,
+        enableVmView: false
       }, options);
       
       var self = this;
@@ -30,10 +31,12 @@
       return this;
     },
     setSnapshot: function(snapshot) {
-      var item = this.data('item');
-      item.snapshot = snapshot;
-      this.data('item', item);
-      this.vmSample('_enableImageToggle');
+      if (this.data('options').enableVmView) {
+        var item = this.data('item');
+        item.snapshot = snapshot;
+        this.data('item', item);
+        this.vmSample('_enableImageToggle');
+      }
       return this;
     },
     getSnapshot: function() {

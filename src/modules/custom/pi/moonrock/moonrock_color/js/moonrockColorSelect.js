@@ -40,6 +40,6 @@ var MoonrockColorSelect = {
 };
 
 $(function() {
-  MoonrockColorSelect.init();
+  MoonrockModules.register('MoonrockColorSelect', MoonrockColorSelect);
 });
 

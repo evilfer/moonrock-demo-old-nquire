@@ -95,14 +95,14 @@ function pi_result_presentations_form(&$node) {
   );
 
   // ['body_filter']
-  $form['body'] = array(
+  /*$form['body'] = array(
       '#type' => 'textarea',
       '#title' => t('Conclusion'),
       '#required' => FALSE,
       '#default_value' => $node->body,
       '#description' => t('Enter the conclusion you extract from your graph'),
       '#weight' => -9
-  );
+  );*/
 
   $chart_types = array(
       'line-bar' => t('Bar/point chart'),

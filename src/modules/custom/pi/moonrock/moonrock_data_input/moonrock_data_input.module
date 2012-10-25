@@ -236,10 +236,10 @@ function moonrock_data_input_theme() {
 
 function theme_moonrock_data_input_form_block($separator) {
   drupal_add_css(drupal_get_path('module', 'moonrock_data_input') . '/css/dataMenu.css');
-  drupal_add_css(drupal_get_path('module', 'moonrock_data_input') . '/css/vmMeasureField.css');
   drupal_add_js(drupal_get_path('module', 'moonrock_data_input') . '/js/data.js');
   drupal_add_js(drupal_get_path('module', 'moonrock_data_input') . '/js/actions.js');
   drupal_add_js(drupal_get_path('module', 'moonrock_data_input') . '/js/jquery.vmMeasureField.js');
+  drupal_add_css(drupal_get_path('module', 'moonrock_data_input') . '/css/vmMeasureField.css');
 
 
   drupal_add_css(drupal_get_path('module', 'moonrock_sample_utils') . '/css/falseblock.css');
@@ -278,6 +278,8 @@ function theme_moonrock_data_input_form_block($separator) {
 }
 
 function theme_moonrock_data_input_form_page($separator) {
+  moonrock_sample_utils_load_javascript_modules_support();
+  
   $sample_view = moonrock_sample_utils_find_unique_seesamples_node();
   //$vm_page = theme('moonrock_vm_view_vm_simple_page');
   //$navigator = theme('moonrock_vm_view_vm_top_navigator');

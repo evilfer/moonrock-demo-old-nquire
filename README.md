@@ -8,6 +8,12 @@ Moonrock demonstators.
 Changes:
 
 -----------------
+25-10-2012
+
+- Improved data table.
+- Started snapshot graphic annotations.
+
+-----------------
 23-10-2012 b
 
 - Modified Data form block.

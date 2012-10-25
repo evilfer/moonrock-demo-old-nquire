@@ -7,8 +7,6 @@ var MoonrockSeeSamples = {
   byId: {},
   
   init: function() {
-    console.log('seesamples');
-    
     var self = this;
     
     $('.vmSample').each(function() {
@@ -57,7 +55,7 @@ var MoonrockSeeSamples = {
 
 
 $(function() {
-  MoonrockSeeSamples.init();
+  MoonrockModules.register('MoonrockSeeSamples', MoonrockSeeSamples);
 });
 
 

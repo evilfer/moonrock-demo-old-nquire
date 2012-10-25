@@ -4,9 +4,11 @@ var MoonrockVMComm = {
   _activityId: null,
   _snapshotCallback: null,
   _snapshot: null,
-  _vmPositionMonitor: null,
-  _vmPositionMessageValid: false,
   _vmUpdatingPosition: false,
+  
+  _vmPositionMonitors: {},
+  _vmMeasureMonitors: {},
+  _getPositionCallback: null,
     
   init: function() {
     var self = this;
@@ -15,24 +17,47 @@ var MoonrockVMComm = {
     }, false);
   },
   
-  monitorPositionChange: function(callback) {
-    this._vmPositionMessageValid = false;
-    this._vmPositionMonitor = callback;
-    this._post('monitor', 'PositionPixels');
+  iframeLoaded: function() {
+    var self = this;
+    setTimeout(function() {
+      self._post('monitor', 'PositionPixels');
+      self._post('monitor', 'MeasureMM');
+    }, 500);
   },
-  stopPositionMonitoring: function() {
-    this._vmPositionMonitor = null;
+  saluteVm: function() {
+    this._probing = true;
+    var self = this;
+    
+    var schedule = function() {
+      setTimeout(probe, 10);
+    };
+    var probe = function() {
+      if (self._probing) {
+        console.log('probing');
+        self._post('list');
+        schedule();
+      }
+    };
+    
+    schedule();
   },
   
-  monitorMeasureValue: function(callback) {
+  addPositionChangeListener: function(id, callback) {
+    this._vmPositionMonitors[id] = callback;
+  },
+  removePositionChangeListener: function(id) {
+    delete this._vmPositionMonitors[id];
+  },
+  
+  addMeasureValueListener: function(id, callback) {
     this._post('set', 'FeatureState', {
       measure: true
     });
-    this._post('monitor', 'MeasureMM');
-    this._vmMeasureMonitor = callback;
+    
+    this._vmMeasureMonitors[id] = callback;
   },
-  stopMeasureValueMonitoring: function() {
-    this._vmMeasureMonitor = null;
+  removeMeasureValueListener: function(id) {
+    delete this._vmMeasureMonitors[id];
     this._post('set', 'FeatureState', {
       measure: false
     });
@@ -49,11 +74,10 @@ var MoonrockVMComm = {
     value.zoom = Math.max(0, value.zoom);
     this._post('set', 'PositionPixels', value);
   },
-  
 
-  _fire: function(event, params) {
-    if (this._vmListener && this._vmListener[event]) {
-      (this._vmListener[event])(params);
+  _notifyPosition: function(content) {
+    for (var id in this._vmPositionMonitors) {
+      this._vmPositionMonitors[id](content);
     }
   },
   _receiveMessage: function(event) {
@@ -61,18 +85,22 @@ var MoonrockVMComm = {
     var msg = event.data;
     switch(msg.action) {
       case 'list':
-        self._activityId = msg.content[0].id;
-        self._fire('vmready');
+        if (self._probing) {
+          console.log('vm answered');
+          self._probing = false;
+          self.iframeLoaded();
+        }
         break;
       case 'monitor':
         switch( (msg.param)) {
           case 'PositionPixels':
-            if (this._vmPositionMessageValid) {
-              if (self._vmPositionMonitor) {
-                this._vmPositionMonitor(msg.content);
-              }
+            if (msg.content) {
+              self._notifyPosition(msg.content);
             } else {
-              this._vmPositionMessageValid = true;
+              self._getPositionCallback = function(content) {
+                self._notifyPosition(content);
+              }
+              self._post('get', 'PositionPixels');
             }
             break;
           case 'MeasureMM':
@@ -95,8 +123,14 @@ var MoonrockVMComm = {
             self._post('get', 'PositionPixels');
             break;
           case 'PositionPixels':
-            self._snapshot.position = JSON.stringify(msg.content);
-            self._post('get', 'Snapshot', {});
+            if (self._getPositionCallback == null) {
+              self._snapshot.position = JSON.stringify(msg.content);
+              self._post('get', 'Snapshot', {});
+            } else {
+              var callback = self._getPositionCallback;
+              self._getPositionCallback = null;
+              callback(msg.content);
+            }
             break;
           case 'Snapshot':
             var image = new Image();
@@ -159,8 +193,8 @@ var MoonrockVMComm = {
     }
     
     if(iframe && iframe.postMessage) {
-      iframe.postMessage(msg, iframe.location.href);
-//      iframe.postMessage(msg, location.origin);
+      iframe.postMessage(msg, location.href);
+    //      iframe.postMessage(msg, location.origin);
     } else {
       console.log('ERROR: Messaging is not available');
     }
@@ -190,5 +224,5 @@ var MoonrockVMComm = {
 };
 
 $(function() {
-  MoonrockVMComm.init();
+  MoonrockModules.register('MoonrockVMComm', MoonrockVMComm);
 });

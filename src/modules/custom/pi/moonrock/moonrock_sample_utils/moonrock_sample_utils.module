@@ -10,11 +10,47 @@ function moonrock_sample_utils_find_unique_seesamples_node() {
   $node_details = get_inquiry_details_from_current_path();
   $sample_view_nid = find_unique_node_type_for_uid_and_inquiry('moonrock_seesamples', $user->uid, $node_details->inquiry_id);
   if ($sample_view_nid) {
-    module_load_include('inc', 'moonrock_seesamples', 'moonrock_seesamples.table');
     return node_load($sample_view_nid);
   } else {
     return FALSE;
   }
+}
+
+function moonrock_sample_utils_find_unique_method_node() {
+  global $user;
+  $node_details = get_inquiry_details_from_current_path();
+  $sample_view_nid = find_unique_node_type_for_uid_and_inquiry('moonrock_method', $user->uid, $node_details->inquiry_id);
+  if ($sample_view_nid) {
+    return node_load($sample_view_nid);
+  } else {
+    return FALSE;
+  }
+}
+
+function moonrock_sample_utils_filter_visible_measures($measure_rows) {
+  $use_measure = array();
+  $method_node = moonrock_sample_utils_find_unique_method_node();
+  if ($method_node) {
+    $selected_measures = moonrock_method_selected_measures($method_node);
+  } else {
+    $selected_measures = FALSE;
+  }
+  foreach ($measure_rows as $measure_info_nid => $measure_selection) {
+    if ($measure_selection['#status'] == 'key' || $measure_selection['#status'] == 'selected') {
+      if ($measure_selection['#status'] == 'key' || ($selected_measures && $selected_measures[$measure_info_nid])) {
+        $use_measure[$measure_info_nid] = TRUE;
+      } else {
+        $measure_info = node_load($measure_info_nid);
+        if ($measure_info->content_options) {
+          $function = "{$measure_info->content_options}_nquire_data_suitable_for_method_planning";
+          if (function_exists($function) && !$function()) {
+            $use_measure[$measure_info_nid] = TRUE;
+          }
+        }
+      }
+    }
+  }
+  return $use_measure;
 }
 
 function moonrock_sample_utils_add_info_tooltip($title, $content) {
@@ -115,12 +151,15 @@ function moonrock_sample_utils_load_measure_format() {
   drupal_add_css(drupal_get_path('module', 'moonrock_sample_utils') . '/css/measures.css');
 }
 
+function moonrock_sample_utils_load_javascript_modules_support() {
+  drupal_add_js(drupal_get_path('module', 'moonrock_sample_utils') . '/js/modules.js');
+}
+
 function moonrock_sample_utils_load_vmSample_format() {
   drupal_add_css(drupal_get_path('module', 'moonrock_sample_utils') . '/css/external_link.css');
   drupal_add_css(drupal_get_path('module', 'moonrock_sample_utils') . '/css/vmSample.css');
   drupal_add_js(drupal_get_path('module', 'moonrock_sample_utils') . '/js/vmSample.js');
 }
-
 
 function moonrock_sample_utils_theme() {
   return array(
@@ -138,7 +177,7 @@ function moonrock_sample_utils_theme() {
 
 function theme_moonrock_sample_utils_false_block($title, $content) {
   drupal_add_css(drupal_get_path('module', 'moonrock_sample_utils') . '/css/falseblock.css');
-  
+
   $output = '<div class="moonrock-block-column">'
           . '  <div class="moonrock-block">'
           . '    <h2 class="title">' . $title . '</h2>'

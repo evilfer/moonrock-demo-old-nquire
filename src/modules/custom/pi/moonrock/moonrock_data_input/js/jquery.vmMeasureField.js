@@ -68,7 +68,7 @@
       return this;
     },
     hasValue: function() {
-      return this.vmMeasureField('getDisplayValue').length > 0;
+      return this.length > 0 && this.vmMeasureField('getDisplayValue').length > 0;
     },
 
     _setDisplayValue: function(value) {
@@ -134,14 +134,14 @@
     
     _startMonitoring: function() {
       var self = this;
-      MoonrockVMComm.monitorMeasureValue(function(value) {
+      MoonrockVMComm.addMeasureValueListener('measurefield', function(value) {
         self.vmMeasureField('_setDisplayValue', value).vmMeasureField('_notify', false);
       });
       this.vmMeasureField('_setButtonsEdit');
       return this;
     },
     _stopMonitoring: function() {
-      MoonrockVMComm.stopMeasureValueMonitoring();
+      MoonrockVMComm.removeMeasureValueListener('measurefield');
       this.vmMeasureField('_setButtonsIdle');
       return this;
     },
