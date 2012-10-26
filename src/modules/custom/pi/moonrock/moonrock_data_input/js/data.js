@@ -76,7 +76,15 @@ var MoonrockDataInput = {
           }
         }
       });
-    })
+    });
+    
+    SnapshotAnnotation.addChangeListener('dataform', function(action) {
+      if (action == 'done') {
+        self._bigDataChange();
+      } else {
+        self._smallDataChange();
+      }
+    });
   },
   
   _enableOverlay: function(enabled) {
@@ -180,17 +188,15 @@ var MoonrockDataInput = {
     var self = this;
     this.currentItemId = item.id;
     
-    this.vmComm.removePositionChangeListener('dataform');
     
     if (item) {
-      var monitor = function() {
-        self.vmComm.addPositionChangeListener('dataform', function(position) {
-          self.vmPositionChanged(position);
-        });
-      };
+      this.vmComm.removePositionChangeListener('dataform');
       this.currentPosition = item.data.snapshot_vm_position;
       this.vmComm.setVMParams(item.data.snapshot_vm_position);
-      setTimeout(monitor, 1000);
+      this.vmComm.addPositionChangeListener('dataform', function(position) {
+        self.vmPositionChanged(position);
+      });
+    /*SnapshotAnnotation.*/
     }
     
     this.setModeEdit(true);
@@ -213,7 +219,6 @@ var MoonrockDataInput = {
             }
             break;
           case 'moonrock_snapshot':
-            /* load params */
             $('input[measure_content_type="moonrock_snapshot"]').attr('value', item.data.values[measure_nid]);
             break;
           case 'moonrock_sample':
@@ -225,8 +230,10 @@ var MoonrockDataInput = {
             break;
         }
       }
+      
     }
     
+    SnapshotAnnotation.setItem(item);
     $('.moonrock-measure-field').vmMeasureField('fieldValueUpdated');
   },
   
@@ -242,6 +249,8 @@ var MoonrockDataInput = {
     $('.moonrock-measure-field').vmMeasureField('setValue', '');
     $('input[type="text"], textarea').val('');
     $('select').val(null);
+    
+    SnapshotAnnotation.clear();
   },
   clearDataIds: function() {
     $('input[name="data_nid"]').attr('value', '');
@@ -325,8 +334,9 @@ var MoonrockDataInput = {
     this._enableOverlay(true);
 
     $('.moonrock-measure-field').vmMeasureField('acceptCurrentMeasure');
+    SnapshotAnnotation.acceptCurrentValue();
     
-    this.submitData('save');
+    this.submitData();
   },
   createData: function() {
     this.currentItemId = null;
@@ -356,6 +366,6 @@ var MoonrockDataInput = {
 };
 
 $(function() {
-  MoonrockModules.register('MoonrockDataInput', MoonrockDataInput, ['MoonrockColorSelect']);
+  MoonrockModules.register('MoonrockDataInput', MoonrockDataInput, ['MoonrockColorSelect', 'SnapshotAnnotation']);
 });
 

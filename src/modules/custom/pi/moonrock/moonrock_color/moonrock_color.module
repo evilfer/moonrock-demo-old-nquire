@@ -288,7 +288,7 @@ function _moonrock_color_create_color_picker_image() {
   $height = 2 * $margin + $maxrow * ($chipHeight + $chipVGap) + $chipHeight;
 
   $output = '';
-  $output .= "<div id='rock-color-picker-container' style='width: {$width}px; height: {$height}px;'>";
+  $output .= "<div id='rock-color-picker-container' class='hidden' style='width: {$width}px; height: {$height}px;'>";
   $output .= "<svg id='rock-color-picker-svg' version='1.1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' viewBox='0 0 $width $height'>";
   $output .= '<g id="rock-color-picker-svg-group" fill-rule="evenodd" style="font-size: 18px; text-anchor: middle; font-family: serif;">';
 

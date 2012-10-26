@@ -25,7 +25,21 @@
       }
     },
     
-
+    'rawdrag': function(callback) {
+      this.customMouseInput('_directBind', 'down', function(event) {
+        $('body')
+        .data('customMouseInputMovingCallback', callback)
+        .data('customMouseInputMovingMode', 'drag');
+        if ($.fn.disableSelection) {
+          $('body').disableSelection();
+        }
+        
+        callback('dragstart', {
+          x: event.pageX, 
+          y: event.pageY
+        });
+      });
+    },
     'move': function(callback) {
       this.customMouseInput('_directBind', 'down', function(event) {
         $('body')
@@ -34,6 +48,7 @@
           y: event.pageY
         })
         .data('customMouseInputMovingCallback', callback)
+        .data('customMouseInputMovingMode', 'move')
         .disableSelection();
       });
     },
@@ -162,24 +177,42 @@ $(function() {
     if (movingCallback) {      
       consumableEvent.preventDefault();
       consumableEvent.stopPropagation();
-      var point = $('body').data('customMouseInputMovingPoint');
-        
-      var deltaX = event.pageX - point.x, deltaY = event.pageY - point.y;
-      $('body').data('customMouseInputMovingPoint', {
+      
+      var point = {
         x: event.pageX, 
         y: event.pageY
-      });
-      movingCallback(deltaX, deltaY);
+      };
+      
+      var mode = $('body').data('customMouseInputMovingMode');
+      
+      if (mode == 'move') {
+        var previouspoint = $('body').data('customMouseInputMovingPoint');
+        
+        var deltaX = point.x - previouspoint.x, deltaY = point.y - previouspoint.y;
+        $('body').data('customMouseInputMovingPoint', point);
+        movingCallback(deltaX, deltaY);
+      } else if (mode == 'drag') {
+        movingCallback('drag', point);
+      }
     }
   });  
   
   $('body').customMouseInput('_directBind', 'up', function() {
     var data = $('body').data('customMouseInputIsClick');
     if (data) {
-      data.fn(data.element);
       $('body').data('customMouseInputIsClick', false);
+      data.fn(data.element);
+    } 
+    
+    var movingCallback = $('body').data('customMouseInputMovingCallback');
+    var mode = $('body').data('customMouseInputMovingMode');
+    if (movingCallback && mode == 'drag') {
+      movingCallback('dragend');
     }
+    
     $('body').data('customMouseInputMovingCallback', false);
-    $('body').enableSelection();
+    if ($.fn.enableSelection) {
+      $('body').enableSelection();
+    }
   });
 });

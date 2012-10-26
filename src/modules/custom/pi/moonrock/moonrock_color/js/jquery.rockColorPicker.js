@@ -69,6 +69,7 @@
     },
     open: function() {
       $('#rock-color-picker-container').fadeIn();
+      $('#rock-color-picker-container').removeClass('hidden');
       if (this.data('rock-color-picker-openclose-callback')) {
         this.data('rock-color-picker-openclose-callback')(true);
       }

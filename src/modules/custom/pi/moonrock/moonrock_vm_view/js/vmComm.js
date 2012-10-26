@@ -9,6 +9,7 @@ var MoonrockVMComm = {
   _vmPositionMonitors: {},
   _vmMeasureMonitors: {},
   _getPositionCallback: null,
+  _vmAvailableListeners: {},
     
   init: function() {
     var self = this;
@@ -18,13 +19,17 @@ var MoonrockVMComm = {
   },
   
   iframeLoaded: function() {
-    var self = this;
-    setTimeout(function() {
-      self._post('monitor', 'PositionPixels');
-      self._post('monitor', 'MeasureMM');
-    }, 500);
+    this._post('monitor', 'PositionPixels');
+    this._post('monitor', 'MeasureMM');
+    this._notifyVmAvailable(true);
+  },
+  _notifyVmAvailable: function(available) {
+    for (var i in this._vmAvailableListeners) {
+      this._vmAvailableListeners[i](available);
+    }
   },
   saluteVm: function() {
+    this._notifyVmAvailable(false);
     this._probing = true;
     var self = this;
     
@@ -47,6 +52,9 @@ var MoonrockVMComm = {
   },
   removePositionChangeListener: function(id) {
     delete this._vmPositionMonitors[id];
+  },
+  addVmAvailableListener: function(id, callback) {
+    this._vmAvailableListeners[id] = callback;
   },
   
   addMeasureValueListener: function(id, callback) {
@@ -174,6 +182,12 @@ var MoonrockVMComm = {
   
   _post: function(action, param, value) {
     var iframe = $('#moonrock-vm-iframe')[0].contentWindow;
+    if (!iframe.onerror) {
+      iframe.onerror = function(error) {
+        console.log('iframe error: ' + error);
+        return true;
+      };
+    }
     var msg = {
       action: action
     };

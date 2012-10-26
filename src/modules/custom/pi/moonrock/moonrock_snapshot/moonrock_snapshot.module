@@ -114,55 +114,22 @@ function moonrock_snapshot_form(&$node) {
       '#default_value' => $node->url,
       '#weight' => 4
   );
-
-  $form['submit_snapshot'] = array(
-      '#type' => 'button',
-      '#value' => t('Save'),
-      '#weight' => 5,
-      '#attributes' => array('onClick' => 'MoonrockDataFormSnapshooting.submitSnapshot();return false;'),
-  );
-  $form['snapshot_delete'] = array(
-      '#type' => 'button',
-      '#value' => t('Delete'),
-      '#weight' => 5,
-      '#attributes' => array('onClick' => 'MoonrockDataFormSnapshooting.deleteSnapshot();return false;'),
-  );
-  $form['cancel_snapshot'] = array(
-      '#type' => 'button',
-      '#value' => t('Cancel'),
-      '#weight' => 6,
-      '#attributes' => array('onClick' => 'MoonrockDataFormSnapshooting.cancelSnapshot();return false;'),
+  $form['annotation'] = array(
+      '#type' => 'hidden',
+      '#title' => t('VM view URL'),
+      '#required' => TRUE,
+      '#default_value' => $node->annotation,
+      '#weight' => 4
   );
 
   return $form;
 }
 
-/*
-function moonrock_snapshot_form_moonrock_snapshot_form_alter(&$form, &$form_state) {
-  if (isset($form['#parameters'][2])) {
-    $sample_ref = $form['#parameters'][2]['sample_ref'];
-    $vm_parameters = $form['#parameters'][2]['vm_parameters'];
-
-    $sample = node_load($sample_ref);
-    if ($sample) {
-      $form['#prefix'] = "<p>Snapshot for: <b>{$sample->title}</b></p>";
-      $form["sample_ref"]['#value'] = $sample_ref;
-    } else {
-      $form['#prefix'] = "<p>No sample!</p>";
-    }
-
-    $form["vm_parameters"]['#value'] = $vm_parameters;
-  }
-
-  return;
-}
- */
-
 /**
  * Implementation of hook_insert().
  */
 function moonrock_snapshot_insert($node) {
-  db_query("INSERT INTO {moonrock_snapshot} (nid, vid, notes, sample_ref, position, url) VALUES ('%d', '%d', '%s', '%d', '%s', '%s')", $node->nid, $node->vid, $node->notes, $node->sample_ref, $node->position, $node->url);
+  db_query("INSERT INTO {moonrock_snapshot} (nid, vid, notes, sample_ref, position, url, annotation) VALUES ('%d', '%d', '%s', '%d', '%s', '%s', '%s')", $node->nid, $node->vid, $node->notes, $node->sample_ref, $node->position, $node->url, $node->annotation);
 }
 
 /**
@@ -172,7 +139,7 @@ function moonrock_snapshot_update($node) {
   if ($node->revision) {
     moonrock_snapshot_insert($node);
   } else {
-    db_query("UPDATE {moonrock_snapshot} SET notes='%s', sample_ref='%d', position='%s', url='%s' WHERE vid = %d", $node->notes, $node->sample_ref, $node->position, $node->url, $node->vid);
+    db_query("UPDATE {moonrock_snapshot} SET notes='%s', sample_ref='%d', position='%s', url='%s', annotation='%s' WHERE vid = %d", $node->notes, $node->sample_ref, $node->position, $node->url, $node->annotation, $node->vid);
   }
 }
 
@@ -254,7 +221,21 @@ function moonrock_snapshot_nquire_measure_choose_explanation() {
 }
 
 function moonrock_snapshot_nquire_data_form_prefix($measure) {
-  return '';
+  drupal_add_js(drupal_get_path('module', 'moonrock_snapshot') . '/js/jquery.svg.js');
+  drupal_add_js(drupal_get_path('module', 'moonrock_snapshot') . '/js/jquery.svgdom.js');
+  drupal_add_js(drupal_get_path('module', 'moonrock_snapshot') . '/js/paint.js');
+  drupal_add_js(drupal_get_path('module', 'moonrock_snapshot') . '/js/annotation.js');
+  drupal_add_js(drupal_get_path('module', 'moonrock_snapshot') . '/js/transform.js');
+  drupal_add_js(drupal_get_path('module', 'moonrock_snapshot') . '/js/vmsizedata.js');
+
+  drupal_add_css(drupal_get_path('module', 'moonrock_snapshot') . '/css/jquery.svg.css');
+
+  $output = '<div id="snapshot-annotation">'
+          . '<button id="snapshot-annotation-annotate">' . t('Annotate VM') . '</button>'
+          . '<button id="snapshot-annotation-clear">' . t('Clear') . '</button>'
+          . '</div>';
+
+  return $output;
 }
 
 function moonrock_snapshot_nquire_data_get_text_value($nid) {
@@ -291,9 +272,11 @@ function moonrock_snapshot_nquire_data_form_elements($value) {
   if ($snapshot) {
     $default_position = $snapshot->position;
     $default_url = $snapshot->url;
+    $default_annotation = $snapshot->annotation;
   } else {
     $default_position = '';
     $default_url = '';
+    $default_annotation = '[]';
   }
 
   return array(
@@ -322,6 +305,12 @@ function moonrock_snapshot_nquire_data_form_elements($value) {
           '#title' => t('Snapshot notes'),
           '#required' => FALSE,
           '#attributes' => array("measure_content_type" => 'moonrock_snapshot_notes'),
+      ),
+      'moonrock_snapshot_annotation' => array(
+          '#type' => 'hidden',
+          '#title' => t('Snapshot annotation'),
+          '#required' => FALSE,
+          '#attributes' => array("measure_content_type" => 'moonrock_snapshot_annotation'),
       ),
   );
 }

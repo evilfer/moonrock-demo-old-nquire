@@ -29,6 +29,7 @@ function theme_moonrock_vm_view_vm_top_navigator() {
 
 function theme_moonrock_vm_view_vm() {
   drupal_add_css(drupal_get_path('module', 'moonrock_vm_view') . '/css/vm_view.css');
+  drupal_add_css(drupal_get_path('module', 'moonrock_vm_view') . '/css/annotation.css');
   drupal_add_js(drupal_get_path('module', 'moonrock_vm_view') . '/js/vm.js');
   drupal_add_js(drupal_get_path('module', 'moonrock_vm_view') . '/js/vmComm.js');
   moonrock_vm_state_load_resources();
@@ -36,6 +37,20 @@ function theme_moonrock_vm_view_vm() {
   $output = '<div id="moonrock-vm-container" class="moonrock-vm-container">'
           . '  <div id="moonrock-vm-iframe-container" class="moonrock-vm-iframe-container">'
           . '    <iframe id="moonrock-vm-iframe" src="about:black"></iframe>'
+          . '    <div id="annotation" class="annotation annotation-root-element annotation-inactive">'
+          . '      <div class="annotation-canvas" id="annotation-canvas"></div>'
+          . '    </div>'
+          . '    <div class="annotation-buttons annotation-root-element annotation-inactive">'
+          . '      <div class="annotation-mode-selector annotation-color annotation-color-blue" mode="blue"></div>' 
+          . '      <div class="annotation-mode-selector annotation-color annotation-color-green" mode="green"></div>' 
+          . '      <div class="annotation-mode-selector annotation-color annotation-color-yellow" mode="yellow"></div>' 
+          . '      <div class="annotation-mode-selector annotation-color annotation-color-red" mode="red"></div>'
+          . '      <div class="annotation-mode-selector annotation-erase" mode="erase"></div>' 
+          . '      <div class="annotation-done-button-container">'
+          . '        <button id="annotation-done">' . t('Done') . '</button>'
+          . '        <button id="annotation-cancel">' . t('Cancel') . '</button>'
+          . '      </div>'
+          . '    </div>'
           . '  </div>'
           . '  <div id="moonrock-vm-resize-container" class="moonrock-vm-resize-container">'
           . '    <canvas id="moonrock-vm-resize-canvas"></canvas>'

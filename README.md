@@ -8,6 +8,13 @@ Moonrock demonstators.
 Changes:
 
 -----------------
+26-10-2012
+
+- Snapshot graphic annotation working.
+- Added javascript MoonrockModule management (with dependencies).
+- Missing: annotations do not appear on snapshot image.
+
+-----------------
 25-10-2012
 
 - Improved data table.

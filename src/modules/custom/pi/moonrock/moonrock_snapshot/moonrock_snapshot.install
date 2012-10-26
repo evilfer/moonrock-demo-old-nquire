@@ -86,6 +86,12 @@ function moonrock_snapshot_schema() {
               'not null' => TRUE,
               'default' => ''
           ),
+          'annotation' => array(
+              'description' => t('Graphic annotation'),
+              'type' => 'text',
+              'size' => 'normal',
+              'not null' => TRUE,
+          ),
       ),
       'primary key' => array('vid'),
       'indexes' => array(

@@ -132,6 +132,7 @@ function _moonrock_data_input_prepare_data_items($data, $sample_filter = FALSE) 
               'values' => $datum,
               'snapshot_vm_position' => $snapshot->position,
               'snapshot_vm_viewurl' => $snapshot->url,
+              'snapshot_vm_annotation' => $snapshot->annotation
           ),
           'metadata' => array(
               'title' => t('Data'),
@@ -193,6 +194,7 @@ function moonrock_data_input_nodeapi(&$node, $op) {
           $snapshot->notes = $node->onepageprofile_categories['moonrock_snapshot_notes']['value'];
           $snapshot->position = $node->onepageprofile_categories['moonrock_snapshot_position']['value'];
           $snapshot->url = $node->onepageprofile_categories['moonrock_snapshot_viewurl']['value'];
+          $snapshot->annotation = $node->onepageprofile_categories['moonrock_snapshot_annotation']['value'];
           $snapshot->sample_ref = $sample_nid;
           node_save($snapshot);
           $node->onepageprofile_categories[$snapshot_key]['value'] = $snapshot->nid;
@@ -245,8 +247,8 @@ function theme_moonrock_data_input_form_block($separator) {
   drupal_add_css(drupal_get_path('module', 'moonrock_sample_utils') . '/css/falseblock.css');
 
   $title = '<div class="moonrock-block-title">'
-          . '<div id="moonrock-data-input-header-new" style="display:none;">' . t('Add new data') . '</div>'
-          . '<div id="moonrock-data-input-header-edit" style="display:none;">' . t('Edit data') . '</div>'
+          . '<div id="moonrock-data-input-header-new">' . t('Add new data') . '</div>'
+          . '<div id="moonrock-data-input-header-edit">' . t('Edit data') . '</div>'
           . '</div>';
   $middle = '<div class="moonrock-block-middle-content">' . $separator . '</div>';
 
