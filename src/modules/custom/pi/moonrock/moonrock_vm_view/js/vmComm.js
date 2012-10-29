@@ -79,7 +79,7 @@ var MoonrockVMComm = {
   setVMParams: function(params) {
     this._vmUpdatingPosition = true;
     var value = JSON.parse(params);
-    value.zoom = Math.max(0, value.zoom);
+    value.zoom = Math.max(0.00001, value.zoom);
     this._post('set', 'PositionPixels', value);
   },
 
@@ -153,6 +153,8 @@ var MoonrockVMComm = {
 
               resizeCanvas.getContext("2d").drawImage(this, 0, 0, _width, height);
               self._snapshot.image = resizeCanvas.toDataURL();
+              self._snapshot.image2 = self._getSVGAnnotation(_width, height, _width/this.width);
+              
               var callback = self._snapshotCallback;
               self._snapshotCallback = null;
               callback(self._snapshot);
@@ -178,6 +180,22 @@ var MoonrockVMComm = {
         }
         break;
     }
+  },
+  
+  _getSVGAnnotation: function(width, height, scale) {
+    var svgElement = $('#annotation-canvas > svg').clone();
+    svgElement.attr({
+      'xmlns': 'http://www.w3.org/2000/svg',
+      'width' : width,
+      'height': height
+    });
+    var g = svgElement.children();
+    var transform = g.attr('transform');
+    g.attr('transform', 'scale(' + scale + ') ' + transform);
+
+    var serializer = new XMLSerializer();
+    var svg = serializer.serializeToString(svgElement[0]);
+    return "data:image/svg+xml;base64," + btoa(svg);
   },
   
   _post: function(action, param, value) {

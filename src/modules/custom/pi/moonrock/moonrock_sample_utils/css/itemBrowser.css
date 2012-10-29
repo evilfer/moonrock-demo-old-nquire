@@ -97,9 +97,17 @@
   border-color: #f44;
 }
 
-.item-browser-item img {
+.item-browser-item img.item-browser-item-main {
   height: 100%;  
   width: auto;
+}
+
+.item-browser-item img.item-browser-item-annotation {
+  position: absolute;
+  width: 100%;
+  height: 100%;  
+  top: 0px;
+  left: 0px;
 }
 
 .item-browser-item .open {

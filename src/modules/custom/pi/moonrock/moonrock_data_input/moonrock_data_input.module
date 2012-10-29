@@ -125,6 +125,7 @@ function _moonrock_data_input_prepare_data_items($data, $sample_filter = FALSE) 
       $item = array(
           'id' => $datum_nid,
           'image' => moonrock_snapshot_images_get_snapshot_url($snapshot_nid),
+          'image2' => moonrock_snapshot_images_get_svgsnapshot_url($snapshot_nid),
           'data' => array(
               'selected_measures_nid' => $data['selected_measures_nid'],
               'content_measures' => $data['content_measures'],

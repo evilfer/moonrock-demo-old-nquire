@@ -101,9 +101,9 @@
       .attr('id', id)
       .attr("item-id", item.id);
       
-      var image = $("<img/>")
-      .appendTo(element);//.css('display', 'none');
-            
+      var image = $("<img />").addClass('item-browser-item-main').appendTo(element);
+      var image2 = $('<img />').addClass('item-browser-item-annotation').appendTo(element);
+      
       var self = this;
       image[0].onload = function() {
         element.css('width', $(this).width() + 6);
@@ -114,6 +114,7 @@
       };
       
       image.attr("src", item.image + '?t=' + (new Date()).getTime());
+      image2.attr("src", item.image2 + '?t=' + (new Date()).getTime());
       
       if (this.data('options').imageLink) {
         var link = $("<div/>").addClass('open').appendTo(element);
@@ -163,7 +164,9 @@
       return this;
     },
     _updateItem: function(item, element) {
-      element.data('item', item).find('img').attr("src", item.image + '?t=' + (new Date()).getTime());
+      element.data('item', item)
+      .find('img.item-browser-item-main').attr("src", item.image + '?t=' + (new Date()).getTime()).end()
+      .find('img.item-browser-item-annotation').attr("src", item.image2 + '?t=' + (new Date()).getTime());
       return this;
     },
     removeItem: function(itemId) {

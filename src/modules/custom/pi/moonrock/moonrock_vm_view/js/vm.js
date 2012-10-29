@@ -52,6 +52,9 @@ var VmManager = {
   
   _setSample: function(sample) {
     if (sample != this._sample) {
+      
+      GraphicAnnotation.clear();
+      
       var self = this;
       var updateCallback = function() {
         self._sample = sample;

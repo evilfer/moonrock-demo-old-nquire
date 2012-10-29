@@ -50,7 +50,7 @@ var GraphicAnnotation = {
     
     MoonrockVMComm.addVmAvailableListener('annotation', function(available) {
       if (available) {
-        AnnotationTransform.resize();
+        AnnotationTransform.vmLoaded();
         self._element.show();
       } else {
         self._element.hide();
@@ -59,6 +59,10 @@ var GraphicAnnotation = {
     
     MoonrockVMComm.addPositionChangeListener('annotation', function(pos) {
       AnnotationTransform.setVmPos(pos);
+    });
+    
+    TabsManager.addResizeListener('annotation', function() {
+      AnnotationTransform.resize();
     });
   },
   
@@ -214,5 +218,5 @@ var GraphicAnnotation = {
 }
 
 $(function() {
-  MoonrockModules.register('GraphicAnnotation', GraphicAnnotation, ['MoonrockVMComm', 'AnnotationTransform']);
+  MoonrockModules.register('GraphicAnnotation', GraphicAnnotation, ['MoonrockVMComm', 'AnnotationTransform', 'TabsManager']);
 });

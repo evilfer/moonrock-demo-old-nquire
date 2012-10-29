@@ -46,6 +46,7 @@ function pi_data_access($op, $node, $account) {
   if ($op == 'update') {
     return check_node_function_of_activity($details->inquiry_id, $details->activity_id, $user->uid, 'edit');
   }
+  
   if ($op == 'delete') {
     if (arg(0) == 'node' && arg(2) == 'delete') {
       //get inquiry for session id and activity
@@ -68,6 +69,7 @@ function pi_data_access($op, $node, $account) {
     }
   }
 }
+
 
 /**
  * hook_form() for pi_data - dynamically generates the add data form based on selected, available measures and their weights

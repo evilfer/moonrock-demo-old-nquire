@@ -2,9 +2,6 @@
 
 function moonrock_vm_view_theme() {
   return array(
-      'moonrock_vm_view_vm_top_navigator' => array(
-          'arguments' => array(),
-      ),
       'moonrock_vm_view_vm' => array(
           'arguments' => array(),
       ),
@@ -14,24 +11,23 @@ function moonrock_vm_view_theme() {
   );
 }
 
-function theme_moonrock_vm_view_vm_top_navigator() {
-  drupal_add_css(drupal_get_path('module', 'moonrock_vm_view') . '/css/vm_navigator.css');
-  drupal_add_js(drupal_get_path('module', 'moonrock_vm_view') . '/js/navigator.js');
 
-  $output = ' <div id="moonrock-vm-navigator" class="moonrock-vm-navigator">'
-          . '  <div id="moonrock-vm-navigator-previous" class="moonrock-vm-navigator-button moonrock-vm-navigator-previous"></div>'
-          . '  <div class="moonrock-vm-navigator-prefix">' . t('Browsing ') . '</div>'
-          . '  <div id="moonrock-vm-navigator-sample" class="moonrock-vm-navigator-sample"></div>'
-          . '  <div id="moonrock-vm-navigator-next" class="moonrock-vm-navigator-button moonrock-vm-navigator-next"></div>'
-          . ' </div>';
-  return $output;
-}
 
 function theme_moonrock_vm_view_vm() {
   drupal_add_css(drupal_get_path('module', 'moonrock_vm_view') . '/css/vm_view.css');
   drupal_add_css(drupal_get_path('module', 'moonrock_vm_view') . '/css/annotation.css');
+  drupal_add_css(drupal_get_path('module', 'moonrock_vm_view') . '/css/jquery.svg.css');
+  
   drupal_add_js(drupal_get_path('module', 'moonrock_vm_view') . '/js/vm.js');
   drupal_add_js(drupal_get_path('module', 'moonrock_vm_view') . '/js/vmComm.js');
+  
+  drupal_add_js(drupal_get_path('module', 'moonrock_vm_view') . '/js/jquery.svg.js');
+  drupal_add_js(drupal_get_path('module', 'moonrock_vm_view') . '/js/jquery.svgdom.js');
+  drupal_add_js(drupal_get_path('module', 'moonrock_vm_view') . '/js/paint.js');
+  drupal_add_js(drupal_get_path('module', 'moonrock_vm_view') . '/js/transform.js');
+  drupal_add_js(drupal_get_path('module', 'moonrock_vm_view') . '/js/vmsizedata.js');
+
+
   moonrock_vm_state_load_resources();
 
   $output = '<div id="moonrock-vm-container" class="moonrock-vm-container">'

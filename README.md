@@ -8,6 +8,16 @@ Moonrock demonstators.
 Changes:
 
 -----------------
+
+29-10-2012
+
+- Annotation appears on data browser and data table.
+- Annotation is correctly transformed when window is resized. 
+- View tab hidden from pi_data activities (unnecessary).
+- moonrock_snapshot_image creates two separate images (png and svg) for each snapshot. Rather, these two images should be merged.
+ 
+
+-----------------
 26-10-2012
 
 - Snapshot graphic annotation working.

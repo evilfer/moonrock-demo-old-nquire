@@ -362,7 +362,7 @@ function pi_sort_data_view($node, $teaser, $page = FALSE) {
       $created = t('Created: ') . '<br />' . format_date($data_item_node->created, 'custom', 'Y/m/d H:i');
 
       $created .= '<br/>'
-              . l('edit', 'activity/' . $data_item_activity_id) . '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'
+              . l('edit', 'activity/' . $data_item_activity_id . '/edit') . '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'
               . l('delete', 'node/' . $sorted_data_items_nid . '/delete', array('query' => 'destination=phase/' . $node_details->phase_id));
 
       array_unshift($values, $created);

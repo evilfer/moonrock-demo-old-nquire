@@ -3,6 +3,7 @@
 var TabsManager = {
   _currentTab: null,
   _currentContent: null,
+  _resizeListeners: {},
   
   init: function() {
     this._selectTab('samples');
@@ -20,6 +21,11 @@ var TabsManager = {
       }
     });
   },
+  
+  addResizeListener: function(id, callback) {
+    this._resizeListeners[id] = callback;
+  },
+  
   selectTab: function(id) {
     return this._selectTab(id);
   },
@@ -88,6 +94,10 @@ var TabsManager = {
         content.css('width', w);
         this._resizeBox(root);
       } 
+    }
+    
+    for (var i in this._resizeListeners) {
+      this._resizeListeners[i]();
     }
   },
  

@@ -63,80 +63,38 @@ function moonrock_sample_utils_add_info_tooltip($title, $content) {
   return $output;
 }
 
-function moonrock_sample_utils_prepare_object($nid) {
+function moonrock_sample_utils_prepare_sample($nid) {
   global $user;
 
-  $object = node_load($nid, NULL, TRUE);
-  if ($object->type == 'moonrock_sample') {
-    $sample = $object;
-    $snapshot = FALSE;
-  } else {
-    $snapshot = $object;
-    $sample = node_load($snapshot->sample_ref);
+  $sample = node_load($nid, NULL, TRUE);
+  if ($sample->type != 'moonrock_sample') {
+    return FALSE;
   }
 
   $output = array(
-      "id" => $snapshot ? $snapshot->nid : $sample->nid,
+      "id" => $sample->nid,
       "title" => $sample->title,
       "sample" => array(
           "nid" => $sample->nid,
           "image" => 'moonrock_snapshots/' . $sample->snapshot,
       ),
-      "snapshot" => $snapshot ? array(
-          "image" => moonrock_snapshot_images_get_snapshot_url($snapshot->nid),
-          "vm_parameters" => $snapshot->vm_parameters,
-              ) : FALSE,
       "vm" => $sample->vm,
-      "metadata" => array(),
-  );
-
-  if ($snapshot) {
-    if ($user->uid == $snapshot->uid) {
-      $author = t("Me");
-    } else {
-      $author_user = user_load($snapshot->uid);
-      $author = check_plain($author_user->name);
-    }
-    $output['metadata']['author'] = array(
-        "title" => t("Created by: "),
-        "value" => $author,
-    );
-    $output['metadata']['notes'] = array(
-        "title" => t("Notes: "),
-        "value" => $snapshot->notes,
-    );
-    $output['metadata']['date'] = array(
-        "title" => t("Creation date: "),
-        "value" => format_date($snapshot->created, 'small'),
-    );
-  }
-
-  $output['metadata']['location'] = array(
-      "title" => t("Location: "),
-      "value" => $sample->location . ' <a href="' . $sample->map_url . '" target="_blank" class="external_link"><div></div></a>',
-  );
-  $output['metadata']['source'] = array(
-      "title" => t("Sample source: "),
-      "value" => $sample->source,
-  );
-  $output['metadata']['info'] = array(
-      "title" => t("Further information:"),
-      "value" => '<a href="' . $sample->info_url . '" target="_blank" class="external_link"><span>' . t('read more ') . '</span><div></div></a>',
+      "metadata" => array(
+          "location" => array(
+              "title" => t("Location: "),
+              "value" => $sample->location . ' <a href="' . $sample->map_url . '" target="_blank" class="external_link"><div></div></a>',
+          ),
+          "source" => array(
+              "title" => t("Sample source: "),
+              "value" => $sample->source,
+          ),
+          "info" => array(
+              "title" => t("Further information:"),
+              "value" => '<a href="' . $sample->info_url . '" target="_blank" class="external_link"><span>' . t('read more ') . '</span><div></div></a>',
+          ),
+      ),
   );
   return $output;
-}
-
-function moonrock_sample_utils_format_html_data($nid) {
-  $node = node_load($nid);
-  if ($node->type === 'moonrock_snapshot') {
-    $img = moonrock_snapshot_images_get_snapshot_url($nid);
-  } else {
-    $img = moonrock_snapshot_images_get_sample_url($nid);
-  }
-
-  $title = check_plain($node->title);
-
-  return "<img style='width: 50px' src='$img'></img><span style='padding-left: 10px;'>$title</span>";
 }
 
 function moonrock_sample_utils_activity_link($type) {

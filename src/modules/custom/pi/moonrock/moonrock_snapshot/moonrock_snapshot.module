@@ -221,14 +221,7 @@ function moonrock_snapshot_nquire_measure_choose_explanation() {
 }
 
 function moonrock_snapshot_nquire_data_form_prefix($measure) {
-  drupal_add_js(drupal_get_path('module', 'moonrock_snapshot') . '/js/jquery.svg.js');
-  drupal_add_js(drupal_get_path('module', 'moonrock_snapshot') . '/js/jquery.svgdom.js');
-  drupal_add_js(drupal_get_path('module', 'moonrock_snapshot') . '/js/paint.js');
   drupal_add_js(drupal_get_path('module', 'moonrock_snapshot') . '/js/annotation.js');
-  drupal_add_js(drupal_get_path('module', 'moonrock_snapshot') . '/js/transform.js');
-  drupal_add_js(drupal_get_path('module', 'moonrock_snapshot') . '/js/vmsizedata.js');
-
-  drupal_add_css(drupal_get_path('module', 'moonrock_snapshot') . '/css/jquery.svg.css');
 
   $output = '<div id="snapshot-annotation">'
           . '<button id="snapshot-annotation-annotate">' . t('Annotate VM') . '</button>'
@@ -251,8 +244,12 @@ function moonrock_snapshot_nquire_data_get_text_value($nid) {
 function moonrock_snapshot_nquire_data_get_html_value($nid) {
   $node = node_load($nid);
   if ($node->type === 'moonrock_snapshot') {
-    $img = moonrock_snapshot_images_get_snapshot_url($nid);
-    return "<img style='width: 200px' src='$img'></img>";
+    $png = moonrock_snapshot_images_get_snapshot_url($nid);
+    $svg = moonrock_snapshot_images_get_svgsnapshot_url($nid);
+    return "<div style='width: 200px; position: relative'>"
+            . "<img style='width: 100%' src='$png'></img>"
+            . "<img style='position: absolute; width: 100%; height: 100%; left: 0px;top:0px;' src='$svg'></img>"
+            . "</div>";
   } else {
     return $nid;
   }

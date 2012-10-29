@@ -209,7 +209,7 @@ var ActionsManager = {
      * Request the current snapshot from the Virtual Microscope, submits when ready.
      */
     this.imageHelper.getVMSnapshot(function(snapshot) {
-      $('input[measure_content_type="moonrock_snapshot_image"]').attr('value', snapshot.image);
+      $('input[measure_content_type="moonrock_snapshot_image"]').attr('value', snapshot.image + '|' + snapshot.image2);
       $('input[measure_content_type="moonrock_snapshot_position"]').attr('value', snapshot.position);
       $('input[measure_content_type="moonrock_snapshot_viewurl"]').attr('value', snapshot.viewurl);
       $('input[measure_content_type="moonrock_snapshot_notes"]').attr('value', $('form#node-form').find('.form-textarea').val());

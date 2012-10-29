@@ -320,7 +320,7 @@ function moonrock_seesamples_get_main_samples($node) {
     if (count($parts) == 2) {
       $object = db_fetch_object(db_query($query, $parts[0]));
       if ($object) {
-        $result[] = moonrock_sample_utils_prepare_object($object->nid);
+        $result[] = moonrock_sample_utils_prepare_sample($object->nid);
       }
     }
   }
