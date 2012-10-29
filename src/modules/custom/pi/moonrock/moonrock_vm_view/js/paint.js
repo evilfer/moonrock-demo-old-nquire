@@ -7,6 +7,7 @@ var GraphicAnnotation = {
   _action: null,
   _currentPolyline: null,
   _currentPointList: null,
+  _currentAnnotation: null,
   _buttonDown: false,
   _mode: 'blue',
   _changeListeners: {},
@@ -23,7 +24,10 @@ var GraphicAnnotation = {
     });
     
     $('#annotation-done').click(function() {
-      self._notify('done');
+      self._done();
+    });
+    $('#annotation-cancel').click(function() {
+      self._cancel();
     });
     
     
@@ -48,6 +52,9 @@ var GraphicAnnotation = {
       }
     }); 
     
+    this._svgElement = this._element.children();
+    this._svgElement.attr('xmlns', 'http://www.w3.org/2000/svg');
+    
     MoonrockVMComm.addVmAvailableListener('annotation', function(available) {
       if (available) {
         AnnotationTransform.vmLoaded();
@@ -62,6 +69,10 @@ var GraphicAnnotation = {
     });
     
     TabsManager.addResizeListener('annotation', function() {
+      self._svgElement.attr({
+        width: self._element.width(),
+        height: Math.max(0, self._element.height() - 40)
+      });
       AnnotationTransform.resize();
     });
   },
@@ -69,10 +80,25 @@ var GraphicAnnotation = {
   addChangeListener: function(id, callback) {
     this._changeListeners[id] = callback;
   },
+  _done: function() {
+    this.setEnabled(false);
+    this._createAnnotation();
+    this._notify('done');
+  },
+  _cancel: function() {
+    this.setEnabled(false);
+    this.importAnnotation(this._currentAnnotation);
+    this._notify('cancel');
+  },
   _notify: function(action) {
     for(var i in this._changeListeners) {
       this._changeListeners[i](action);
     }
+  },
+  
+  acceptCurrentValue: function() {
+    this.setEnabled(false);
+    this._createAnnotation();
   },
   
   setEnabled: function(enabled) {
@@ -100,12 +126,12 @@ var GraphicAnnotation = {
   },
   
   clear: function() {
-    for (var i = 0; i < this._group.childElementCount; i++) {
-      var polyline = this._group.childNodes[i];
+    while (this._group.childElementCount > 0) {
+      var polyline = this._group.childNodes[0];
       this._group.removeChild(polyline);
     }
   },
-  exportAnnotation: function() {
+  _createAnnotation: function() {
     var obj = [];
     for (var i = 0; i < this._group.childElementCount; i++) {
       var polyline = this._group.childNodes[i];
@@ -114,10 +140,16 @@ var GraphicAnnotation = {
         color: polyline.getAttribute('stroke')
       });
     }
-    return JSON.stringify(obj);    
+    
+    this._currentAnnotation = JSON.stringify(obj);    
   },
+  getCurrentAnnotation: function() {
+    return this._currentAnnotation;
+  },
+  
   importAnnotation: function(annotation) {
     this.clear();
+    this._currentAnnotation = annotation;
     if (annotation) {
       var array = JSON.parse(annotation);
       for (var i in array) {

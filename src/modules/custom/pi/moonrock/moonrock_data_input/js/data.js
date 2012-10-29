@@ -81,9 +81,7 @@ var MoonrockDataInput = {
     SnapshotAnnotation.addChangeListener('dataform', function(action) {
       if (action == 'done') {
         self._bigDataChange();
-      } else {
-        self._smallDataChange();
-      }
+      } 
     });
   },
   
@@ -196,7 +194,6 @@ var MoonrockDataInput = {
       this.vmComm.addPositionChangeListener('dataform', function(position) {
         self.vmPositionChanged(position);
       });
-    /*SnapshotAnnotation.*/
     }
     
     this.setModeEdit(true);

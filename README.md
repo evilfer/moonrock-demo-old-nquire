@@ -8,7 +8,12 @@ Moonrock demonstators.
 Changes:
 
 -----------------
+29-10-2012 b
 
+- Several bugs fixed.
+- div pointer-events: none not working on iPad/Safari.
+
+-----------------
 29-10-2012
 
 - Annotation appears on data browser and data table.

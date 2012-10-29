@@ -185,7 +185,7 @@ var MoonrockVMComm = {
   _getSVGAnnotation: function(width, height, scale) {
     var svgElement = $('#annotation-canvas > svg').clone();
     svgElement.attr({
-      'xmlns': 'http://www.w3.org/2000/svg',
+/*      'xmlns': 'http://www.w3.org/2000/svg',*/
       'width' : width,
       'height': height
     });

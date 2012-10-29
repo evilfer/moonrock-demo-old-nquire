@@ -9,15 +9,16 @@ var SnapshotAnnotation = {
       var self = this;
       
       $('#snapshot-annotation-annotate').click(function() {
-        $('#snapshot-annotation > button').attr('disabled', 'disabled');
+        self._setButtonsEnabled(false);
         GraphicAnnotation.setEnabled(true);
       });
       
       GraphicAnnotation.addChangeListener('snapshotAnnotation', function(action) {
         if (action == 'done') {
-          GraphicAnnotation.setEnabled(false);
-          self._storeData();
-          $('#snapshot-annotation > button').removeAttr('disabled');
+          self._storeData(GraphicAnnotation.getCurrentAnnotation());
+          self._setButtonsEnabled(true);
+        } else if (action == 'cancel') {
+          self._setButtonsEnabled(true);
         }
         
         self._notify(action);
@@ -28,8 +29,19 @@ var SnapshotAnnotation = {
     this._changeListeners[id] = callback;
   },
   acceptCurrentValue: function() {
-    
+    GraphicAnnotation.acceptCurrentValue();
+    this._storeData(GraphicAnnotation.getCurrentAnnotation());
+    this._setButtonsEnabled(true);
   },
+  
+  _setButtonsEnabled: function(enabled) {
+    if (enabled) {
+      $('#snapshot-annotation > button').removeAttr('disabled');
+    } else {
+      $('#snapshot-annotation > button').attr('disabled', 'disabled');
+    }
+  },
+  
   _notify: function(action) {
     for(var i in this._changeListeners) {
       this._changeListeners[i](action);
@@ -40,10 +52,11 @@ var SnapshotAnnotation = {
     GraphicAnnotation.clear();
   },  
   setItem: function(item) {
+    GraphicAnnotation.setEnabled(false);
     this._loadData(item.data.snapshot_vm_annotation);
+    this._setButtonsEnabled(true);
   },
-  _storeData: function() {
-    var annotation = GraphicAnnotation.exportAnnotation();
+  _storeData: function(annotation) {
     $('input[measure_content_type="moonrock_snapshot_annotation"]').attr('value', annotation);
   },
   _loadData: function(annotation) {

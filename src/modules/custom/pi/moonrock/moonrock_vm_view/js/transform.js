@@ -40,8 +40,6 @@ var AnnotationTransform = {
 
   
   resize: function() {
-    console.log('transform resize');
-    
     this._resize();
     if (this._pos) {
       this._update();

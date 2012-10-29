@@ -14,6 +14,8 @@ function moonrock_vm_view_theme() {
 
 
 function theme_moonrock_vm_view_vm() {
+  moonrock_sample_utils_load_mouse_input();
+  
   drupal_add_css(drupal_get_path('module', 'moonrock_vm_view') . '/css/vm_view.css');
   drupal_add_css(drupal_get_path('module', 'moonrock_vm_view') . '/css/annotation.css');
   drupal_add_css(drupal_get_path('module', 'moonrock_vm_view') . '/css/jquery.svg.css');

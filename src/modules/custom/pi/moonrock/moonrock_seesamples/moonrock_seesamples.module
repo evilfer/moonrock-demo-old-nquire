@@ -186,6 +186,8 @@ function theme_moonrock_seesamples($node, $teaser) {
     $output = '<a href="?q=activity/' . $activity_id . '">' . $text . '</a>';
     return $output;
   } else {
+    moonrock_sample_utils_load_javascript_modules_support();
+    
     $vm_page = theme('moonrock_vm_view_vm_simple_page');
     $output = theme('moonrock_seesamples_tabs', $node, $vm_page);
     return $output;
