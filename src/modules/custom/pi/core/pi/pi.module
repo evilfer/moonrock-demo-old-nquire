@@ -251,6 +251,13 @@ function get_inquiry_details_from_current_path() {
           }
         }
       }
+    } else {
+      $inquiry_ids = get_inquiry_ids_of_user($user->uid);
+      if (count($inquiry_ids) == 1) {
+        $result->inquiry_id = $inquiry_ids[0];
+        $stage = get_current_stage_of_inquiry_and_user($result->inquiry_id, $user->uid);
+        $result->stage_id = $stage->stage_id;
+      }
     }
   } else {
     $inquiry_ids = get_inquiry_ids_of_user($user->uid);

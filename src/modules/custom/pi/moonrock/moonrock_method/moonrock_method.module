@@ -267,8 +267,7 @@ function moonrock_method_link_alter(&$links, $node) {
  * Implementation of hook_view().
  */
 function moonrock_method_view($node, $teaser = FALSE, $page = FALSE) {
-  //$node->content['body']['#value'] = $teaser ? $node->teaser : ('<div id="moonrock-activity-description">' . $node->body . '</div>');
-
+  
   $node->content['moonrock_method'] = array(
       '#value' => theme('moonrock_method', $node, $teaser),
       '#weight' => 1

@@ -1,19 +1,19 @@
 <?php
 
 function moonrock_forum_manager_form_alter(&$form, &$form_state, $form_id) {
-
-
   if ($form_id === 'forum_node_form') {
     if ($form['field_inquiry_item']['#default_value'][0]['nid']) {
       $form['title']['#type'] = 'value';
     }
 
-    //$form['field_inquiry_item']['#type'] = 'nodereference_hidden';
-    $form['shadow']['#type'] = 'value';
-    $form['taxonomy']['1']['#type'] = 'value';
-    $form['taxonomy']['1']['#value'] = $form['taxonomy']['1']['#default_value'][0];
+    $form['field_inquiry_item']['#type'] = 'nodereference_hidden';
+    //$form['taxonomy']['#type'] = 'value';//$form['taxonomy']['2']['#default_value'];
+    /*$form['shadow']['#type'] = 'value';
+    $form['taxonomy']['#type'] = 'hidden';
+    $form['taxonomy']['2']['#value'] = $form['taxonomy']['2']['#default_value'];
+    //$form['taxonomy']['#value'] = $form['taxonomy']['2']['#default_value'][0];*/
 
-    unset($form['taxonomy']['1']['#theme']);
+    //$form['taxonomy']['#type'] = 'hidden';
     return;
   }
 }
@@ -185,7 +185,7 @@ function theme_moonrock_forum_manager_question_social_info($nid) {
 
   if ($forum_nid) {
     $comment_data = _moonrock_forum_manager_forum_new_comments($forum_nid);
-    $output .= '<a target="_blank" href="?q=node/' . $forum_nid . '">' . t('Discuss in forum') . '</a>';
+    $output .= '<a href="?q=node/' . $forum_nid . '">' . t('Discuss in forum') . '</a>';
     $output .= '<small> - '
             . $comment_data['comments']
             . ($comment_data['comments'] == 1 ? t(' comment') : t(' comments'));
@@ -200,7 +200,7 @@ function theme_moonrock_forum_manager_question_social_info($nid) {
     }
     $output .= '.</small>';
   } else {
-    $output .= '<small><a target="_blank" href="?q=moonrock_forum_manager/create/' . $nid . '">' . t('Publish this question and discuss with other users.') . '</a></small>';
+    $output .= '<small><a href="?q=moonrock_forum_manager/create/' . $nid . '">' . t('Publish this question and discuss with other users.') . '</a></small>';
   }
 
   $output .= '</div></div>';

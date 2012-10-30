@@ -79,8 +79,8 @@ function pi_activity_menu() {
   $items['activity/%pi_activity/view'] = array(
       'title' => 'View',
       'type' => MENU_DEFAULT_LOCAL_TASK,
-      'access callback' => 'pi_activity_view_access',
-      'access arguments' => array(1),
+      'access callback' => 'pi_activity_item_access',
+      'access arguments' => array(1, 'view'),
       'weight' => 0
   );
 
@@ -158,13 +158,6 @@ function pi_activity_menu() {
   return $items;
 }
 
-/**
- * FIX (eloy)
- * To hide the view tab in pi_data edit activities
- */
-function pi_activity_view_access($activity) {
-  return $activity->activity_type != 'pi_data';
-}
 
 /**
  * This page is the standard activity authoring page that is currently linked to from admin/nquire

@@ -31,7 +31,12 @@ var MoonrockDataInput = {
         self.createData();
       }
     });    
-    $('#moonrock-data-input-button-save').click(function() {
+    $('#moonrock-data-input-button-savenew').click(function() {
+      if ($(this).hasClass('enabled')) {
+        self.saveData();
+      }
+    });
+    $('#moonrock-data-input-button-savechanges').click(function() {
       if ($(this).hasClass('enabled')) {
         self.saveData();
       }
@@ -83,13 +88,23 @@ var MoonrockDataInput = {
         self._bigDataChange();
       } 
     });
+    
+    $('body').append($('<div/>').addClass('moonrock-block-overlay').hide());
   },
   
   _enableOverlay: function(enabled) {
+    var overlay = $('.moonrock-block-overlay');
+    
     if (enabled) {
-      $('.moonrock-block > .overlay').show();
+      var block = $('#moonrock-data-form-block');
+      overlay.css({
+        width: block.width(),
+        height: block.height(),
+        top: block.offset().top,
+        left: block.offset().left
+      }).show();
     } else {
-      $('.moonrock-block > .overlay').hide();
+      overlay.hide();
     }
   },
   
@@ -103,25 +118,18 @@ var MoonrockDataInput = {
     }
   },
   setModeEdit: function(editing) {
+    this._editing = editing;
     if (editing) {
       $('#moonrock-data-input-header-new').hide();
       $('#moonrock-data-input-header-edit').show();
       this._setSaveButtons('saved');
-      this._setChangesButtons(false);
       this._setDataManagementButtons(true);
     } else {
       $('#moonrock-data-input-header-edit').hide();
       $('#moonrock-data-input-header-new').show();
-      this._setSaveButtons('save');
-      this._setChangesButtons(true);
+      this._setSaveButtons('savenew');
       this._setDataManagementButtons(false);
     }
-  },
-  _setChangesButtons: function(enabled) {
-    this._setButtons({
-      newitem: enabled && ! this.currentItemId ? 'enabled' : 'hidden',
-      modified: enabled && this.currentItemId ? 'enabled' : 'hidden'
-    });
   },
   _setDataManagementButtons : function(enabled) {
     var mode = enabled ? 'enabled' : 'hidden';
@@ -137,7 +145,8 @@ var MoonrockDataInput = {
       buttons[button] = button === savemode ? 'enabled' : 'hidden';
     };
     
-    f('save');
+    f('savenew');
+    f('savechanges');
     f('saving');
     f('saved');
     
@@ -318,7 +327,6 @@ var MoonrockDataInput = {
   _opCompleted: function(op) {
     this._enableOverlay(false);
     if (op === 'delete') {
-      this._setChangesButtons(true);
       this._setSaveButtons('save');
     } else {
       this._setSaveButtons('saved');
@@ -327,7 +335,6 @@ var MoonrockDataInput = {
   
   saveData: function() {
     this._setSaveButtons('saving');
-    this._setChangesButtons(false);
     this._enableOverlay(true);
 
     $('.moonrock-measure-field').vmMeasureField('acceptCurrentMeasure');
@@ -338,7 +345,7 @@ var MoonrockDataInput = {
   createData: function() {
     this.currentItemId = null;
     
-    this.clearDataIds();
+    this.clearForm();
     this.setModeEdit(false);
     this.dataBrowser.select(null);
   },
@@ -354,8 +361,9 @@ var MoonrockDataInput = {
   },
   
   _smallDataChange: function() {
-    this._setSaveButtons('save');
-    this._setChangesButtons(true);
+    if (this._editing) {
+      this._setSaveButtons('savechanges');
+    }
   },
   _bigDataChange: function() {
     this.saveData();

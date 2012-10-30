@@ -5,14 +5,18 @@
 }
 
 .moonrock-measure-field-value {
-  height: 16px;
   font-size: 14px;
   padding: 1px 3px 1px 3px;
   border: 1px solid #aaa;
-  background: #ddd;
+  background: white;
   vertical-align: middle;
   font-weight: bold;
   margin-bottom: 2px;
+  cursor: pointer;
+}
+.moonrock-measure-field-value.empty {
+  font-weight: normal;
+  font-size: 12px;
 }
 
 

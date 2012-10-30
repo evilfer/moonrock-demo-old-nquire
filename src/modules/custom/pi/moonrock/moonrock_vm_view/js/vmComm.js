@@ -21,6 +21,7 @@ var MoonrockVMComm = {
   iframeLoaded: function() {
     this._post('monitor', 'PositionPixels');
     this._post('monitor', 'MeasureMM');
+    console.log('VM ready');
     this._notifyVmAvailable(true);
   },
   _notifyVmAvailable: function(available) {
@@ -61,6 +62,7 @@ var MoonrockVMComm = {
     this._post('set', 'FeatureState', {
       measure: true
     });
+    this._post('get', 'MeasureMM');
     
     this._vmMeasureMonitors[id] = callback;
   },
@@ -88,6 +90,11 @@ var MoonrockVMComm = {
       this._vmPositionMonitors[id](content);
     }
   },
+  _notifyMeasure: function(measure) {
+    for (var id in this._vmMeasureMonitors) {
+      this._vmMeasureMonitors[id](measure);
+    }
+  },
   _receiveMessage: function(event) {
     var self = this;
     var msg = event.data;
@@ -112,8 +119,8 @@ var MoonrockVMComm = {
             }
             break;
           case 'MeasureMM':
-            if (self._vmMeasureMonitor && msg.content && typeof msg.content.distance !== 'undefined') {
-              this._vmMeasureMonitor(msg.content.distance);
+            if (msg.content && typeof msg.content.distance !== 'undefined') {
+              this._notifyMeasure(msg.content.distance);
             }
             break;
         }
@@ -166,6 +173,11 @@ var MoonrockVMComm = {
     
             image.src = msg.content;
             break;
+          case 'MeasureMM':
+            if (msg.content && typeof msg.content.distance !== 'undefined') {
+              this._notifyMeasure(msg.content.distance);
+            }
+            break;
         }
         break;
       case 'set':
@@ -183,12 +195,13 @@ var MoonrockVMComm = {
   },
   
   _getSVGAnnotation: function(width, height, scale) {
-    var svgElement = $('#annotation-canvas > svg').clone();
+    var svgElement = $('#annotation-svg').clone();
     svgElement.attr({
-/*      'xmlns': 'http://www.w3.org/2000/svg',*/
+      /*      'xmlns': 'http://www.w3.org/2000/svg',*/
       'width' : width,
       'height': height
     });
+    svgElement.removeClass();
     var g = svgElement.children();
     var transform = g.attr('transform');
     g.attr('transform', 'scale(' + scale + ') ' + transform);

@@ -17,7 +17,7 @@ var AnnotationTransform = {
   
   
   init: function() {
-    this._element = $('#annotation');
+    this._element = $('#annotation-svg');
   },
   
   vmLoaded: function() {
@@ -34,7 +34,7 @@ var AnnotationTransform = {
     this._resize();
     
     var wk = (this._viewSize.width - 30) / this._sectionSize.width;
-    var hk = (this._viewSize.height - 70) / this._sectionSize.height;
+    var hk = (this._viewSize.height - 30) / this._sectionSize.height;
     this._zeroZoomScale = Math.min(wk, hk);
   },
 
@@ -55,10 +55,10 @@ var AnnotationTransform = {
   },  
   
   _resize: function() {    
-    this._viewSize.width = this._element.width();
-    this._viewSize.height = this._element.height();
+    this._viewSize.width = parseFloat(this._element.attr('width'));
+    this._viewSize.height = parseFloat(this._element.attr('height'));
     this._viewSize.cx = .5 * this._viewSize.width;
-    this._viewSize.cy = .5 * this._viewSize.height - 20;
+    this._viewSize.cy = .5 * this._viewSize.height;
   },
   
   

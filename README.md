@@ -8,6 +8,12 @@ Moonrock demonstators.
 Changes:
 
 -----------------
+30-10-2012
+
+- Several bug fixes.
+- div pointer-events: none not working on iPad/Safari.
+
+-----------------
 29-10-2012 b
 
 - Several bugs fixed.

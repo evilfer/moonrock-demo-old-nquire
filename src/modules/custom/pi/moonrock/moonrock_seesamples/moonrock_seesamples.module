@@ -147,7 +147,6 @@ function moonrock_seesamples_link_alter(&$links, $node) {
  * Implementation of hook_view().
  */
 function moonrock_seesamples_view($node, $teaser = FALSE, $page = FALSE) {
-//  $node->content['body']['#value'] = $teaser ? $node->teaser : ('<div id="moonrock-activity-description">' . $node->body . '</div>');
 
   $node->content['moonrock_seesamples'] = array(
       '#value' => theme('moonrock_seesamples', $node, $teaser),
@@ -186,8 +185,6 @@ function theme_moonrock_seesamples($node, $teaser) {
     $output = '<a href="?q=activity/' . $activity_id . '">' . $text . '</a>';
     return $output;
   } else {
-    moonrock_sample_utils_load_javascript_modules_support();
-    
     $vm_page = theme('moonrock_vm_view_vm_simple_page');
     $output = theme('moonrock_seesamples_tabs', $node, $vm_page);
     return $output;
@@ -229,15 +226,21 @@ function theme_moonrock_seesamples_tabs($node, $vm_tab) {
 
 function theme_moonrock_seesamples_sample_pics($node) {
   $output = '';
+  $output .= '<table>';
 
-  $output .= '<div style="width: 100%;">';
+  $row1 = '';
+  $row2 = '';
+
   $samples = moonrock_seesamples_get_main_samples($node);
+  $td_tag = '<td style="vertical-align: bottom; text-align: center;">';
+  $img_style = 'style="padding:2px; width: 100px; border: 1px solid gray; border-radius:3px; background: lightgray;';
   foreach ($samples as $sample) {
-    $style = 'padding:2px;margin:10px; width: 100px;border: 1px solid gray; border-radius:3px; background: lightgray;';
-    $img = '<img style="' . $style . '" src="' . $sample['sample']['image'] . '"></img>';
-    $output .= $img;
+    $row1 .= $td_tag . '<img src="' . $sample['sample']['image'] . '" ' . $img_style . '"></img>';
+    $row2 .= $td_tag . $sample['title'] . '</td>';
   }
-  $output .= '</div>';
+
+  $output .= '<tr>' . $row1 . '</tr><tr>' . $row2 . '</tr></table>';
+
   return $output;
 }
 
@@ -245,9 +248,15 @@ function theme_moonrock_seesamples_table($node, $teaser, $linkVM) {
   moonrock_seesamples_load_resources();
   moonrock_sample_utils_load_vmSample_format();
   moonrock_vm_state_load_resources();
+  moonrock_sample_utils_load_javascript_modules_support();
+
 
   $output = '';
-  $output .= '<div id="moonrock-activity-description">' . $node->body . '</div>';
+  $output .= '<p>' . $node->body . '</p>';
+
+  if ($linkVM) {
+    $output .= '<p><b>' . t('To open the Virtual Microscope, click on any sample\'s image.') . '</b></p>';
+  }
 
   $samples = moonrock_seesamples_get_main_samples($node);
 

@@ -6,7 +6,8 @@
     init : function(options) {
       var _options = $.extend({
         eventCallback: null,
-        imageLink: false
+        imageLink: false,
+        usePhantomNewItem: true
       }, options, {
         id: this.attr('id')
       });
@@ -37,6 +38,17 @@
         self.data('item-browser-center-on', false);
         self.itemBrowser('_slide', 'right', true);
       });
+      
+      if (_options.usePhantomNewItem) {
+        var src = 'sites/all/modules/custom/pi/moonrock/moonrock_sample_utils/css/icons/new_file.png';
+        var image = $('<img/>').attr('src', src);
+        var phantom = $('<div/>')
+        .addClass('item-browser-phantom').attr('item-id', 'new')
+        .append(image).appendTo(slider)
+        .click(function() {
+          self.itemBrowser('select', null).itemBrowser('_event', 'new');
+        });
+      }
     },
     
     clear : function() {
@@ -65,7 +77,7 @@
         if (itemsToKeep[id]) {
           currentIds[id] = true;
           self.itemBrowser('_updateItem', itemsToKeep[id], $(this));
-        } else if (deleteOld) {
+        } else if (deleteOld && id != 'new') {
           itemsToRemove.push(this);
         }
       });
@@ -92,14 +104,21 @@
     _addItem: function(item) {
       var id = this.data('options').id + '-' + item.id;
       var slider = this.find('.item-browser-slider');
+      var phantom = slider.find('.item-browser-phantom');
       
       var element = $("<div />")
       .data('item', item)
       .addClass('item-browser-item')
-      .appendTo(slider)
       .data('item', item)
       .attr('id', id)
       .attr("item-id", item.id);
+      
+      if (phantom.length > 0) {
+        element.insertBefore(phantom);
+      } else {
+        element.appendTo(slider);
+      }
+      
       
       var image = $("<img />").addClass('item-browser-item-main').appendTo(element);
       var image2 = $('<img />').addClass('item-browser-item-annotation').appendTo(element);
@@ -189,17 +208,21 @@
         }, 'fast', end);
       }
     },
+    
     select: function(id) {
       var self = this;
-      this.data('item-browser-center-on', id ? id : false);
+      var _id = id ? id : 'new';
       
-      this.find('.item-browser-item').each(function() {
-        self.itemBrowser('_setItemClass', $(this), 'item-browser-item-selected', $(this).attr('item-id') == id);
+      this.data('item-browser-center-on', _id ? _id : false);
+      
+      this.find('.item-browser-item, .item-browser-phantom').each(function() {
+        self.itemBrowser('_setItemClass', $(this), 'item-browser-item-selected', $(this).attr('item-id') == _id);
       });
       
       if (id) {
         this.itemBrowser('_makeItemVisible', id);
       }
+      
       return this;
     },
     _setItemClass: function(element, className, enabled) {
@@ -240,8 +263,17 @@
       }
       return this;
     },
+    _makePhantonVisible: function() {
+      var element = this.find('.item-browser-phanton');
+      this.itemBrowser('_makeElementVisible', element);
+      return this;
+    },
     _makeItemVisible: function(itemId) {
       var element = this.find('.item-browser-item[item-id="' + itemId + '"]');
+      this.itemBrowser('_makeElementVisible', element);
+      return this;
+    },
+    _makeElementVisible: function(element) {
       if (element.length > 0) {
         var container = this.find('.item-browser-container');
         var slider = container.find('.item-browser-slider');

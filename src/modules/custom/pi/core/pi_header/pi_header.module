@@ -1,7 +1,7 @@
 <?php
 // $Id: pi_header.module,v 1.2 2009/06/24 09:17:48 ou_pm Exp $
 
-define( 'NQUIRE_VERSION', 'Moonrock Demonstrator ALPHA 10 22-10-2012' );
+define( 'NQUIRE_VERSION', 'Moonrock Demonstrator ALPHA 11 22-10-2012' );
 
 function pi_header_block($op = 'list', $delta = 0, $edit = array()) {
 	global $user;
@@ -23,11 +23,11 @@ function pi_header_block($op = 'list', $delta = 0, $edit = array()) {
 			if( arg(0) == 'inquiry' || arg(0) == 'phase' || arg(0) == 'activity' )
 			{
 				//$home_icon = l(t("<h1 class=\"nquire_home\">home</h1>"), t("inquiry/" . $details->inquiry_id), array('html' => TRUE));
-				$home_icon = l('<img src="' . $image_path . '/octagon.png" height="50px" >', 'inquiry/' . $details->inquiry_id, array('html' => TRUE) ) ;
+				$home_icon = l('<img src="' . $image_path . '/hexagon.png" style="border:1px solid #bbb" height="50px" >', 'inquiry/' . $details->inquiry_id, array('html' => TRUE) ) ;
 			}
 			else
 			{
-				$home_icon = l( '<img src="' . $image_path . '/logo.png" height="50px" >', 'http://www.nquire.org.uk', array('html' => TRUE) ) ;
+				$home_icon = l( '<img src="' . $image_path . '/logo2.png" height="50px" >', 'http://www.nquire.org.uk', array('html' => TRUE) ) ;
 			}
 
 			$output = '';
@@ -46,10 +46,10 @@ function pi_header_block($op = 'list', $delta = 0, $edit = array()) {
 			}
 			$output .= "</div>";
 
-			if(NQUIRE_VERSION)
+			/*if(NQUIRE_VERSION)
 			{
 				$output .= "<div style='float:right;clear:right;'>" . t('Version ID') . ':&nbsp;' . NQUIRE_VERSION . "</div>";
-			}
+			}*/
 
 			if ($user->uid)
 			{

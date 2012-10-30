@@ -4,6 +4,7 @@ var GraphicAnnotation = {
   _element: null,
   _svg: null,
   _group: null,
+  _enabled: false,
   _action: null,
   _currentPolyline: null,
   _currentPointList: null,
@@ -18,7 +19,8 @@ var GraphicAnnotation = {
     });
     
     var self = this;
-    this._element = $('#annotation-canvas');
+    this._element = $('#annotation-svg');
+    this._parent = this._element.parent();
     $('.annotation-buttons > .annotation-mode-selector').click(function() {
       self._setMode($(this).attr('mode'));
     });
@@ -37,23 +39,22 @@ var GraphicAnnotation = {
         self._group = svg.group(); 
         
         self._element.customMouseInput('rawdrag', function(action, point) {
-          switch(action) {
-            case 'dragstart':
-              self.startDrag(point);
-              break;
-            case 'drag':
-              self.drag(point);
-              break;
-            case 'dragend':
-              self.endDrag();
-              break;
+          if (self._enabled) {
+            switch(action) {
+              case 'dragstart':
+                self.startDrag(point);
+                break;
+              case 'drag':
+                self.drag(point);
+                break;
+              case 'dragend':
+                self.endDrag();
+                break;
+            }
           }
         });
       }
     }); 
-    
-    this._svgElement = this._element.children();
-    this._svgElement.attr('xmlns', 'http://www.w3.org/2000/svg');
     
     MoonrockVMComm.addVmAvailableListener('annotation', function(available) {
       if (available) {
@@ -69,9 +70,9 @@ var GraphicAnnotation = {
     });
     
     TabsManager.addResizeListener('annotation', function() {
-      self._svgElement.attr({
-        width: self._element.width(),
-        height: Math.max(0, self._element.height() - 40)
+      self._element.attr({
+        width: self._parent.width(),
+        height: Math.max(0, self._parent.height() - 40)
       });
       AnnotationTransform.resize();
     });
@@ -102,6 +103,7 @@ var GraphicAnnotation = {
   },
   
   setEnabled: function(enabled) {
+    this._enabled = enabled;
     if (enabled) {
       $('.annotation-root-element').removeClass('annotation-inactive');
       this._setMode('blue');

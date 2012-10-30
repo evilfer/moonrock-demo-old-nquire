@@ -12,6 +12,8 @@ var MoonrockDataInputDataBrowser = {
           MoonrockDataInput.setItem(item);
         } else if (type === 'itemadded') {
           MoonrockDataInput.itemAdded(item);
+        } else if (type === 'new') {
+          MoonrockDataInput.createData();
         }
       },
       imageLink: true

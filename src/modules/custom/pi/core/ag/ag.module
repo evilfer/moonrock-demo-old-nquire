@@ -61,8 +61,16 @@ function ag_block($op = 'list', $delta = 0, $edit = array()) {
       //$hidden_created_activity_types = array('pi_measure_filter');
 
       $image_path = drupal_get_path('module', 'pi') . '/images/';
-
-      if (arg(0) == 'phase' || arg(0) == 'activity') {
+      
+      $show_navigation = $node_details->inquiry_id && $node_details->stage_id && arg(0) != 'inquiry';
+      if (arg(0) == 'node') {
+        $current_node = node_load(arg(1));
+        if ($current_node->type == 'story') {
+          $show_navigation = FALSE;
+        }
+      }
+//      if (arg(0) == 'phase' || arg(0) == 'activity') {
+      if ($show_navigation) {
 
         $phases = pi_phase_load_nids_for_user($node_details->inquiry_id, $user->uid);
         $stages = pi_stage_load_nids_for_user($details->inquiry_id, $user->uid);
@@ -145,7 +153,9 @@ function ag_block($op = 'list', $delta = 0, $edit = array()) {
 
         $block_content = t(theme('item_list', $phase_menu_items, NULL, 'ul', array('class' => 'menu')));
       }
-      if (arg(0) == 'phase' && $show_phases || arg(0) == 'activity' && ($show_phases || $show_activities)) {
+      
+//      if (arg(0) == 'phase' && $show_phases || arg(0) == 'activity' && ($show_phases || $show_activities)) {
+      if ($show_navigation && ($show_phases || $show_activities)) {
         $loaded_inquiry = node_load($node_details->inquiry_id);
         $block['subject'] = t('Navigation');
         $block['content'] = "<div class='activity-guide'>" . $ag_content . $inquiry_stage_info . $block_content . "</div>";

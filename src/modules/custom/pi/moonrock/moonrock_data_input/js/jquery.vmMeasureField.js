@@ -14,8 +14,9 @@
       
       self.html('').addClass('moonrock-measure-field');
       
-      $('<div/>')
+      var display = $('<div/>')
       .addClass('moonrock-measure-field-value')
+      .attr('action', 'measure')
       .appendTo(self);
       
       self.vmMeasureField('_field2displayValue');
@@ -30,6 +31,8 @@
       var click = function() {
         self.vmMeasureField('_buttonAction', $(this).attr('action'));
       };
+      
+      display.click(click);
       
       for (var i in buttons) {
         var button = buttons[i];
@@ -46,7 +49,7 @@
     },
     
     getDisplayValue: function() {
-      return this.find('.moonrock-measure-field-value').html();
+      return this.data('displayValue');
     },    
     setValue: function(value) {
       this
@@ -72,7 +75,15 @@
     },
 
     _setDisplayValue: function(value) {
-      this.find('.moonrock-measure-field-value').html(value);
+      this.data('displayValue', value);
+      var element = this.find('.moonrock-measure-field-value');
+      var text = '' + value;
+      if (text.length == 0) {
+        element.addClass('empty').html('Click here to start measuring!');
+      } else {
+        element.removeClass('empty').html(value);
+        }
+      
       return this;
     },
     _display2fieldValue: function() {
@@ -116,19 +127,19 @@
     },
     
     _setButtonsIdle: function() {
-      $('[action="done"], [action="cancel"]').addClass('moonrock-measure-field-button-hidden');
-      $('[action="measure"]').removeClass('moonrock-measure-field-button-hidden');
+      $('.moonrock-measure-field-button[action="done"], .moonrock-measure-field-button[action="cancel"]').addClass('moonrock-measure-field-button-hidden');
+      $('.moonrock-measure-field-button[action="measure"]').removeClass('moonrock-measure-field-button-hidden');
       
       if (this.vmMeasureField('hasValue')) {
-        $('[action="clear"]').removeClass('moonrock-measure-field-button-hidden');
+        $('.moonrock-measure-field-button[action="clear"]').removeClass('moonrock-measure-field-button-hidden');
       } else {
-        $('[action="clear"]').addClass('moonrock-measure-field-button-hidden');
+        $('.moonrock-measure-field-button[action="clear"]').addClass('moonrock-measure-field-button-hidden');
       }      
       return this;
     },
     _setButtonsEdit: function() {
-      $('[action="measure"], [action="clear"]').addClass('moonrock-measure-field-button-hidden');
-      $('[action="done"], [action="cancel"]').removeClass('moonrock-measure-field-button-hidden');
+      $('.moonrock-measure-field-button[action="measure"], .moonrock-measure-field-button[action="clear"]').addClass('moonrock-measure-field-button-hidden');
+      $('.moonrock-measure-field-button[action="done"], .moonrock-measure-field-button[action="cancel"]').removeClass('moonrock-measure-field-button-hidden');
       return this;
     },
     

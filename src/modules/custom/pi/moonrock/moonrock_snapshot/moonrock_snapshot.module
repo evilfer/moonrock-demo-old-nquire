@@ -224,8 +224,7 @@ function moonrock_snapshot_nquire_data_form_prefix($measure) {
   drupal_add_js(drupal_get_path('module', 'moonrock_snapshot') . '/js/annotation.js');
 
   $output = '<div id="snapshot-annotation">'
-          . '<button id="snapshot-annotation-annotate">' . t('Annotate VM') . '</button>'
-          . '<button id="snapshot-annotation-clear">' . t('Clear') . '</button>'
+          . '<button id="snapshot-annotation-annotate">' . t('Annotate view') . '</button>'
           . '</div>';
 
   return $output;

@@ -256,17 +256,16 @@ function theme_moonrock_data_input_form_block($separator) {
   $bottom = '<div class="moonrock-block-bottom-content">'
           . '<div class="moonrock-data-input-button-menu">'
           . '  <div class="moonrock-data-input-button-row">'
-          . '    <div class="moonrock-data-input-message moonrock-data-input-hidden" id="moonrock-data-input-button-newitem">' . t('New data ') . '</div> '
-          . '    <div class="moonrock-data-input-message moonrock-data-input-hidden" id="moonrock-data-input-button-modified">' . t('Data modified ') . '</div> '
-          . '    <div class="moonrock-data-input-button moonrock-data-input-hidden" id="moonrock-data-input-button-save">' . t('Save') . '</div> '
+          . '    <button class="moonrock-data-input-hidden" id="moonrock-data-input-button-savenew">' . t('Save new data') . '</button> '
+          . '    <button class="moonrock-data-input-hidden" id="moonrock-data-input-button-savechanges">' . t('Save changes') . '</button> '
           . '    <div class="moonrock-data-input-message moonrock-data-input-hidden" id="moonrock-data-input-button-saving">' . t('Saving data... ') . '</div> '
-          . '    <div class="moonrock-data-input-message moonrock-data-input-hidden" id="moonrock-data-input-button-saved">' . t('Changes saved ') . '</div> '
+          . '    <div class="moonrock-data-input-message moonrock-data-input-hidden" id="moonrock-data-input-button-saved">' . t('All changes saved ') . '</div> '
           . '    <div class="moonrock-data-input-icon moonrock-data-input-hidden" id="moonrock-data-input-button-undo"></div> '
           . '    <div class="moonrock-data-input-icon moonrock-data-input-hidden" id="moonrock-data-input-button-redo"></div>'
           . '  </div>'
           . '  <div class="moonrock-data-input-button-row">'
-          . '    <div class="moonrock-data-input-button moonrock-data-input-hidden" id="moonrock-data-input-button-createdata">' . t('New data') . '</div>'
-          . '    <div class="moonrock-data-input-button moonrock-data-input-hidden" id="moonrock-data-input-button-deletedata">' . t('Delete data') . '</div>'
+          . '    <button class="moonrock-data-input-hidden" id="moonrock-data-input-button-createdata">' . t('New data') . '</button>'
+          . '    <button class="moonrock-data-input-hidden" id="moonrock-data-input-button-deletedata">' . t('Delete data') . '</button>'
           . '  </div>'
           . '</div>'
           . '</div>';
@@ -296,7 +295,7 @@ function theme_moonrock_data_input_form_page($separator) {
   $form = theme('moonrock_data_input_form_block', $separator);
   $vm_page = theme('moonrock_layout_horizontal', array(
       array('content' => $left, 'flex' => TRUE),
-      array('content' => $form, 'width' => 200),
+      array('content' => $form, 'width' => 200, 'id' => 'moonrock-data-form-block'),
           ), TRUE);
 
   $output = theme('moonrock_seesamples_tabs', $sample_view, $vm_page);

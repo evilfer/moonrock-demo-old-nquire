@@ -8,7 +8,7 @@
   box-sizing: border-box;
   -moz-box-sizing: border-box;
   -webkit-box-sizing: border-box;
-  
+
   width: 100%;
 }
 
@@ -74,7 +74,7 @@
   left: 0px;
 }
 
-.item-browser-item {
+.item-browser-item, .item-browser-phantom {
   -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
   -moz-box-sizing: border-box;    /* Firefox, other Gecko */
   box-sizing: border-box;         /* Opera/IE 8+ */
@@ -82,24 +82,45 @@
   position: relative;
   display: inline-block;
   height: 100%;
-  background: #aaa;
   margin: 0px 2px 0px 2px;
   border-width: 3px;
   border-radius: 3px;
 
   border-style: solid;
   border-color: #222;
-  /*width: auto;*/
+  top: 0px;
+}
+
+.item-browser-item {
+  background: #aaa;
+}
+
+.item-browser-phantom {
+  width: 75px;
 }
 
 .item-browser-item.item-browser-item-selected {
-  border-style: solid;
   border-color: #f44;
+  border-style: solid;
 }
+.item-browser-phantom.item-browser-item-selected {
+  border-color: #f84;
+  border-style: solid;
+}
+
 
 .item-browser-item img.item-browser-item-main {
   height: 100%;  
   width: auto;
+}
+.item-browser-phantom img {
+  height: 100%;
+  padding: 15px 20px 15px 15px;
+  width: auto;
+  -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+  -moz-box-sizing: border-box;    /* Firefox, other Gecko */
+  box-sizing: border-box;         /* Opera/IE 8+ */
+  cursor: pointer;
 }
 
 .item-browser-item img.item-browser-item-annotation {
@@ -124,153 +145,3 @@
 }
 
 
-
-
-
-
-/*
-
-.item-browser-container {
-  position: relative;
-  margin-left: 25px;
-  height: 215px;
-  margin-bottom: 20px;
-}
-
-.item-browser-scroll-container {
-  position: absolute;
-  overflow: hidden;
-  bottom: 0px;
-  left: 0px;
-  height: 15px;
-  width: 0px;
-  background: #fafafa;
-}
-
-.item-browser-scroll-bar {
-  position: absolute;
-  top: 0px;
-  width: 50px;
-  height: 100%;
-  background: #c8c8c8;
-  cursor: pointer;
-}
-
-.item-browser-item {
-  position: absolute;
-  bottom: 20px;
-  padding: 5px;
-  border: 1px solid transparent;
-}
-
-.item-browser-item-img-container {
-  position: relative;
-  width: 100%;
-  border: 0px solid transparent;
-  border-radius: 3px;
-  padding: 3px;
-  background: white;
-}
-
-.item-browser-item-new .item-browser-item-img-container {
-  border: 0px solid transparent;  
-  background: #7f7;
-}
-
-.item-browser-item-selected .item-browser-item-img-container {
-  border: 0px solid transparent;
-  background: #f77;
-}
-
-
-.item-browser-item-img {
-  width: 100%;
-  background: black;
-}
-
-.item-browser-item-img-open {
-  position: absolute;
-  top: 0px;
-  left: 0px;
-  width: 100%;
-  height: 100%;
-  cursor: pointer;
-}
-
-.item-browser-item-img-open {
-  position: absolute;
-  top: 0px;
-  left: 0px;
-  width: 100%;
-  height: 100%;
-  cursor: pointer;
-}
-.item-browser-item-img-container:hover .item-browser-item-img-open {
-  background: url(icons/magnifier.png) no-repeat center;
-}
-
-.item-browser-item-img-toggle {
-  position: absolute;
-  top: 0px;
-  left: 0px;
-  width: 32px;
-  height: 32px;
-  cursor: pointer;
-}
-.item-browser-item-img-container:hover .item-browser-item-img-toggle {
-  background: url(icons/arrow_undo.png) no-repeat center;
-}
-
-
-.item-browser-item-title {
-  text-align: center;
-  font-weight: bold;
-  height: 25px;
-  overflow: hidden;
-}
-
-.item-browser-item-title-cluetip {
-  font-weight: bold;
-  color: orange;
-  display: inline-block;
-  height: 12px;
-  width: 18px;
-  background: url(icons/info.png) no-repeat right;
-  background-size: 12px 12px;
-}
-.item-browser-item-title-open {
-  font-weight: bold;
-  color: orange;
-  display: inline-block;
-  height: 12px;
-  width: 18px;
-  background: url(icons/open.png) no-repeat right;
-  cursor: pointer;
-}
-
-.item-browser-item-header {
-  height: 17px;
-  background: url(icons/clip_a.png) bottom right no-repeat;
-}
-
-.item-browser-item-header.item-browser-item-header-clip {
-  background: url(icons/clip_b.png) bottom right no-repeat;
-}
-
-.item-browser-throbber {
-  display: inline-block;
-  height: 16px;
-  width: 26px;  
-}
-
-.item-browser-throbber.active {
-  background: url("icons/throbber.gif");
-  background-repeat: no-repeat;
-  background-position: right;
-}
-
-.item-browser-item-qtip {
-  font-size: 12px;
-  width: auto !important;
-}
-*/
