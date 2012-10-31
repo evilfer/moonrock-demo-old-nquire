@@ -216,11 +216,11 @@ function theme_moonrock_seesamples_tabs($node, $vm_tab) {
         'title' => $sample['title'],
         'tabId' => $sample['id'],
         'contentId' => 'vm',
-        'hidden' => TRUE,
+        'hidden' => FALSE,
     );
   }
 
-  $output = theme('moonrock_layout_tabs', $tabs, $content);
+  $output = theme('moonrock_layout_tabs', $tabs, $content, TRUE);
   return $output;
 }
 
@@ -260,7 +260,7 @@ function theme_moonrock_seesamples_table($node, $teaser, $linkVM) {
 
   $samples = moonrock_seesamples_get_main_samples($node);
 
-  $output .= '<div class="moonrock-sample-list">';
+  $output .= '<div class="moonrock-sample-list" vmview="' . (!$linkVM) . '">';
   foreach ($samples as $sample) {
     $output .= '<div class="moonrock-sample-container">';
 

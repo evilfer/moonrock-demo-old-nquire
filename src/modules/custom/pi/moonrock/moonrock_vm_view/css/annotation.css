@@ -12,6 +12,10 @@ svg.annotation-inactive, svg.annotation-inactive g, svg.annotation-inactive poly
   pointer-events: none;
 }
 
+.annotation-svg-hidden {
+  display: none;
+}
+
 .annotation-buttons {
   position: absolute;
   bottom: 0px;

@@ -1,13 +1,26 @@
 
 
 .layout-tabbed-container {
+  position: relative;
+  background: white;
+}
+
+.layout-tabbed-container-fullscreen {
+  position: fixed;
+  top: 0px;
+  left: 0px;
+  padding: 10px;
 }
 
 .layout-tabbed-container-tabs {
   border-bottom: 1px solid gray;
-  height: 20px;
+  height: 24px;
   margin-bottom: 10px;
 }
+.layout-tabbed-container-fullscreen-enabled .layout-tabbed-container-tabs {
+  padding-left: 22px;
+}
+
 
 .layout-tabbed-container-tab {
   background: #ddd;
@@ -15,8 +28,8 @@
   border: 1px solid gray;
   border-radius: 2px;
   padding: 2px 8px 2px 8px;
-  height: 15px;
-  margin: 0px 0px 0px 5px;
+  height: 17px;
+  margin: 2px 0px 0px 5px;
   cursor: pointer;
   font-size: 12px;
   font-weight: bold;
@@ -56,4 +69,27 @@
 }
 .layout-block {
   position: absolute;
+}
+
+
+.layout-tabbed-container-fullscreen-button {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 24px 24px;
+  cursor: pointer;
+
+  background-image: url(icons/fullscreen.png);
+}
+.layout-tabbed-container-fullscreen-button:hover {
+  background-image: url(icons/fullscreen_hover.png);
+}
+
+.layout-tabbed-container-fullscreen .layout-tabbed-container-fullscreen-button {
+  background-image: url(icons/fullscreen_back.png);
+}
+.layout-tabbed-container-fullscreen .layout-tabbed-container-fullscreen-button:hover {
+  background-image: url(icons/fullscreen_back_hover.png);
 }

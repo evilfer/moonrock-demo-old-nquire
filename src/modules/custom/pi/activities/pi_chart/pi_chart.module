@@ -139,9 +139,15 @@ function pi_chart_create_png($title, $type, $abscissa_nid, $ordinate_str, $color
             $max = max($max, _pi_chart_get_numeric_value($row[$i], $types[$i]));
           }
         }
-        $max = $ngaps * ceil($max / $ngaps);
-        $min = $ngaps * floor($min / $ngaps);
-
+        
+        $max_abs_value = max(abs($max), abs($min));
+        if ($max_abs_value > 0) {
+          $log = log10($max_abs_value);
+          $f10 = pow(10, ceil($log) - 2);
+          $min = floor($min / $f10) * $f10;
+          $max = ceil($max / $f10) * $f10;
+        }
+        
         $gap = $max > $min ? ($max - $min) / $ngaps : 5;
         $limits = array();
         for ($j = 0; $j < $ngaps; $j++) {

@@ -3,7 +3,6 @@
 var VmManager = {
   _sample: null,
   _sampleSelectionCallbacks: [],
-  _vmVisible: false,
   
   init: function() {
     var self = this;
@@ -21,10 +20,9 @@ var VmManager = {
   
   vmTabOpened: function(id) {
     if (id == 'samples') {
-      this._vmVisible = false;
+      this._setSample(null);
     } else {
       this._setSample(MoonrockSeeSamples.getItem(id));
-      this._vmVisible = true;
     }
   },
   
@@ -52,27 +50,32 @@ var VmManager = {
   
   _setSample: function(sample) {
     if (sample != this._sample) {
-      
+      GraphicAnnotation.setEnabled(false);
       var self = this;
       var updateCallback = function() {
         self._sample = sample;
         //VmNavigator.update(sample);
+        
+        if (sample) {
+          var url = sample.snapshot ? sample.snapshot.viewurl :
+          (location.protocol + '//' + location.host + location.pathname + sample.vm);
       
-        var url = sample.snapshot ? sample.snapshot.viewurl :
-        (location.protocol + '//' + location.host + location.pathname + sample.vm);
-      
-        $('#moonrock-vm-iframe').attr('src', url);
-        MoonrockVMComm.saluteVm();
+          $('#moonrock-vm-iframe').attr('src', url);
+          MoonrockVMComm.saluteVm();
+        }
         
         for(var i in self._sampleSelectionCallbacks) {
           (self._sampleSelectionCallbacks[i])(self._sample);
         }
       };
     
-      if (this._sample && this._vmVisible) {
+      console.log((this._sample ? true : false));
+      if (this._sample) {
+        console.log('getting state for ' + this._sample.id);
         var oldId = this._sample.id;
 
         var snapshotCallback = function(snapshot) {
+          console.log('saving state for ' + oldId);
           MoonrockSeeSamples.setSnapshot(oldId, snapshot)
         };
         MoonrockVMComm.getVMSnapshotAndDoOtherStuffQuick(snapshotCallback, updateCallback);

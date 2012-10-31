@@ -77,7 +77,6 @@ var AnnotationTransform = {
     'translate(' + (-this._vmCenterRelPos.dx) +  ' ' + (-this._vmCenterRelPos.dy) + ') ' +
     '';
     
-    console.log(transform);
     GraphicAnnotation._setTransform(transform);
   },
   

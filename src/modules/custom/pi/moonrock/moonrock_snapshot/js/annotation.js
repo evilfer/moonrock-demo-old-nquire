@@ -2,29 +2,36 @@
 
 var SnapshotAnnotation = {
   _changeListeners: {},
+  _available: false,
   
   init: function() {
     this._element = $('#snapshot-annotation');
     if (this._element.length > 0) {
-      var self = this;
-      
-      $('#snapshot-annotation-annotate').click(function() {
-        self._setButtonsEnabled(false);
-        GraphicAnnotation.setEnabled(true);
-      });
-      
-      GraphicAnnotation.addChangeListener('snapshotAnnotation', function(action) {
-        if (action == 'done') {
-          self._storeData(GraphicAnnotation.getCurrentAnnotation());
-          self._setButtonsEnabled(true);
-        } else if (action == 'cancel') {
-          self._setButtonsEnabled(true);
-        }
+      if (GraphicAnnotation.isTablet()) {
+        this._element.hide();
+      } else {
+        this._available = true;
+        var self = this;
         
-        self._notify(action);
-      });
+        $('#snapshot-annotation-annotate').click(function() {
+          self._setButtonsEnabled(false);
+          GraphicAnnotation.setEnabled(true);
+        });
+      
+        GraphicAnnotation.addChangeListener('snapshotAnnotation', function(action) {
+          if (action == 'done') {
+            self._storeData(GraphicAnnotation.getCurrentAnnotation());
+            self._setButtonsEnabled(true);
+          } else if (action == 'cancel') {
+            self._setButtonsEnabled(true);
+          }
+        
+          self._notify(action);
+        });
+      }
     }
   },
+
   addChangeListener: function(id, callback) {
     this._changeListeners[id] = callback;
   },
@@ -49,12 +56,16 @@ var SnapshotAnnotation = {
   },
   
   clear: function() {
-    GraphicAnnotation.clear();
+    if (this._available) {
+      GraphicAnnotation.clear();
+    }
   },  
   setItem: function(item) {
-    GraphicAnnotation.setEnabled(false);
-    this._loadData(item.data.snapshot_vm_annotation);
-    this._setButtonsEnabled(true);
+    if (this._available) {
+      GraphicAnnotation.setEnabled(false);
+      this._loadData(item.data.snapshot_vm_annotation);
+      this._setButtonsEnabled(true);
+    }
   },
   _storeData: function(annotation) {
     $('input[measure_content_type="moonrock_snapshot_annotation"]').attr('value', annotation);

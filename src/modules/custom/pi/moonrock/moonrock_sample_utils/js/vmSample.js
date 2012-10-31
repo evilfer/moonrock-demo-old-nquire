@@ -31,10 +31,10 @@
       return this;
     },
     setSnapshot: function(snapshot) {
+      var item = this.data('item');
+      item.snapshot = snapshot;
+      this.data('item', item);
       if (this.data('options').enableVmView) {
-        var item = this.data('item');
-        item.snapshot = snapshot;
-        this.data('item', item);
         this.vmSample('_enableImageToggle');
       }
       return this;

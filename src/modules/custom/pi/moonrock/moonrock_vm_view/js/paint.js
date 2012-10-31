@@ -14,68 +14,71 @@ var GraphicAnnotation = {
   _changeListeners: {},
   
   init: function() {
-    $('.othercontent').click(function() {
-      alert('clicked on green');
-    });
-    
-    var self = this;
-    this._element = $('#annotation-svg');
-    this._parent = this._element.parent();
-    $('.annotation-buttons > .annotation-mode-selector').click(function() {
-      self._setMode($(this).attr('mode'));
-    });
-    
-    $('#annotation-done').click(function() {
-      self._done();
-    });
-    $('#annotation-cancel').click(function() {
-      self._cancel();
-    });
-    
-    
-    this._element.svg({
-      onLoad: function(svg) { 
-        self._svg = svg; 
-        self._group = svg.group(); 
-        
-        self._element.customMouseInput('rawdrag', function(action, point) {
-          if (self._enabled) {
-            switch(action) {
-              case 'dragstart':
-                self.startDrag(point);
-                break;
-              case 'drag':
-                self.drag(point);
-                break;
-              case 'dragend':
-                self.endDrag();
-                break;
-            }
-          }
-        });
-      }
-    }); 
-    
-    MoonrockVMComm.addVmAvailableListener('annotation', function(available) {
-      if (available) {
-        AnnotationTransform.vmLoaded();
-        self._element.show();
-      } else {
-        self._element.hide();
-      }
-    });
-    
-    MoonrockVMComm.addPositionChangeListener('annotation', function(pos) {
-      AnnotationTransform.setVmPos(pos);
-    });
-    
-    TabsManager.addResizeListener('annotation', function() {
-      self._element.attr({
-        width: self._parent.width(),
-        height: Math.max(0, self._parent.height() - 40)
+    if (GraphicAnnotation.isTablet()) {
+      $('#annotation-svg').addClass('annotation-svg-hidden');
+    } else {
+      var self = this;
+      this._element = $('#annotation-svg');
+      this._parent = this._element.parent();
+      $('.annotation-buttons > .annotation-mode-selector').click(function() {
+        self._setMode($(this).attr('mode'));
       });
-      AnnotationTransform.resize();
-    });
+    
+      $('#annotation-done').click(function() {
+        self._done();
+      });
+      $('#annotation-cancel').click(function() {
+        self._cancel();
+      });
+    
+    
+      this._element.svg({
+        onLoad: function(svg) { 
+          self._svg = svg; 
+          self._group = svg.group(); 
+        
+          self._element.customMouseInput('rawdrag', function(action, point) {
+            if (self._enabled) {
+              switch(action) {
+                case 'dragstart':
+                  self.startDrag(point);
+                  break;
+                case 'drag':
+                  self.drag(point);
+                  break;
+                case 'dragend':
+                  self.endDrag();
+                  break;
+              }
+            }
+          });
+        }
+      }); 
+    
+      MoonrockVMComm.addVmAvailableListener('annotation', function(available) {
+        if (available) {
+          AnnotationTransform.vmLoaded();
+          self._element.show();
+        } else {
+          self._element.hide();
+        }
+      });
+    
+      MoonrockVMComm.addPositionChangeListener('annotation', function(pos) {
+        AnnotationTransform.setVmPos(pos);
+      });
+    
+      TabsManager.addResizeListener('annotation', function() {
+        self._element.attr({
+          width: self._parent.width(),
+          height: Math.max(0, self._parent.height() - 40)
+        });
+        AnnotationTransform.resize();
+      });
+    
+    
+      self.setEnabled(false);
+    }
   },
   
   addChangeListener: function(id, callback) {
@@ -100,6 +103,9 @@ var GraphicAnnotation = {
   acceptCurrentValue: function() {
     this.setEnabled(false);
     this._createAnnotation();
+  },
+  isTablet : function() {
+    return navigator.userAgent.match(/iPad|Android/i);
   },
   
   setEnabled: function(enabled) {
@@ -128,9 +134,11 @@ var GraphicAnnotation = {
   },
   
   clear: function() {
-    while (this._group.childElementCount > 0) {
-      var polyline = this._group.childNodes[0];
-      this._group.removeChild(polyline);
+    if (this._group) {
+      while (this._group.childElementCount > 0) {
+        var polyline = this._group.childNodes[0];
+        this._group.removeChild(polyline);
+      }
     }
   },
   _createAnnotation: function() {
@@ -203,6 +211,8 @@ var GraphicAnnotation = {
         }
         this._currentPolyline = this._createPolyline(this._currentPointList, this._mode);
       }
+      
+      this._notify('change');
     }
   },
   erase: function(point) {

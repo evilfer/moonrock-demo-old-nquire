@@ -9,7 +9,7 @@ function moonrock_layout_theme() {
           'arguments' => array('elements', 'isRoot'),
       ),
       'moonrock_layout_tabs' => array(
-          'arguments' => array('tabs', 'content'),
+          'arguments' => array('tabs', 'content', 'enable_fullscreen'),
       ),
   );
 }
@@ -22,19 +22,32 @@ function theme_moonrock_layout_horizontal($elements, $isRoot) {
   return _moonrock_layout_direction($elements, 'horizontal', $isRoot);
 }
 
-function theme_moonrock_layout_tabs($tabs, $content) {
+function theme_moonrock_layout_tabs($tabs, $content, $enable_fullscreen) {
   _moonrock_layout_load_resources();
 
-  $output = '<div class="layout-tabbed-container">';
+  $container_class = 'layout-tabbed-container';
+  if ($enable_fullscreen) {
+    $container_class .= ' layout-tabbed-container-fullscreen-enabled';
+  }
+
+
+  $output = '<div class="' . $container_class . '">';
+
+  if ($enable_fullscreen) {
+    $output .= '<div class="layout-tabbed-container-fullscreen-button"></div>';
+  }
+
 
   $output .= '<div class="layout-tabbed-container-tabs">';
+
+
   foreach ($tabs as $tab) {
     $classname = 'layout-tabbed-container-tab';
     if ($tab['hidden']) {
       $classname .= ' layout-tabbed-container-hidden';
     }
-    
-    $output .= '<div class="' . $classname  . '" tab="' . $tab['tabId'] . '" content="' . $tab['contentId'] . '">'
+
+    $output .= '<div class="' . $classname . '" tab="' . $tab['tabId'] . '" content="' . $tab['contentId'] . '">'
             . $tab['title']
             . '</div>';
   }
@@ -71,7 +84,7 @@ function _moonrock_layout_direction($elements, $direction, $isRoot) {
     } else {
       $classname .= ' layout-block-fixed';
     }
-    
+
     $style = '';
     if (isset($element['width'])) {
       $style .= 'width:' . $element['width'] . 'px;';
@@ -79,7 +92,7 @@ function _moonrock_layout_direction($elements, $direction, $isRoot) {
     if (isset($element['height'])) {
       $style .= 'height:' . $element['height'] . 'px;';
     }
-    
+
     if (isset($element['id'])) {
       $id = 'id="' . $element['id'] . '"';
     } else {

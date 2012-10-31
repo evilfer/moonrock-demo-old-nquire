@@ -2,6 +2,10 @@
 
 var MoonrockVmState = {
   
+  init: function() {
+    
+  },
+  
   get: function(callback) {
     $.ajax({
       url: '?q=moonrock_vm_state/get',
@@ -35,3 +39,7 @@ var MoonrockVmState = {
     });
   }  
 };
+
+$(function() {
+  MoonrockModules.register('MoonrockVmState', MoonrockVmState);
+});

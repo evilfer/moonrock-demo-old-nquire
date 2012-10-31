@@ -96,7 +96,11 @@
 }
 
 .item-browser-phantom {
-  width: 75px;
+  width: 100px;
+  background: #222;
+  border-color: #555;
+  text-align: center;
+  cursor: pointer;
 }
 
 .item-browser-item.item-browser-item-selected {
@@ -106,6 +110,7 @@
 .item-browser-phantom.item-browser-item-selected {
   border-color: #f84;
   border-style: solid;
+  background: #333;
 }
 
 
@@ -144,4 +149,30 @@
   background: url(icons/magnifier.png) no-repeat center;
 }
 
+.item-browser-item-message {
+  position: absolute;
+  width: 100%;
+  bottom: 8px;
+  left: 0px;
+  text-align: center;
+  display: none;
+}
+
+.item-browser-item-message span {
+  box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+
+  border: 2px solid #555;
+  border-radius: 10px;
+  background: #222;
+  color: white;
+  /*font-weight: bold;*/
+
+  padding: 4px 15px 4px 15px;
+}
+
+.item-browser-item-selected .item-browser-item-message {
+  display: block;
+}
 

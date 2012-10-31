@@ -18,9 +18,18 @@ function pi_header_block($op = 'list', $delta = 0, $edit = array()) {
 
 			$details = get_inquiry_details_from_current_path();
 			$inquiry = node_load($details->inquiry_id);
-
+      
+      $show_cycle = FALSE;
+			if( arg(0) == 'inquiry' || arg(0) == 'phase' || arg(0) == 'activity' || arg(0) == 'forum') {
+        $show_cycle = TRUE;
+      } else if (arg(0) == 'node') {
+        $node = node_load(arg(1));
+        if ($node && $node->type == 'forum') {
+          $show_cycle = TRUE;
+        }
+      }
 			//$block['subject'] = "nQuire";
-			if( arg(0) == 'inquiry' || arg(0) == 'phase' || arg(0) == 'activity' )
+      if ($show_cycle)
 			{
 				//$home_icon = l(t("<h1 class=\"nquire_home\">home</h1>"), t("inquiry/" . $details->inquiry_id), array('html' => TRUE));
 				$home_icon = l('<img src="' . $image_path . '/hexagon.png" style="border:1px solid #bbb" height="50px" >', 'inquiry/' . $details->inquiry_id, array('html' => TRUE) ) ;

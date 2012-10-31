@@ -40,7 +40,7 @@
       });
       
       if (_options.usePhantomNewItem) {
-        var src = 'sites/all/modules/custom/pi/moonrock/moonrock_sample_utils/css/icons/new_file.png';
+        var src = 'sites/all/modules/custom/pi/moonrock/moonrock_sample_utils/css/icons/add.png';
         var image = $('<img/>').attr('src', src);
         var phantom = $('<div/>')
         .addClass('item-browser-phantom').attr('item-id', 'new')
@@ -48,6 +48,9 @@
         .click(function() {
           self.itemBrowser('select', null).itemBrowser('_event', 'new');
         });
+        
+        var message = $('<div/>').addClass('item-browser-item-message').appendTo(phantom);
+        $('<span/>').html('New data').appendTo(message);
       }
     },
     
@@ -127,9 +130,11 @@
       image[0].onload = function() {
         element.css('width', $(this).width() + 6);
         self.itemBrowser('_checkSliderPosition');
-        if (self.data('item-browser-center-on') == item.id) {
+        /*if (self.data('item-browser-center-on') == item.id) {
           self.itemBrowser('_makeItemVisible', item.id);
-        }
+        }*/
+        
+        self.itemBrowser('_rearrange');
       };
       
       image.attr("src", item.image + '?t=' + (new Date()).getTime());
@@ -142,6 +147,10 @@
           self.itemBrowser('_event', 'imgclick', _item);
         });
       }
+      
+      var message = $('<div/>').addClass('item-browser-item-message').appendTo(element);
+      $('<span/>').html('Editing').appendTo(message);
+      
       
       self.itemBrowser('_event', 'itemadded', item);
     },
@@ -219,7 +228,7 @@
         self.itemBrowser('_setItemClass', $(this), 'item-browser-item-selected', $(this).attr('item-id') == _id);
       });
       
-      if (id) {
+      if (id || this.data('options').usePhantomNewItem) {
         this.itemBrowser('_makeItemVisible', id);
       }
       
@@ -263,13 +272,20 @@
       }
       return this;
     },
-    _makePhantonVisible: function() {
-      var element = this.find('.item-browser-phanton');
-      this.itemBrowser('_makeElementVisible', element);
-      return this;
+    _rearrange: function() {
+      var centerOn = this.data('item-browser-center-on');
+      if (centerOn) {
+        this.itemBrowser('_makeItemVisible', centerOn);
+      }
     },
     _makeItemVisible: function(itemId) {
-      var element = this.find('.item-browser-item[item-id="' + itemId + '"]');
+      var element;
+      if (itemId && itemId != 'new') { 
+        element = this.find('.item-browser-item[item-id="' + itemId + '"]') ;
+      } else {
+        element = this.find('.item-browser-phantom');
+      }
+      
       this.itemBrowser('_makeElementVisible', element);
       return this;
     },
@@ -277,12 +293,13 @@
       if (element.length > 0) {
         var container = this.find('.item-browser-container');
         var slider = container.find('.item-browser-slider');
-      
+        var extra = 100;
+        
         var itemLeft = element.position().left;
         var sliderLeft = slider.position().left;
-        var relativeLeft = itemLeft + sliderLeft;
+        var relativeLeft = itemLeft + sliderLeft - .5 * extra;
         var containerWidth = container.width();
-        var itemWidth = element.width() + 10;
+        var itemWidth = element.width() + extra;
         var relativeRight = containerWidth - relativeLeft - itemWidth;
         if (relativeLeft < 0) {
           this.itemBrowser('_slide', -relativeLeft, true);
@@ -318,6 +335,7 @@
       }
       var correctedPos = Math.min(0, Math.max(width - sliderWidth, newPos));
       if (pos != correctedPos) {
+        slider.stop(true);
         if (animate) {
           slider.animate({
             left: correctedPos

@@ -63,6 +63,7 @@ var MoonrockVMComm = {
       measure: true
     });
     this._post('get', 'MeasureMM');
+    this._post('monitor', 'MeasureMM');
     
     this._vmMeasureMonitors[id] = callback;
   },

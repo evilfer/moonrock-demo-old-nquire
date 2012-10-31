@@ -16,7 +16,8 @@ var MoonrockSeeSamples = {
             var callback = self.eventCallbacks[i];
             callback(type, item);
           }
-        }
+        },
+        enableVmView : parseInt($('.moonrock-sample-list').attr('vmview')) == 1
       });
       var item = $(this).vmSample('getItem');
       self.items.push(item);
@@ -55,7 +56,7 @@ var MoonrockSeeSamples = {
 
 
 $(function() {
-  MoonrockModules.register('MoonrockSeeSamples', MoonrockSeeSamples);
+  MoonrockModules.register('MoonrockSeeSamples', MoonrockSeeSamples, ['MoonrockVmState']);
 });
 
 

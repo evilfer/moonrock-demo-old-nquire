@@ -281,7 +281,7 @@ function theme_moonrock_data_input_form_block($separator) {
 
 function theme_moonrock_data_input_form_page($separator) {
   moonrock_sample_utils_load_javascript_modules_support();
-  
+
   $sample_view = moonrock_sample_utils_find_unique_seesamples_node();
   //$vm_page = theme('moonrock_vm_view_vm_simple_page');
   //$navigator = theme('moonrock_vm_view_vm_top_navigator');
@@ -298,7 +298,9 @@ function theme_moonrock_data_input_form_page($separator) {
       array('content' => $form, 'width' => 200, 'id' => 'moonrock-data-form-block'),
           ), TRUE);
 
-  $output = theme('moonrock_seesamples_tabs', $sample_view, $vm_page);
+  $output = '<div style="margin: 10px 0 10px 0">'
+          . theme('moonrock_seesamples_tabs', $sample_view, $vm_page)
+          . '</div>';
   return $output;
 }
 

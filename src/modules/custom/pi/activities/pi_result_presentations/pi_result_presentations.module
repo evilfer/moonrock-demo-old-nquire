@@ -583,6 +583,7 @@ function result_presentations_teaser_view($node) {
 function theme_pi_result_presentations_node_form($form) {
   drupal_add_css(drupal_get_path('module', 'pi_result_presentations') . '/css/pi_result_presentations.css');
   drupal_add_js(drupal_get_path('module', 'pi_result_presentations') . '/js/pi_result_presentations.js');
+  moonrock_sample_utils_load_javascript_modules_support();
 
   $output = '<p>' . t('Create a graph with your collected data.'). '</p>';
   $output .= drupal_render($form['title']);

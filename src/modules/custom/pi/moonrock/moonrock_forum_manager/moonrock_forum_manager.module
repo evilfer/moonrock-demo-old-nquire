@@ -7,13 +7,11 @@ function moonrock_forum_manager_form_alter(&$form, &$form_state, $form_id) {
     }
 
     $form['field_inquiry_item']['#type'] = 'nodereference_hidden';
-    //$form['taxonomy']['#type'] = 'value';//$form['taxonomy']['2']['#default_value'];
-    /*$form['shadow']['#type'] = 'value';
-    $form['taxonomy']['#type'] = 'hidden';
-    $form['taxonomy']['2']['#value'] = $form['taxonomy']['2']['#default_value'];
-    //$form['taxonomy']['#value'] = $form['taxonomy']['2']['#default_value'][0];*/
 
-    //$form['taxonomy']['#type'] = 'hidden';
+    $form['taxonomy']['2']['#type'] = 'hidden';
+    $form['taxonomy']['2']['#value'] = 4;
+    unset($form['taxonomy']['2']['#theme']);
+
     return;
   }
 }
@@ -142,12 +140,12 @@ function theme_moonrock_forum_manager_question_forum_body($node) {
             . nl2br($question_method->external)
             . '</div>';
   }
-  
+
   if (strlen($method) > 0) {
     $output .= '<p>' . $method . '</p>';
   }
 
-  
+
   $answers = '';
   $query_answers = "SELECT DISTINCT {node}.nid FROM {pi_key_answers} LEFT JOIN {node} on {node}.nid={pi_key_answers}.nid WHERE {pi_key_answers}.key_question_id=%d";
   $result_answers = db_query($query_answers, $node->nid);

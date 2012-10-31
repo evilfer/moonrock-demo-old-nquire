@@ -86,7 +86,9 @@ var MoonrockDataInput = {
     SnapshotAnnotation.addChangeListener('dataform', function(action) {
       if (action == 'done') {
         self._bigDataChange();
-      } 
+      } else if (action == 'change') {
+        self._smallDataChange();
+      }
     });
     
     $('body').append($('<div/>').addClass('moonrock-block-overlay').hide());
