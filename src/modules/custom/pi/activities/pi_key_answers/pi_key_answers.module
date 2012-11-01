@@ -214,6 +214,7 @@ function pi_key_answers_theme() {
 }
 
 function theme_pi_key_answers_node_form($form) {
+  moonrock_sample_utils_load_javascript_modules_support();
   drupal_add_js(drupal_get_path('module', 'pi_key_answers') . '/js/PiKeyAnswers.js');
 
   global $user;
@@ -235,7 +236,8 @@ function theme_pi_key_answers_node_form($form) {
     } */
   $option_categories = pi_sort_key_questions_get_options();
   if (count($option_categories) > 0) {
-    $output .= drupal_render($form['key_question_id']);
+//    $output .= drupal_render($form['key_question_id']);
+    $output .= drupal_render($form);
 
     $query = 'SELECT DISTINCT {node}.nid FROM {pi_result_presentations} '
             . 'LEFT JOIN {node} on {node}.nid={pi_result_presentations}.nid '
@@ -251,7 +253,6 @@ function theme_pi_key_answers_node_form($form) {
     }
 
 
-    $output .= drupal_render($form);
   } else {
     $output .= "<p>No key questions are available to answer.</p>";
   }

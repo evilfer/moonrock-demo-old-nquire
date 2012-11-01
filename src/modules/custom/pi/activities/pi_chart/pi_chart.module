@@ -18,7 +18,7 @@ function pi_chart_menu() {
   );
 
   $items['pi_chart/tempchart.png'] = array(
-      'page callback' => 'pi_chart_show_chart_as_temppng',
+      'page callback' => 'pi_chart_show_chart_as_temppnlg',
       'page arguments' => array(1, 2),
       'access arguments' => array('access content'),
       'type' => MENU_CALLBACK,
@@ -143,7 +143,7 @@ function pi_chart_create_png($title, $type, $abscissa_nid, $ordinate_str, $color
         $max_abs_value = max(abs($max), abs($min));
         if ($max_abs_value > 0) {
           $log = log10($max_abs_value);
-          $f10 = pow(10, ceil($log) - 2);
+          $f10 = pow(10, ceil($log));
           $min = floor($min / $f10) * $f10;
           $max = ceil($max / $f10) * $f10;
         }

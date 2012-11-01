@@ -203,19 +203,9 @@
       var element = this.find('.item-browser-item[item-id="' + itemId + '"]');
       element.attr('item-id', '-1');
       element.html('');
-      
-      var end = function() {
-        element.remove();
-        self.itemBrowser('_slide', 0, true);
-      };
-      
-      if (element.is(':last-child')) {
-        end();
-      } else { 
-        element.animate({
-          width: 0
-        }, 'fast', end);
-      }
+
+      element.remove();
+      self.itemBrowser('select', null);
     },
     
     select: function(id) {

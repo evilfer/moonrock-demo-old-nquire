@@ -3,6 +3,7 @@
 var MoonrockDataInput = {
   initialItemId: false,
   currentItemId: false,
+  adjustingToNewItem: false,
   
   init: function() {
     this.actionsHelper = ActionsManager;
@@ -73,11 +74,19 @@ var MoonrockDataInput = {
     
     $('div[vm_measure]').each(function() {
       $(this).vmMeasureField({
-        changeCallback: function(complete) {
-          if (complete) {
-            self._bigDataChange();
-          } else {
-            self._smallDataChange();
+        changeCallback: function(op) {
+          switch(op) {
+            case 'done':
+              self._bigDataChange();
+              break;
+              self._smallDataChange();
+            case 'change':
+              break;
+            case 'start':
+              SnapshotAnnotation.acceptCurrentValue();
+              break;
+            default:
+              break;
           }
         }
       });
@@ -88,6 +97,8 @@ var MoonrockDataInput = {
         self._bigDataChange();
       } else if (action == 'change') {
         self._smallDataChange();
+      } else if (action == 'start') {
+        $('.moonrock-measure-field').vmMeasureField('acceptCurrentMeasure');        
       }
     });
     
@@ -181,8 +192,10 @@ var MoonrockDataInput = {
     this.setModeEdit(false);
     this.dataBrowser.select(null);
       
-    this.updateSampleData(sample);
-    this.actionsHelper.setSample(sample.id);
+    if (sample) {
+      this.updateSampleData(sample);
+      this.actionsHelper.setSample(sample.id);
+    }
   },
   
   vmPositionChanged: function(position) {
@@ -199,12 +212,17 @@ var MoonrockDataInput = {
     
     
     if (item) {
-      this.vmComm.removePositionChangeListener('dataform');
+      //this.vmComm.removePositionChangeListener('dataform');
+      this.adjustingToNewItem = true;
       this.currentPosition = item.data.snapshot_vm_position;
       this.vmComm.setVMParams(item.data.snapshot_vm_position);
       this.vmComm.addPositionChangeListener('dataform', function(position) {
         self.vmPositionChanged(position);
       });
+      
+      setTimeout(function() {
+        self.adjustingToNewItem = false;
+      }, 250);
     }
     
     this.setModeEdit(true);
@@ -312,9 +330,9 @@ var MoonrockDataInput = {
   },
 
   /**
-   * Submits the form to update the data item being currently edited, 
-   * or to create a new one.
-   */
+     * Submits the form to update the data item being currently edited, 
+     * or to create a new one.
+     */
   submitData: function() {
     var self = this;
     
@@ -334,6 +352,8 @@ var MoonrockDataInput = {
       this._setSaveButtons('saved');
     }
   },
+  
+  
   
   saveData: function() {
     this._setSaveButtons('saving');
@@ -363,7 +383,7 @@ var MoonrockDataInput = {
   },
   
   _smallDataChange: function() {
-    if (this._editing) {
+    if (this._editing && !this.adjustingToNewItem) {
       this._setSaveButtons('savechanges');
     }
   },

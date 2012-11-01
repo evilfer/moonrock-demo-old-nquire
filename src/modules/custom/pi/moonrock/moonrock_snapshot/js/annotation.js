@@ -6,29 +6,28 @@ var SnapshotAnnotation = {
   
   init: function() {
     this._element = $('#snapshot-annotation');
-    if (this._element.length > 0) {
-      if (GraphicAnnotation.isTablet()) {
-        this._element.hide();
-      } else {
-        this._available = true;
-        var self = this;
+    if (this._element.length > 0 && GraphicAnnotation.annotationAvailable()) {
+      this._available = true;
+      var self = this;
         
-        $('#snapshot-annotation-annotate').click(function() {
-          self._setButtonsEnabled(false);
-          GraphicAnnotation.setEnabled(true);
-        });
+      $('#snapshot-annotation-annotate').click(function() {
+        self._setButtonsEnabled(false);
+        GraphicAnnotation.setEnabled(true);
+        self._notify('start');
+      });
       
-        GraphicAnnotation.addChangeListener('snapshotAnnotation', function(action) {
-          if (action == 'done') {
-            self._storeData(GraphicAnnotation.getCurrentAnnotation());
-            self._setButtonsEnabled(true);
-          } else if (action == 'cancel') {
-            self._setButtonsEnabled(true);
-          }
+      GraphicAnnotation.addChangeListener('snapshotAnnotation', function(action) {
+        if (action == 'done') {
+          self._storeData(GraphicAnnotation.getCurrentAnnotation());
+          self._setButtonsEnabled(true);
+        } else if (action == 'cancel') {
+          self._setButtonsEnabled(true);
+        }
         
-          self._notify(action);
-        });
-      }
+        self._notify(action);
+      });
+    } else {
+      this._element.hide();
     }
   },
 
@@ -36,9 +35,11 @@ var SnapshotAnnotation = {
     this._changeListeners[id] = callback;
   },
   acceptCurrentValue: function() {
-    GraphicAnnotation.acceptCurrentValue();
-    this._storeData(GraphicAnnotation.getCurrentAnnotation());
-    this._setButtonsEnabled(true);
+    if (this._available) {
+      GraphicAnnotation.acceptCurrentValue();
+      this._storeData(GraphicAnnotation.getCurrentAnnotation());
+      this._setButtonsEnabled(true);
+    }  
   },
   
   _setButtonsEnabled: function(enabled) {

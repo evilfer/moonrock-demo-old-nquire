@@ -50,6 +50,7 @@ var MoonrockVMComm = {
   
   addPositionChangeListener: function(id, callback) {
     this._vmPositionMonitors[id] = callback;
+    this._post('monitor', 'PositionPixels');
   },
   removePositionChangeListener: function(id) {
     delete this._vmPositionMonitors[id];
@@ -130,6 +131,14 @@ var MoonrockVMComm = {
         switch (msg.param) {
           case 'viewURL':
             var url = msg.content;
+            if (url.substr(0, 'http://'.length) == 'http://') {
+              url = url.substr('http://'.length);
+            }
+            var d = url.indexOf('/');
+            if (d >= 0) {
+              url = url.substr(d);
+            } 
+            
             var a = url.indexOf('?');
             var b = url.lastIndexOf('?');
             if (a >0 && b > 0) {

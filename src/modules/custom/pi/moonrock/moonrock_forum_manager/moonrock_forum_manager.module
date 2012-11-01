@@ -27,6 +27,7 @@ function moonrock_forum_manager_menu() {
   return $items;
 }
 
+
 function moonrock_forum_manager_create_access() {
   return TRUE;
 }

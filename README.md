@@ -8,6 +8,12 @@ Moonrock demonstators.
 Changes:
 
 -----------------
+01-11-2012
+
+- Several bug fixes.
+- Annotation working for iPad3, disabled for iPad1.
+
+-----------------
 31-10-2012
 
 - Several bug fixes.

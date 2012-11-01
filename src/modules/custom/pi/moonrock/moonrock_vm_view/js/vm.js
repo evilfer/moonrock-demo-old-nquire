@@ -11,6 +11,10 @@ var VmManager = {
         self.sampleSelected(item);
       }
     });
+    
+    TabsManager.addResizeListener('vm', function(fullscreenToggled) {
+      $('#moonrock-vm-iframe').resize();
+    });
   },
   
   sampleSelected: function(sample) {
@@ -48,8 +52,8 @@ var VmManager = {
     this._setSample(samples[0]);
   },
   
-  _setSample: function(sample) {
-    if (sample != this._sample) {
+  _setSample: function(sample, forceReload, onlyPosition) {
+    if (sample != this._sample || forceReload) {
       GraphicAnnotation.setEnabled(false);
       var self = this;
       var updateCallback = function() {
@@ -88,5 +92,5 @@ var VmManager = {
 };
 
 $(function() {
-  MoonrockModules.register('VmManager', VmManager);
+  MoonrockModules.register('VmManager', VmManager, ['TabsManager']);
 });

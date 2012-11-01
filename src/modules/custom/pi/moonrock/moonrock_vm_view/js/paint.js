@@ -14,9 +14,7 @@ var GraphicAnnotation = {
   _changeListeners: {},
   
   init: function() {
-    if (GraphicAnnotation.isTablet()) {
-      $('#annotation-svg').addClass('annotation-svg-hidden');
-    } else {
+    if (this.annotationAvailable()) {
       var self = this;
       this._element = $('#annotation-svg');
       this._parent = this._element.parent();
@@ -78,6 +76,8 @@ var GraphicAnnotation = {
     
     
       self.setEnabled(false);
+    } else {
+      $('#annotation-svg').addClass('annotation-svg-hidden');
     }
   },
   
@@ -104,8 +104,14 @@ var GraphicAnnotation = {
     this.setEnabled(false);
     this._createAnnotation();
   },
-  isTablet : function() {
-    return navigator.userAgent.match(/iPad|Android/i);
+  annotationAvailable : function() {
+    if (navigator.userAgent.match(/iPad/i)) {
+      return navigator.userAgent.match(/CPU OS 6/i);
+    } else if (navigator.userAgent.match(/Android/i)) {
+      return false;
+    } else {
+      return true;
+    }
   },
   
   setEnabled: function(enabled) {

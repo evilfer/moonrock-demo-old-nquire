@@ -31,6 +31,7 @@ var TabsManager = {
   toggleFullscreen: function() {
     var container = $('.layout-tabbed-container');
     if (container.hasClass('layout-tabbed-container-fullscreen')) {
+      this._selectTab('samples');
       container.removeClass('layout-tabbed-container-fullscreen');
     } else {
       container.addClass('layout-tabbed-container-fullscreen');
@@ -69,9 +70,8 @@ var TabsManager = {
       });
     }
     
-    this._resizeTabs();
-
-
+    var result;
+    
     if (tab != this._currentTab) {
       this._currentTab = tab;
       $('.layout-tabbed-container-tab').each(function() {
@@ -82,14 +82,16 @@ var TabsManager = {
           element.removeClass('layout-tabbed-container-selected');
         }
       });
-      return true;
+      result = true;
     } else {
-      return false;
+      result = false;
     }
     
+    this._resizeTabs();
+    return result;
   },
   
-  _resizeTabs : function() {
+  _resizeTabs : function(fullscreenToggled) {
     var container = $('.layout-tabbed-container');
     var fullscreen = container.hasClass('layout-tabbed-container-fullscreen');
     var nodeView = $('.node').length > 0;
@@ -133,7 +135,7 @@ var TabsManager = {
     }
     
     for (var i in this._resizeListeners) {
-      this._resizeListeners[i]();
+      this._resizeListeners[i](fullscreenToggled);
     }
   },
  

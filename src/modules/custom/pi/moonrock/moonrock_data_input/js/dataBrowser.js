@@ -20,7 +20,9 @@ var MoonrockDataInputDataBrowser = {
     });
     
     VmManager.addSampleSelectionCallback(function(sample) {
-      self.refresh(sample.id);
+      if (sample) {
+        self.refresh(sample.id);
+      }
     });
   },
   
@@ -30,13 +32,15 @@ var MoonrockDataInputDataBrowser = {
   },
   
   refresh: function(sampleId) {
-    if (sampleId) {
-      this.selectedSample = sampleId;
+    
+    if (sampleId != this.selectedSample) {
+      $('#moonrock-data-browser').itemBrowser('clear');
     }
     
+    this.selectedSample = sampleId;
+    
     var self = this;
-    $('#moonrock-data-browser-throbber').itemBrowserThrobber("on");
-
+    
     $.ajax({
       url: '?q=moonrock_data_input/' + VmManager.getActivityId() + '/search',
       type: 'POST',
