@@ -16,12 +16,15 @@
 }
 .moonrock-measure-field-value.empty {
   font-weight: normal;
-  font-size: 12px;
+  font-size: 10px;
 }
 
 
 
-
+div.moonrock-measure-field-button {
+  color: blue;
+  cursor: pointer;
+}
 
 .moonrock-measure-field-button-hidden {
   display: none;

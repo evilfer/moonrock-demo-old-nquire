@@ -41,7 +41,7 @@ function pi_chart_show_chart_as_temppng() {
   $abscissa_nid = $_REQUEST['abscissa'];
   $ordinate_str = $_REQUEST['ordinate'];
   $color_nid = $_REQUEST['color'];
-  
+
   global $user;
 
   if (strlen($type) > 0 && strlen($abscissa_nid) > 0 && strlen($ordinate_str) > 0) {
@@ -80,15 +80,17 @@ function pi_chart_create_png($title, $type, $abscissa_nid, $ordinate_str, $color
 
     $grouped_rows = array();
     foreach ($rows as $row) {
-      $row_has_data = FALSE;
-      foreach ($numeric_fields as $field) {
-        if (strlen($row[$field]) > 0) {
-          $row_has_data = TRUE;
-          break;
+      if (strlen($row[0]) > 0) {
+        $row_has_data = FALSE;
+        foreach ($numeric_fields as $field) {
+          if (strlen($row[$field]) > 0) {
+            $row_has_data = TRUE;
+            break;
+          }
         }
-      }
-      if ($row_has_data) {
-        $grouped_rows[$row[0]][] = $row;
+        if ($row_has_data) {
+          $grouped_rows[$row[0]][] = $row;
+        }
       }
     }
 
@@ -139,7 +141,7 @@ function pi_chart_create_png($title, $type, $abscissa_nid, $ordinate_str, $color
             $max = max($max, _pi_chart_get_numeric_value($row[$i], $types[$i]));
           }
         }
-        
+
         $max_abs_value = max(abs($max), abs($min));
         if ($max_abs_value > 0) {
           $log = log10($max_abs_value);
@@ -147,15 +149,23 @@ function pi_chart_create_png($title, $type, $abscissa_nid, $ordinate_str, $color
           $min = floor($min / $f10) * $f10;
           $max = ceil($max / $f10) * $f10;
         }
-        
+
         $gap = $max > $min ? ($max - $min) / $ngaps : 5;
         $limits = array();
+        $ft = function($f) {
+          $t = "$f";
+          if (strlen($t) > 1 && $t[0] == '0') {
+            $t = substr($t, 1);
+          }
+          return $t;
+        };
+        
         for ($j = 0; $j < $ngaps; $j++) {
           $l0 = $min + $j * $gap;
           $l1 = $l0 + $gap;
 
           $limits[$j] = $l1;
-          $data_values[$i][$j] = "$l0-$l1";
+          $data_values[$i][$j] = $ft($l0) . ' - ' . $ft($l1);
         }
         $numeric_data_limits[$i] = $limits;
       } else {
@@ -333,16 +343,16 @@ function _pi_chart_draw_histogram($title, $headers, $numeric, $cross, $data_valu
   $MyData->setAbscissa($headers[0]);
   $MyData->setAbscissaName($headers[0]);
 
-  $myPicture = new pImage(700, 250, $MyData);
+  $myPicture = new pImage(900, 350, $MyData);
 
   /* Add a border to the picture */
-  $myPicture->drawRectangle(0, 0, 699, 249, array("R" => 0, "G" => 0, "B" => 0));
+  $myPicture->drawRectangle(0, 0, 899, 349, array("R" => 0, "G" => 0, "B" => 0));
 
   /* Set the default font */
   $myPicture->setFontProperties(array("FontName" => dirname(__FILE__) . '/lib/Fonts/tahoma.ttf', "FontSize" => 10));
 
   /* Define the chart area */
-  $myPicture->setGraphArea(60, 40, 650, 210);
+  $myPicture->setGraphArea(60, 40, 850, 310);
   /* Draw the scale */
   $scaleSettings = array(
       "GridR" => 200,
@@ -352,10 +362,10 @@ function _pi_chart_draw_histogram($title, $headers, $numeric, $cross, $data_valu
       "CycleBackground" => TRUE,
       "Mode" => SCALE_MODE_MANUAL,
       "ManualScale" => array(0 => array("Min" => 0, "Max" => $max + 1)),
-      "MinDivHeight" => 105.0/($max + 1),
+      "MinDivHeight" => 105.0 / ($max + 1),
   );
   $myPicture->drawScale($scaleSettings);
-  $myPicture->drawText(350, 5, $title, array("FontSize" => 12, "Align" => TEXT_ALIGN_TOPMIDDLE));
+  $myPicture->drawText(450, 5, $title, array("FontSize" => 12, "Align" => TEXT_ALIGN_TOPMIDDLE));
 
   /* Write the chart legend */
   //$myPicture->drawLegend(580, 12, array("Style" => LEGEND_NOBORDER, "Mode" => LEGEND_HORIZONTAL));

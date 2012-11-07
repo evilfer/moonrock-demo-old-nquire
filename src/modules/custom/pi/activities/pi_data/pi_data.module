@@ -46,7 +46,7 @@ function pi_data_access($op, $node, $account) {
   if ($op == 'update') {
     return check_node_function_of_activity($details->inquiry_id, $details->activity_id, $user->uid, 'edit');
   }
-  
+
   if ($op == 'delete') {
     if (arg(0) == 'node' && arg(2) == 'delete') {
       //get inquiry for session id and activity
@@ -70,7 +70,6 @@ function pi_data_access($op, $node, $account) {
   }
 }
 
-
 /**
  * hook_form() for pi_data - dynamically generates the add data form based on selected, available measures and their weights
  */
@@ -78,16 +77,6 @@ function pi_data_form(&$node) {
   global $user;
   $node_details = get_inquiry_details_from_current_path();
   $form_prefix = '';
-
-  /*
-    $form_prefix .= t('Add data to answer your key questions:</p><ul>');
-    $query = "SELECT {node}.title FROM {node} WHERE {node}.type='pi_key_questions' and {node}.uid=%d";
-    $result = db_query($query, $user->uid);
-    while ($obj = db_fetch_object($result)) {
-    $form_prefix .= "<li><b>{$obj->title}</b></li>";
-    }
-    $form_prefix .= '</ul><br/>';
-   */
 
   if (is_numeric($node_details->activity_id)) {
     $current_activity = load_activity($node_details->activity_id);
@@ -129,7 +118,13 @@ function pi_data_form(&$node) {
   $tree = &$form['onepageprofile_categories'];
 
   if (is_array($measure_rows)) {
-    $use_measure = moonrock_sample_utils_filter_visible_measures($measure_rows);
+    $current_question = isset($_COOKIE['active_key_question']) ? $_COOKIE['active_key_question'] : '0';
+    $form['key_question'] = array(
+        '#type' => 'hidden',
+        '#value' => $current_question,
+    );
+    
+    $use_measure = moonrock_sample_utils_filter_visible_measures($measure_rows, $current_question);
 
     /**
      * Check whether they have custom forms
@@ -398,6 +393,10 @@ function _pi_data_measure_title($measure_value, $measure_type) {
  * @param $node the node to be inserted
  */
 function pi_data_insert($node) {
+
+  db_query("INSERT INTO {pi_data_question} (nid, vid, key_question) VALUES (%d, %d, %d)", $node->nid, $node->vid, $node->key_question);
+
+
   $title_array = array();
   $node->categories = &$node->onepageprofile_categories;
 
@@ -465,7 +464,11 @@ function pi_data_insert($node) {
   }
 
   //values of key measures becomes the activity name
-  $activity_name = implode("-", $title_array);
+  // $activity_name = implode("-", $title_array);
+  /* FIX (eloy) didn't look good for moonrock
+   *  
+   */
+  $activity_name = t('Collect data');
 
   //if empty give a placeholder name
   if (strlen($activity_name) < 2) {
@@ -483,6 +486,8 @@ function pi_data_update($node) {
   if ($node->revision) {
     pi_data_insert($node);
   } else {
+    db_query("UPDATE {pi_data_question} SET key_question = %d WHERE vid = %d", $node->key_question, $node->vid);
+
     //	this methods removes all data associated with the vid whether or not a current selected/key measure
     //		db_query("DELETE FROM pi_collected_data WHERE vid = '" . $node->vid . "' ");
     //	this method only deletes data associated with current key/selected measures
@@ -501,6 +506,10 @@ function pi_data_update($node) {
  * hook_delete() for pi_data, also deletes data values from pi_collected_data and attached images and files
  */
 function pi_data_delete(&$node) {
+
+  db_query("DELETE FROM {pi_data_question} WHERE nid = %d AND vid = %d", $node->nid, $node->vid);
+
+
   foreach ($node->onepageprofile_categories as $key => $measure) {
     $hyphen_pos = strrpos($key, "-");
     $selected_measure_nid = substr($key, 0, $hyphen_pos);
@@ -529,8 +538,8 @@ function pi_data_delete(&$node) {
 //needs to be reintroduced
 function is_checkboxes_measure($id) {
   $query = "SELECT measure_nid FROM {pi_sort_measures} WHERE psm_id = %d";
-  $measure_nid = db_fetch_object(db_query($query, $id));
-  $measure_nid = $measure_nid->measure_nid;
+  $measure_nid_obj = db_fetch_object(db_query($query, $id));
+  $measure_nid = $measure_nid_obj->measure_nid;
   $measure = node_load($measure_nid);
   if ($measure->data_type) {
     return $measure->data_type == 3;
@@ -548,6 +557,16 @@ function pi_data_load($node) {
   // Add pointers to measures to keep compatibility with forms, etc
   $result->categories = &$result->measures;
   $result->onepageprofile_categories = &$result->measures;
+
+  $query = "SELECT key_question FROM {pi_data_question} WHERE nid = %d AND vid = %d";
+  $db_result = db_query($query, $node->nid, $node->vid);
+  $obj = db_fetch_object($db_result);
+  if ($obj) {
+    $result->key_question = $obj->key_question;
+  } else {
+    $result->key_question = FALSE;
+  }
+
   return $result;
 }
 
@@ -615,8 +634,11 @@ function pi_data_table_row_values($node, $node_details, $data_item_activity_id, 
 
             $measure_value = $node->measures[$key]['#value'];
 
-            $formatted_value = pi_chart_get_html_value($measure_value, $measure_type);            
-            $values[] = $formatted_value;
+            $formatted_value = pi_chart_get_html_value($measure_value, $measure_type);
+            $values[] = array(
+                'data' => $formatted_value,
+                'measure_id' => $measure_nid
+            );
           }
         }
       }

@@ -243,8 +243,8 @@ function moonrock_snapshot_nquire_data_get_text_value($nid) {
 function moonrock_snapshot_nquire_data_get_html_value($nid) {
   $node = node_load($nid);
   if ($node->type === 'moonrock_snapshot') {
-    $png = moonrock_snapshot_images_get_snapshot_url($nid);
-    $svg = moonrock_snapshot_images_get_svgsnapshot_url($nid);
+    $png = moonrock_snapshot_images_get_snapshot_url($nid, TRUE);
+    $svg = moonrock_snapshot_images_get_svgsnapshot_url($nid, TRUE);
     return "<div style='width: 200px; position: relative'>"
             . "<img style='width: 100%' src='$png'></img>"
             . "<img style='position: absolute; width: 100%; height: 100%; left: 0px;top:0px;' src='$svg'></img>"

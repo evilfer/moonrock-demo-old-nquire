@@ -44,7 +44,10 @@ function pi_sort_data_theme() {
           'arguments' => array('form'),
       ),
       'pi_sort_data' => array(
-          'arguments' => array('node', 'teaser', 'measure_headers', 'data_values'),
+          'arguments' => array('node', 'teaser', 'question_data'),
+      ),
+      'pi_sort_data_question_selection' => array(
+          'arguments' => array(),
       ),
   );
 }
@@ -241,8 +244,13 @@ function pi_sort_data_items_around_key_measures($sorted_data_items, $key_measure
   $eval_string .= '$km_values[\'nid\'],SORT_ASC);';
   eval($eval_string);
 
-  $count = 0;
+  /**
+   * FIX (eloy)
+   * sort by descending creation date   
+   */
+  //$count = 0;
   foreach ($km_values['nid'] as $km_nid) {
+    //$sorted_data_items[$km_nid]["#weight"] = $count++;
     $sorted_data_items[$km_nid]["#weight"] = $count++;
   }
 
@@ -260,11 +268,13 @@ function pi_sort_data_get_measure_information() {
 
   $measures = array();
   $content_measures = array();
-  foreach ($selected_measure_node->categories as $nid => $category) {
-    $measure = node_load($nid);
-    $measures[$nid] = $measure;
-    if ($measure->content_options) {
-      $content_measures[$measure->content_options] = $nid;
+  if (is_array($selected_measure_node->categories)) {
+    foreach ($selected_measure_node->categories as $nid => $category) {
+      $measure = node_load($nid);
+      $measures[$nid] = $measure;
+      if ($measure->content_options) {
+        $content_measures[$measure->content_options] = $nid;
+      }
     }
   }
 
@@ -284,22 +294,6 @@ function pi_sort_data_get_process_item($node, $measures_info) {
   return $item;
 }
 
-function pi_sort_data_get_unsorted_items() {
-  $data = pi_sort_data_get_measure_information();
-
-  $unsorted_data_items = pi_sort_data_get_options();
-  $nids = array_keys($unsorted_data_items);
-
-  $items = array();
-  foreach ($nids as $item_nid) {
-    $node = node_load($item_nid);
-    $items[$item_nid] = pi_sort_data_get_process_item($node, $data);
-  }
-
-  $data['items'] = $items;
-
-  return $data;
-}
 
 function pi_sort_data_view($node, $teaser, $page = FALSE) {
   global $user;
@@ -314,51 +308,65 @@ function pi_sort_data_view($node, $teaser, $page = FALSE) {
     }
   }
 
+  $questions = pi_sort_key_questions_get_options();
+  $questions['0'] = array('#title' => t('unasigned'));
+  $question_data = array();
+
   // Assemble an array of key questions in the output format (build_activity_link makes this a link with icon)
   $already_sorted_data_items = $node->categories;
-
   $unsorted_data_items = pi_sort_data_get_options();
-
   $sorted_data_items = pi_merge_content_item_lists($already_sorted_data_items, $unsorted_data_items);
-
   $node->key_measures = array();
-
-  $measure_headers = array(t('Data'));
 
   $selected_measure_nid = find_selected_measures_nid_for_uid_and_inquiry($user->uid, $node_details->inquiry_id);
   if ($selected_measure_nid) {
     $selected_measures_node = node_load($selected_measure_nid);
     if ($selected_measures_node) {
       $selected_measures = $selected_measures_node->measures_list;
-      $use_measure = moonrock_sample_utils_filter_visible_measures($selected_measures);
-      foreach ($selected_measures as $key => $measure) {
-        if ($use_measure[$key]) {
-          $measure_node = node_load($key);
-          $measure_text = check_plain($measure_node->title);
-          if (strlen($measure_node->units_short) > 0) {
-            $measure_text .= " ({$measure_node->units_short})";
+
+      foreach ($questions as $question_nid => $question) {
+        $use_measure = $question_nid == '0' ?
+                moonrock_sample_utils_filter_visible_measures($selected_measures) :
+                moonrock_sample_utils_filter_visible_measures_for_question($selected_measures, $question_nid);
+
+        $measure_headers = array(t('Data'));
+
+        foreach ($selected_measures as $key => $measure) {
+          if ($use_measure[$key]) {
+            $measure_node = node_load($key);
+            $measure_text = check_plain($measure_node->title);
+            if (strlen($measure_node->units_short) > 0) {
+              $measure_text .= " ({$measure_node->units_short})";
+            }
+            $measure_headers[] = $measure_text;
           }
-          $measure_headers[] = $measure_text;
         }
+
+        $question_data[$question_nid]['title'] = $question['#title'];
+        $question_data[$question_nid]['measures'] = $use_measure;
+        $question_data[$question_nid]['header'] = $measure_headers;
+        $question_data[$question_nid]['values'] = array();
       }
     }
   }
 
+
   //sort  combined list according to measures
   //comment this out to return to standard sort order
-  if ($node->autosort && count($sorted_data_items) > 1) {
+  /* if ($node->autosort && count($sorted_data_items) > 1) {
     $sorted_data_items = pi_sort_data_items_around_key_measures($sorted_data_items, $node->key_measures, $selected_measure_nid);
-  }
-
-  $data_values = array();
-
+    } */
 
 
   foreach (array_keys($sorted_data_items) as $sorted_data_items_nid) {
     $data_item_activity_id = get_activity_id_for_nid($sorted_data_items_nid);
     if ($data_item_activity_id) {
       $data_item_node = node_load($sorted_data_items_nid);
-      $values = pi_data_table_row_values($data_item_node, $node_details, $data_item_activity_id, $use_measure);
+
+      $question_nid = $data_item_node->key_question;
+      $group = isset($question_data[$question_nid]) ? $question_nid : '0';
+
+      $values = pi_data_table_row_values($data_item_node, $node_details, $data_item_activity_id, $question_data[$group]['measures']);
       $created = t('Created: ') . '<br />' . format_date($data_item_node->created, 'custom', 'Y/m/d H:i');
 
       $created .= '<br/>'
@@ -366,7 +374,11 @@ function pi_sort_data_view($node, $teaser, $page = FALSE) {
               . l('delete', 'node/' . $sorted_data_items_nid . '/delete', array('query' => 'destination=phase/' . $node_details->phase_id));
 
       array_unshift($values, $created);
-      $data_values[] = $values;
+      array_unshift($question_data[$group]['values'], array(
+          'data' => $values,
+          'class' => 'pi-sort-data-row',
+          'key_question_id' => $question_nid,
+      ));
     }
   }
 
@@ -382,36 +394,49 @@ function pi_sort_data_view($node, $teaser, $page = FALSE) {
   }
 
   $node->content['pi_sort_data'] = array(
-      '#value' => theme('pi_sort_data', $node, $teaser, $measure_headers, $data_values),
+      '#value' => theme('pi_sort_data', $node, $teaser, $question_data),
       '#weight' => 2
   );
 
   return $node;
 }
 
-function theme_pi_sort_data($node, $teaser, $measure_headers, $data_values) {
+function theme_pi_sort_data_question_selection() {
+  moonrock_sample_utils_load_javascript_modules_support();
+  moonrock_sample_utils_load_cookie_support();
+  drupal_add_js(drupal_get_path('module', 'pi_sort_data') . '/js/filter.js');
+
+  $questions = pi_sort_key_questions_get_options();
+
+  $output = '<select id="pi-sort-data-key-question" name="key_questions">';
+  foreach ($questions as $nid => $question) {
+    $output .= '<option value="' . $nid . '">' . $question['#title'] . '</option>';
+  }
+  $output .= '<option value="0" style="font-style: italic;">unasigned</option>';
+  $output .= '</select>';
+
+  return $output;
+}
+
+function theme_pi_sort_data($node, $teaser, $question_data) {
   drupal_add_js(drupal_get_path('module', 'pi_sort_data') . '/js/sorttable.js');
   drupal_add_css(drupal_get_path('module', 'pi_sort_data') . '/css/sorttable.css');
 
   $output = '';
 
-  if (count($data_values) > 0) {
-    $output .= '<p>';
-    $output .= t('Collect data to answer your questions. You can collect any number of data items for each sample, for instance to record variations in features within each sample.') . '<br/>'
-            . t('Later you can analyze your collected data by creating graphs in activity ') . moonrock_sample_utils_activity_link('pi_sort_result_presentations') . '.'
-            . '</p>';
+  $output .= theme('pi_sort_data_question_selection');
 
-    $output .= '</p>';
-//		$output .= theme('item_list', $rows, NULL, 'ul', array('class' => 'activity'));
-    $output .= theme('table', $measure_headers, $data_values, array(
-        'class' => 'sortable',
-            )
-    );
 
-    //$output .= theme('table', $header, $rows);
-  } else {
-    $output .= '<p>No data entries are available.</p>';
+  foreach ($question_data as $question_nid => $data) {
+    $output .= '<div class="pi-sort-data-list" key_question_id="' . $question_nid . '">'
+            . t('Data for question: <i>') . $data['title'] . '</i>'
+            . theme('table', $data['header'], $data['values'], array(
+                'class' => 'sortable'
+            ));
+
+    $output .= '</div>';
   }
+
   return $output;
 }
 

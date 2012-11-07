@@ -8,6 +8,13 @@ Moonrock demonstators.
 Changes:
 
 -----------------
+07-11-2012
+
+- Many bug fixes.
+- Data is linked with questions.
+- Data form depends on active question.
+
+-----------------
 01-11-2012
 
 - Several bug fixes.

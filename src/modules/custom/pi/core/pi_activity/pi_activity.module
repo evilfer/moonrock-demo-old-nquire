@@ -41,7 +41,14 @@ function pi_activity_access($op, $node, $account) {
  * @return TRUE or FALSE to indicate whether access is allowed for that function
  */
 function pi_activity_item_access($activity, $op) {
-
+  /**
+   * FIX (eloy)
+   * To avoid tabs while editing data
+   */
+  if ($op == 'view' && $activity->activity_type == 'pi_data') {
+    return FALSE;
+  }
+  
   $return_value = false;
   if (isset($activity->activity_id)) {
     global $user;

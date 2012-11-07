@@ -220,7 +220,7 @@ function theme_moonrock_seesamples_tabs($node, $vm_tab) {
     );
   }
 
-  $output = theme('moonrock_layout_tabs', $tabs, $content, TRUE);
+  $output = theme('moonrock_layout_tabs', $tabs, $content, FALSE);
   return $output;
 }
 

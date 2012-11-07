@@ -17,6 +17,7 @@ var GraphicAnnotation = {
     if (this.annotationAvailable()) {
       var self = this;
       this._element = $('#annotation-svg');
+      this._offsetRefElement = $('#moonrock-vm-iframe-container');
       this._parent = this._element.parent();
       $('.annotation-buttons > .annotation-mode-selector').click(function() {
         self._setMode($(this).attr('mode'));
@@ -185,8 +186,9 @@ var GraphicAnnotation = {
   },
   
   getPoint: function(eventPoint) {
-    var offset = this._element.offset();
-    return AnnotationTransform.getVmPointForPolyline(eventPoint.x - offset.left, eventPoint.y - offset.top);
+    var offset = this._offsetRefElement.offset();
+    var point = AnnotationTransform.getVmPointForPolyline(eventPoint.x - offset.left, eventPoint.y - offset.top);
+    return point;
   },  
   startDrag: function(eventPoint) {
     this._buttonDown = true;

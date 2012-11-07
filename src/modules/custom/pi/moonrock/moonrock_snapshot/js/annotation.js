@@ -59,6 +59,7 @@ var SnapshotAnnotation = {
   clear: function() {
     if (this._available) {
       GraphicAnnotation.clear();
+      this._setButtonsEnabled(true);
     }
   },  
   setItem: function(item) {

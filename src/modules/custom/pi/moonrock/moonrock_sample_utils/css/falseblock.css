@@ -24,6 +24,7 @@
 
 .moonrock-block-middle-content {
   border-bottom: none;
+  overflow: auto;
 }
 
 .moonrock-block-bottom-content {

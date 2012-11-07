@@ -160,7 +160,7 @@ var MoonrockVMComm = {
           case 'Snapshot':
             var image = new Image();
             image.onload = function() {
-              var _width = 300;
+              var _width = 200;
               var ratio = parseFloat(this.height) / this.width;
               var height = ratio * _width;
       

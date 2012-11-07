@@ -50,11 +50,13 @@ function moonrock_method_access($op, $node, $account) {
   }
 }
 
-function moonrock_method_selected_measures($node) {
+function moonrock_method_selected_measures($node, $question_id = FALSE) {
   $selected = array();
-  foreach($node->question_methods as $method) {
-    foreach(explode(',', $method->measures) as $measure) {
-      $selected[$measure] = TRUE;
+  foreach ($node->question_methods as $method) {
+    if (!$question_id || $question_id == $method->question_id) {
+      foreach (explode(',', $method->measures) as $measure) {
+        $selected[$measure] = TRUE;
+      }
     }
   }
   return $selected;
@@ -267,7 +269,7 @@ function moonrock_method_link_alter(&$links, $node) {
  * Implementation of hook_view().
  */
 function moonrock_method_view($node, $teaser = FALSE, $page = FALSE) {
-  
+
   $node->content['moonrock_method'] = array(
       '#value' => theme('moonrock_method', $node, $teaser),
       '#weight' => 1

@@ -27,11 +27,16 @@ function moonrock_sample_utils_find_unique_method_node() {
   }
 }
 
-function moonrock_sample_utils_filter_visible_measures($measure_rows) {
+function moonrock_sample_utils_filter_visible_measures_for_question($measure_rows, $question_id) {
+  return moonrock_sample_utils_filter_visible_measures($measure_rows, $question_id);
+}
+
+
+function moonrock_sample_utils_filter_visible_measures($measure_rows, $question_id = FALSE) {
   $use_measure = array();
   $method_node = moonrock_sample_utils_find_unique_method_node();
   if ($method_node) {
-    $selected_measures = moonrock_method_selected_measures($method_node);
+    $selected_measures = moonrock_method_selected_measures($method_node, $question_id);
   } else {
     $selected_measures = FALSE;
   }
@@ -194,6 +199,10 @@ function moonrock_sample_utils_load_item_browser_resources() {
   drupal_add_css(drupal_get_path('module', 'moonrock_sample_utils') . '/css/itemBrowser.css');
   drupal_add_js(drupal_get_path('module', 'moonrock_sample_utils') . '/js/jquery.itemBrowser.js');
   drupal_add_js(drupal_get_path('module', 'moonrock_sample_utils') . '/js/jquery.itemBrowserThrobber.js');
+}
+
+function moonrock_sample_utils_load_cookie_support() {
+  drupal_add_js(drupal_get_path('module', 'moonrock_sample_utils') . '/js/jquery.cookie.js');
 }
 
 function moonrock_sample_utils_load_mouse_input() {

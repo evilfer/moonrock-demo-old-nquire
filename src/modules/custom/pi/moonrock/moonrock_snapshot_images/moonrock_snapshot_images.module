@@ -35,15 +35,21 @@ function moonrock_snapshot_images_savesnapshot($uri, $nid) {
   }
 }
 
-function moonrock_snapshot_images_get_snapshot_url($nid) {
-  return _moonrock_snapshot_images_path('png', $nid);
+function moonrock_snapshot_images_get_snapshot_url($nid, $mdate = FALSE) {
+  return _moonrock_snapshot_images_path('png', $nid, $mdate);
 }
-function moonrock_snapshot_images_get_svgsnapshot_url($nid) {
-  return _moonrock_snapshot_images_path('svg', $nid);
+function moonrock_snapshot_images_get_svgsnapshot_url($nid, $mdate = FALSE) {
+  return _moonrock_snapshot_images_path('svg', $nid, $mdate);
 }
 
-function _moonrock_snapshot_images_path($type, $nid) {
-  return "moonrock_snapshots/snapshot_{$nid}.{$type}";
+function _moonrock_snapshot_images_path($type, $nid, $mdate = FALSE) {
+  if ($mdate) {
+  $filename = _moonrock_snapshot_images_filename($type, $nid);
+  $mdatetxt = '?d=' . filemtime($filename);
+  } else {
+    $mdatetxt = '';
+  }
+  return "moonrock_snapshots/snapshot_{$nid}.{$type}{$mdatetxt}";
 }
 
 function _moonrock_snapshot_images_filename($type, $nid) {

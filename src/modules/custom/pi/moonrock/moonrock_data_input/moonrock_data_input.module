@@ -71,6 +71,8 @@ function moonrock_data_input_data_submit() {
   $node->form_build_id = $_REQUEST['form_build_id'];
   $node->title = $_REQUEST['title'];
   $node->onepageprofile_categories = $_REQUEST['onepageprofile_categories'];
+  $node->key_question = $_REQUEST['key_question'];
+
   node_save($node);
 
   $saved_node = node_load($node->nid, NULL, TRUE);
@@ -152,11 +154,6 @@ function _moonrock_data_input_prepare_data_items($data, $sample_filter = FALSE) 
   return $items;
 }
 
-function _moonrock_data_input_find_data_for_sample($sample_filter) {
-  $data = pi_sort_data_get_unsorted_items();
-  return _moonrock_data_input_prepare_data_items($data, $sample_filter);
-}
-
 function moonrock_data_input_nodeapi(&$node, $op) {
   if (($op === 'presave' && $node->form_id === 'pi_data_node_form') || ($op === 'delete' && $node->type === 'pi_data')) {
     global $user;
@@ -215,11 +212,25 @@ function moonrock_data_input_nodeapi(&$node, $op) {
 
 function moonrock_data_input_data_search() {
   $sample_filter = $_REQUEST['nid'];
+  $current_question = isset($_COOKIE['active_key_question']) ? $_COOKIE['active_key_question'] : '0';
 
+  $data = pi_sort_data_get_measure_information();
+  $unsorted_data_items = pi_sort_data_get_options();
+  $nids = array_keys($unsorted_data_items);
+
+  $data['items'] = array();
+  foreach ($nids as $item_nid) {
+    $node = node_load($item_nid);
+    if ($node->key_question == $current_question) {
+      $data['items'][$item_nid] = pi_sort_data_get_process_item($node, $data);
+    }
+  }
+
+  $items = _moonrock_data_input_prepare_data_items($data, $sample_filter);
 
   drupal_json(array(
       'status' => TRUE,
-      'items' => _moonrock_data_input_find_data_for_sample($sample_filter),
+      'items' => $items,
   ));
 }
 
