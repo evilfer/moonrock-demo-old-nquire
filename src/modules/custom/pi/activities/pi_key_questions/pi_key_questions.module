@@ -137,6 +137,7 @@ function pi_key_questions_form(&$node) {
  */
 function pi_key_questions_insert($node) {
   db_query("INSERT INTO {pi_key_questions} (nid, vid, key_question) VALUES ('%d', '%d', '%s')", $node->nid, $node->vid, $node->key_question);
+  setcookie('active_key_question', $node->nid);
 }
 
 /**
@@ -147,6 +148,7 @@ function pi_key_questions_update($node) {
     pi_key_questions_insert($node);
   } else {
     db_query("UPDATE {pi_key_questions} SET key_question = '%s' WHERE vid = %d", $node->key_question, $node->vid);
+    setcookie('active_key_question', $node->nid);
   }
 }
 

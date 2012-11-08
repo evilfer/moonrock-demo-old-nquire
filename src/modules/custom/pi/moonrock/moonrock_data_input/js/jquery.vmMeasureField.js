@@ -11,6 +11,7 @@
       
       var self = this;
       self.data('options', _options);
+      self.data('fieldid', 'vmmeasure-' + this.attr('vm_measure'));
       
       self.html('').addClass('moonrock-measure-field');
       
@@ -67,9 +68,9 @@
       this.vmMeasureField('_field2displayValue');
       return this;
     },
-    acceptCurrentMeasure: function() {
+    acceptCurrentMeasure: function(keepMeasuring) {
       this
-      .vmMeasureField('_stopMonitoring')
+      .vmMeasureField('_stopMonitoring', keepMeasuring)
       .vmMeasureField('_display2fieldValue');
       return this;
     },
@@ -81,7 +82,7 @@
       this.data('displayValue', value);
       var element = this.find('.moonrock-measure-field-value');
       var text = '' + value;
-      if (text.length == 0) {
+      if (text.length === 0) {
         element.addClass('empty').html('Click here to start measuring!');
       } else {
         element.removeClass('empty').html(value);
@@ -148,14 +149,14 @@
     
     _startMonitoring: function() {
       var self = this;
-      MoonrockVMComm.addMeasureValueListener('measurefield', function(value) {
+      MoonrockVMComm.addMeasureValueListener(this.data('fieldid'), function(value) {
         self.vmMeasureField('_setDisplayValue', value).vmMeasureField('_notify', 'change');
       });
       this.vmMeasureField('_setButtonsEdit');
       return this;
     },
-    _stopMonitoring: function() {
-      MoonrockVMComm.removeMeasureValueListener('measurefield');
+    _stopMonitoring: function(keepMeasuring) {
+      MoonrockVMComm.removeMeasureValueListener(this.data('fieldid'), keepMeasuring);
       this.vmMeasureField('_setButtonsIdle');
       return this;
     },

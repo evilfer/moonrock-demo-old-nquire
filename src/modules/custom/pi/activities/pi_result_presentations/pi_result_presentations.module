@@ -173,70 +173,7 @@ function _pi_result_presentations_format_measure_options($measures, $type) {
   return $options;
 }
 
-/**
- * This function validates the presentaion the user wants to create.
- * It checks that non of the selected y axis measures are non numeric.
- * Additionally it checks if at least 2 measures are selected (x+y)
- * @param $form
- * @param $form_state
- */
-function __pi_result_presentations_validate(&$form, &$form_state) {
-  return;
 
-  global $user;
-  $details = get_inquiry_details_from_current_path();
-
-  $is_y_scale_numeric = TRUE;
-  $is_numeric = TRUE;
-  $selectedMeasure = 0;
-  $measure_weight = -99999;
-  $measure_id = -1;
-  $non_numerics = array();
-
-  $categories = $form->onepageprofile_categories;
-
-  if (is_array($categories)) {
-    foreach ($categories as $measure_id => $category) {
-      if ($category['status'] != 0) {
-        $selectedMeasure++;
-        $weights[$selectedMeasure] = $category['weight'];
-
-        $x_axis_labels = get_data_for_inquiry_measure_and_user($details->inquiry_id, $measure_id, $user->uid);
-
-        $is_numeric = TRUE;
-
-        foreach ($x_axis_labels as $x_axis_label) {
-
-          if (!empty($x_axis_label) && !is_numeric($x_axis_label)) {
-            $is_numeric = FALSE;
-          }
-        }
-
-        if ($is_numeric == FALSE) {
-          $non_numeric[] = intval($category['weight']);
-          $is_y_scale_numeric = FALSE;
-        }
-      }
-    }
-  }
-
-  if (count($non_numeric) == 1) {
-    //Check if the non numeric selected measure is the first one (x axis)
-    //In case it is, the selection is OK.
-    if ($non_numeric[0] <= min($weights)) {
-      $is_y_scale_numeric = TRUE;
-    }
-  }
-
-  //	if($is_y_scale_numeric == FALSE)
-  //	{
-  //		form_set_error('Selected Measure',t('One or more measues can not be displayed because they are not numeric. Only the first selection can be non numeric.'));
-  //	}
-
-  if ($selectedMeasure < 2) {
-    form_set_error('Selected Measure', t('At least two measures have to be selected'));
-  }
-}
 
 /**
  * Implementation of hook_insert().
@@ -584,6 +521,7 @@ function theme_pi_result_presentations_node_form($form) {
   drupal_add_css(drupal_get_path('module', 'pi_result_presentations') . '/css/pi_result_presentations.css');
   drupal_add_js(drupal_get_path('module', 'pi_result_presentations') . '/js/pi_result_presentations.js');
   moonrock_sample_utils_load_javascript_modules_support();
+  moonrock_sample_utils_load_cookie_support();
 
   $output = '<p>' . t('Create a graph with your collected data.'). '</p>';
   $output .= drupal_render($form['title']);

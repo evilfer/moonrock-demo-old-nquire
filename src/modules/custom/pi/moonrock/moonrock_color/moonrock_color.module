@@ -373,7 +373,8 @@ function moonrock_color_nquire_data_get_color_value($nid) {
 function moonrock_color_nquire_data_get_text_value($nid) {
   $node = node_load($nid);
   if ($node && $node->type == 'moonrock_color') {
-    return check_plain($node->title);
+    $pos = strpos($node->title, ' (');
+    return check_plain($pos === FALSE ? $node->title : substr($node->title, 0, $pos));
   }
 
   return $nid;

@@ -294,7 +294,6 @@ function pi_sort_data_get_process_item($node, $measures_info) {
   return $item;
 }
 
-
 function pi_sort_data_view($node, $teaser, $page = FALSE) {
   global $user;
   $node_details = get_inquiry_details_from_current_path();
@@ -309,7 +308,7 @@ function pi_sort_data_view($node, $teaser, $page = FALSE) {
   }
 
   $questions = pi_sort_key_questions_get_options();
-  $questions['0'] = array('#title' => t('unasigned'));
+  //$questions['0'] = array('#title' => t('unasigned'));
   $question_data = array();
 
   // Assemble an array of key questions in the output format (build_activity_link makes this a link with icon)
@@ -364,21 +363,23 @@ function pi_sort_data_view($node, $teaser, $page = FALSE) {
       $data_item_node = node_load($sorted_data_items_nid);
 
       $question_nid = $data_item_node->key_question;
-      $group = isset($question_data[$question_nid]) ? $question_nid : '0';
+      if (isset($question_data[$question_nid])) {
+        $group = isset($question_data[$question_nid]) ? $question_nid : '0';
 
-      $values = pi_data_table_row_values($data_item_node, $node_details, $data_item_activity_id, $question_data[$group]['measures']);
-      $created = t('Created: ') . '<br />' . format_date($data_item_node->created, 'custom', 'Y/m/d H:i');
+        $values = pi_data_table_row_values($data_item_node, $node_details, $data_item_activity_id, $question_data[$group]['measures']);
+        $created = t('Created: ') . '<br />' . format_date($data_item_node->created, 'custom', 'Y/m/d H:i');
 
-      $created .= '<br/>'
-              . l('edit', 'activity/' . $data_item_activity_id . '/edit') . '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'
-              . l('delete', 'node/' . $sorted_data_items_nid . '/delete', array('query' => 'destination=phase/' . $node_details->phase_id));
+        $created .= '<br/>'
+                . l('edit', 'activity/' . $data_item_activity_id . '/edit') . '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'
+                . l('delete', 'node/' . $sorted_data_items_nid . '/delete', array('query' => 'destination=phase/' . $node_details->phase_id));
 
-      array_unshift($values, $created);
-      array_unshift($question_data[$group]['values'], array(
-          'data' => $values,
-          'class' => 'pi-sort-data-row',
-          'key_question_id' => $question_nid,
-      ));
+        array_unshift($values, $created);
+        array_unshift($question_data[$group]['values'], array(
+            'data' => $values,
+            'class' => 'pi-sort-data-row',
+            'key_question_id' => $question_nid,
+        ));
+      }
     }
   }
 
@@ -401,10 +402,14 @@ function pi_sort_data_view($node, $teaser, $page = FALSE) {
   return $node;
 }
 
-function theme_pi_sort_data_question_selection() {
+function pi_sort_data_load_filter_resources() {
   moonrock_sample_utils_load_javascript_modules_support();
   moonrock_sample_utils_load_cookie_support();
   drupal_add_js(drupal_get_path('module', 'pi_sort_data') . '/js/filter.js');
+}
+
+function theme_pi_sort_data_question_selection() {
+  pi_sort_data_load_filter_resources();
 
   $questions = pi_sort_key_questions_get_options();
 
@@ -412,7 +417,7 @@ function theme_pi_sort_data_question_selection() {
   foreach ($questions as $nid => $question) {
     $output .= '<option value="' . $nid . '">' . $question['#title'] . '</option>';
   }
-  $output .= '<option value="0" style="font-style: italic;">unasigned</option>';
+  //$output .= '<option value="0" style="font-style: italic;">unasigned</option>';
   $output .= '</select>';
 
   return $output;

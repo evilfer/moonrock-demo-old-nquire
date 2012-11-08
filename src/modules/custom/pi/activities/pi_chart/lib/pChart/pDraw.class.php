@@ -6023,24 +6023,26 @@ class pDraw {
                   $this->Shadow = TRUE;
                 }
                 $Caption = $DisplaySeriesName ? $SerieName : $this->scaleFormat($Serie["Data"][$Key], $Mode, $Format, $Unit);
-                $textSize = $DisplaySeriesName ? .5 * $DisplaySize : $DisplaySize;
-                $TxtPos = $this->getTextBox(0, 0, $DisplayFont, $DisplaySize, 90, $Caption);
+                $textSize = $DisplaySize;
+                $angle = $DisplayOrientation === ORIENTATION_VERTICAL ? 90 : 0;
+                $TxtPos = $this->getTextBox(0, 0, $DisplayFont, $DisplaySize, $angle, $Caption);
                 $TxtHeight = $TxtPos[0]["Y"] - $TxtPos[1]["Y"] + $TxtMargin;
-
+                
+                
                 if ($DisplayPos == LABEL_POS_INSIDE && abs($TxtHeight) < abs($BarHeight)) {
                   $CenterX = (($X + $XOffset + $XSize - $XSpace) - ($X + $XOffset + $XSpace)) / 2 + $X + $XOffset + $XSpace;
                   $CenterY = ($Y2 - $Y1) / 2 + $Y1;
 
-                  $this->drawText($CenterX, $CenterY, $Caption, array("R" => $DisplayR, "G" => $DisplayG, "B" => $DisplayB, "Align" => TEXT_ALIGN_MIDDLEMIDDLE, "FontSize" => $textSize, "Angle" => 90));
+                  $this->drawText($CenterX, $CenterY, $Caption, array("R" => $DisplayR, "G" => $DisplayG, "B" => $DisplayB, "Align" => TEXT_ALIGN_MIDDLEMIDDLE, "FontSize" => $textSize, "Angle" => $angle));
                 } else {
                   if ($Serie["Data"][$Key] >= 0) {
-                    $Align = TEXT_ALIGN_BOTTOMMIDDLE;
+                    $Align = $DisplayOrientation === ORIENTATION_VERTICAL ? TEXT_ALIGN_MIDDLELEFT : TEXT_ALIGN_BOTTOMMIDDLE;
                     $Offset = $DisplayOffset;
                   } else {
-                    $Align = TEXT_ALIGN_TOPMIDDLE;
+                    $Align = $DisplayOrientation === ORIENTATION_VERTICAL ? TEXT_ALIGN_MIDDLERIGHT : TEXT_ALIGN_TOPMIDDLE;
                     $Offset = -$DisplayOffset;
                   }
-                  $this->drawText($X + $XOffset + $XSize / 2, $Y2 - $Offset, $Caption, array("R" => $DisplayR, "G" => $DisplayG, "B" => $DisplayB, "Align" => $Align, "FontSize" => $textSize));
+                  $this->drawText($X + $XOffset + $XSize / 2, $Y2 - $Offset, $Caption, array("R" => $DisplayR, "G" => $DisplayG, "B" => $DisplayB, "Align" => $Align, "FontSize" => $textSize, "Angle" => $angle));
                 }
 
                 $this->Shadow = $RestoreShadow;
@@ -6201,7 +6203,7 @@ class pDraw {
                 if ($DisplayPos == LABEL_POS_INSIDE && abs($TxtWidth) < abs($BarWidth)) {
                   $CenterX = ($X2 - $X1) / 2 + $X1;
                   $CenterY = (($Y + $YOffset + $YSize - $YSpace) - ($Y + $YOffset + $YSpace)) / 2 + ($Y + $YOffset + $YSpace);
-
+                  
                   $this->drawText($CenterX, $CenterY, $Caption, array("R" => $DisplayR, "G" => $DisplayG, "B" => $DisplayB, "Align" => TEXT_ALIGN_MIDDLEMIDDLE, "FontSize" => $DisplaySize));
                 } else {
                   if ($Serie["Data"][$Key] >= 0) {

@@ -142,7 +142,6 @@ function pi_key_answers_insert($node) {
  * Implementation of hook_update().
  */
 function pi_key_answers_update($node) {
-
   if ($node->revision) {
     pi_key_answers_insert($node);
   } else {
@@ -251,8 +250,6 @@ function theme_pi_key_answers_node_form($form) {
               . "<img style='display:none;' question='{$presentation->key_question_id}' src='?q=activity/{$activity_id}/chart.png'>"
               . "</div>";
     }
-
-
   } else {
     $output .= "<p>No key questions are available to answer.</p>";
   }

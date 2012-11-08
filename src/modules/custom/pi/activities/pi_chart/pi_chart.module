@@ -2,6 +2,7 @@
 
 require_once( 'lib/pChart/pData.class.php');
 require_once( 'lib/pChart/pDraw.class.php');
+require_once( 'lib/pChart/pScatter.class.php');
 require_once( 'lib/pChart/pImage.class.php');
 
 /*
@@ -41,16 +42,17 @@ function pi_chart_show_chart_as_temppng() {
   $abscissa_nid = $_REQUEST['abscissa'];
   $ordinate_str = $_REQUEST['ordinate'];
   $color_nid = $_REQUEST['color'];
+  $question = $_REQUEST['question'];
 
   global $user;
 
   if (strlen($type) > 0 && strlen($abscissa_nid) > 0 && strlen($ordinate_str) > 0) {
-    pi_chart_create_png($title, $type, $abscissa_nid, $ordinate_str, $color_nid, $user->uid);
+    pi_chart_create_png($title, $type, $abscissa_nid, $ordinate_str, $color_nid, $question, $user->uid);
   }
   return;
 }
 
-function pi_chart_create_png($title, $type, $abscissa_nid, $ordinate_str, $color_nid, $uid) {
+function pi_chart_create_png($title, $type, $abscissa_nid, $ordinate_str, $color_nid, $question, $uid) {
   $ordinate_count = count(explode(',', $ordinate_str));
 
   $details = get_inquiry_details_from_current_path();
@@ -61,7 +63,7 @@ function pi_chart_create_png($title, $type, $abscissa_nid, $ordinate_str, $color
   }
 
   $headers = get_selected_measures_headings_for_inquiry_and_user($details->inquiry_id, $selected_measures, $uid);
-  $rows = get_selected_measures_data_for_inquiry_and_user($details->inquiry_id, $selected_measures, $uid);
+  $rows = get_selected_measures_data_for_inquiry_and_user($details->inquiry_id, $selected_measures, $question, $uid);
   $types = get_selected_measures_types_for_inquiry_and_user($details->inquiry_id, $selected_measures, $uid);
 
   /*
@@ -101,6 +103,7 @@ function pi_chart_create_png($title, $type, $abscissa_nid, $ordinate_str, $color
       $type = 'scatter';
     } else {
       $max_data_count_per_key_field = 0;
+
       foreach ($grouped_rows as $row_group) {
         if (count($row_group) > $max_data_count_per_key_field) {
           $max_data_count_per_key_field = count($row_group);
@@ -121,6 +124,8 @@ function pi_chart_create_png($title, $type, $abscissa_nid, $ordinate_str, $color
       case 'plot':
         _pi_chart_draw_plot_chart($title, $headers, $grouped_rows, $types, $numeric_fields, $color_field);
         break;
+      case 'scatter':
+        _pi_chart_draw_scatter_chart($title, $headers, $rows, $types, $color_field);
       default:
         break;
     }
@@ -153,13 +158,13 @@ function pi_chart_create_png($title, $type, $abscissa_nid, $ordinate_str, $color
         $gap = $max > $min ? ($max - $min) / $ngaps : 5;
         $limits = array();
         $ft = function($f) {
-          $t = "$f";
-          if (strlen($t) > 1 && $t[0] == '0') {
-            $t = substr($t, 1);
-          }
-          return $t;
-        };
-        
+                  $t = "$f";
+                  if (strlen($t) > 1 && $t[0] == '0') {
+                    $t = substr($t, 1);
+                  }
+                  return $t;
+                };
+
         for ($j = 0; $j < $ngaps; $j++) {
           $l0 = $min + $j * $gap;
           $l1 = $l0 + $gap;
@@ -237,7 +242,7 @@ function pi_chart_show_chart_as_png($activity_id, $arg_node_function) {
 
   $nid = get_nid_for_inquiry_activity_and_any_user($details->inquiry_id, $activity_id);
   $node = node_load($nid);
-  pi_chart_create_png($node->title, $node->chart_type, $node->abscissa, $node->ordinate, $node->color, $node->uid);
+  pi_chart_create_png($node->title, $node->chart_type, $node->abscissa, $node->ordinate, $node->color, $node->key_question_id, $node->uid);
 }
 
 function _pi_chart_get_numeric_value($value, $type) {
@@ -377,8 +382,9 @@ function _pi_chart_draw_histogram($title, $headers, $numeric, $cross, $data_valu
   $myPicture->setShadow(TRUE, array("X" => 1, "Y" => 1, "R" => 0, "G" => 0, "B" => 0, "Alpha" => 10));
 
   $settings = array(
-      "DisplayPos" => LABEL_POS_TOP,
+      "DisplayPos" => LABEL_POS_INSIDE,
       "DisplaySeriesName" => TRUE,
+      "DisplayOrientation" => ORIENTATION_VERTICAL,
       "DisplayR" => 15,
       "DisplayG" => 15,
       "DisplayB" => 15,
@@ -611,6 +617,122 @@ function _pi_chart_draw_plot_chart($title, $headers, $grouped_rows, $types, $num
   );
 
   $myPicture->drawPlotChart($settings);
+  /* Render the picture (choose the best way) */
+  $myPicture->Stroke();
+}
+
+function _pi_chart_draw_scatter_chart($title, $headers, $rows, $types, $color_field) {
+  /* Create and populate the pData object */
+  $myData = new pData();
+
+  $maxX = 0;
+  $maxY = 0;
+
+  $count = 0;
+
+  foreach ($rows as $row) {
+    if (strlen($row[0]) > 0 && strlen($row[1])) {
+
+      $x = floatval($row[0]);
+      $y = floatval($row[1]);
+      $maxX = max($maxX, $x);
+      $maxY = max($maxY, $y);
+
+      $xid = "X-$count";
+      $yid = "Y-$count";
+      $myData->addPoints($x, $xid);
+      $myData->addPoints($y, $yid);
+      $myData->setSerieOnAxis($xid, 0);
+      $myData->setSerieOnAxis($yid, 1);
+      $myData->setScatterSerie($xid, $yid, $count);
+      $myData->setSerieOnAxis($count, 1);
+
+      if ($color_field) {
+        $myData->setScatterSerieColor($count, _pi_chart_get_color_value($row[$color_field], $types[$color_field]));
+      } else {
+        $myData->setScatterSerieColor($count, array("R" => 200, "G" => 200, "B" => 200, "Alpha" => 0));
+      }
+
+      $count++;
+    }
+  }
+
+  if ($count === 0) {
+    $maxX = $maxY = 1;
+    $myData->addPoints(array(), "x");
+    $myData->addPoints(array(), "y");
+    $myData->setSerieOnAxis("x", 0);
+    $myData->setSerieOnAxis("y", 1);
+    $myData->setScatterSerie("x", "y", 0);
+    $myData->setSerieOnAxis(0, 1);
+  }
+
+  $myData->setAxisName(0, $headers[0]);
+  $myData->setAxisXY(0, AXIS_X);
+  $myData->setAxisPosition(0, AXIS_POSITION_BOTTOM);
+  $myData->setAxisName(1, $headers[1]);
+  $myData->setAxisXY(1, AXIS_Y);
+  $myData->setAxisPosition(1, AXIS_POSITION_LEFT);
+
+
+  $myPicture = new pImage(700, 360, $myData);
+
+  /* Add a border to the picture */
+  $myPicture->drawRectangle(0, 0, 699, 359, array("R" => 0, "G" => 0, "B" => 0));
+
+  /* Set the default font */
+  $myPicture->setFontProperties(array("FontName" => dirname(__FILE__) . '/lib/Fonts/tahoma.ttf', "FontSize" => 10));
+
+  /* Define the chart area */
+  $myPicture->setGraphArea(60, 40, 650, 310);
+
+  /* Draw the scale */
+  $scaleSettings = array(
+      "GridR" => 200,
+      "GridG" => 200,
+      "GridB" => 200,
+      "DrawSubTicks" => TRUE,
+      "Mode" => SCALE_MODE_MANUAL,
+      "ManualScale" => array(0 => array("Min" => 0, "Max" => $maxX), 1 => array("Min" => 0, "Max" => $maxY))
+  );
+  //$myPicture->drawScale($scaleSettings);
+  $myPicture->drawText(350, 5, $title, array("FontSize" => 12, "Align" => TEXT_ALIGN_TOPMIDDLE));
+  /* Write the chart legend */
+  //$myPicture->drawLegend(580, 12, array("Style" => LEGEND_NOBORDER, "Mode" => LEGEND_HORIZONTAL));
+
+
+  $myScatter = new pScatter($myPicture, $myData);
+  $myScatter->drawScatterScale($scaleSettings);
+
+  /* Turn on shadow computing */
+  $myPicture->setShadow(TRUE, array("X" => 1, "Y" => 1, "R" => 0, "G" => 0, "B" => 0, "Alpha" => 10));
+
+
+  $settings = array(
+      "DisplayPos" => LABEL_POS_TOP,
+      "DisplayValues" => TRUE,
+      "DisplayR" => 65,
+      "DisplayG" => 65,
+      "DisplayB" => 65,
+      //   "DisplayShadow" => TRUE,
+      "Rounded" => TRUE,
+      "BorderR" => 35,
+      "BorderG" => 35,
+      "BorderB" => 35,
+      "InnerBorderR" => 215,
+      "InnerBorderG" => 215,
+      "InnerBorderB" => 215,
+      "BorderSize" => 2,
+      "PlotSize" => 7,
+      "PlotBorder" => TRUE,
+  );
+
+  if ($count > 0) {
+    $myScatter->drawScatterPlotChart($settings);
+  }
+  /* Draw the legend */
+  //$myScatter->drawScatterLegend(280, 380, array("Mode" => LEGEND_HORIZONTAL, "Style" => LEGEND_NOBORDER));
+
   /* Render the picture (choose the best way) */
   $myPicture->Stroke();
 }

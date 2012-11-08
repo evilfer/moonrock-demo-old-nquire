@@ -123,7 +123,7 @@ function pi_data_form(&$node) {
         '#type' => 'hidden',
         '#value' => $current_question,
     );
-    
+
     $use_measure = moonrock_sample_utils_filter_visible_measures($measure_rows, $current_question);
 
     /**
@@ -177,13 +177,13 @@ function pi_data_form(&$node) {
                * to enable VM automatic measures.
                */
               if ($measure_info->data_type === 'numeric') {
-                $div = '<div vm_measure="' . $key . '"></div>';
+                $div = '<div class="form-item">' . $measure_text . '<div vm_measure="' . $key . '"></div></div>';
 
                 $tree[$key]['value'] = array(
                     '#type' => 'hidden',
                     '#required' => false,
                     '#attributes' => array('vm_measure' => $key),
-                    '#prefix' => $measure_text . $div,
+                    '#prefix' => $div,
                 );
               } else {
                 $tree[$key]['value'] = array(
@@ -394,7 +394,12 @@ function _pi_data_measure_title($measure_value, $measure_type) {
  */
 function pi_data_insert($node) {
 
-  db_query("INSERT INTO {pi_data_question} (nid, vid, key_question) VALUES (%d, %d, %d)", $node->nid, $node->vid, $node->key_question);
+  $db_result = db_query("SELECT key_question FROM {pi_data_question} WHERE nid=%d AND vid=%d", $node->nid, $node->vid);
+  if (db_fetch_object($db_result)) {
+    db_query("UPDATE {pi_data_question} SET key_question = %d WHERE vid = %d", $node->key_question, $node->vid);
+  } else {
+    db_query("INSERT INTO {pi_data_question} (nid, vid, key_question) VALUES (%d, %d, %d)", $node->nid, $node->vid, $node->key_question);
+  }
 
 
   $title_array = array();

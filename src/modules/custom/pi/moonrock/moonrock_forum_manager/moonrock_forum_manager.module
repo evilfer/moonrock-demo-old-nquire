@@ -27,7 +27,6 @@ function moonrock_forum_manager_menu() {
   return $items;
 }
 
-
 function moonrock_forum_manager_create_access() {
   return TRUE;
 }
@@ -111,8 +110,8 @@ function theme_moonrock_forum_manager_question_forum_body($node) {
   $output .= '<p><b>' . t('Key question:') . '</b><br/><span style="padding-left: 20px;">' . check_plain($node->key_question) . '</span></p>';
 
   $method_nid = find_unique_node_type_for_uid_and_inquiry('moonrock_method', $user->uid, $node_details->inquiry_id);
-  $method = node_load($method_nid, NULL, TRUE);
-  $question_method = $method && isset($method->question_methods[$node->nid]) ? $method->question_methods[$node->nid] : NULL;
+  $method_node = node_load($method_nid, NULL, TRUE);
+  $question_method = $method_node && isset($method_node->question_methods[$node->nid]) ? $method_node->question_methods[$node->nid] : NULL;
 
   $method = '';
 
@@ -159,7 +158,7 @@ function theme_moonrock_forum_manager_question_forum_body($node) {
     $output .= '<p><b>' . t('Key answers:') . '</b><ul>' . $answers . '</ul></p>';
   }
 
-  $query_charts = "SELECT DISTINCT {node}.nid FROM {pi_result_presentations} LEFT JOIN {node} on {node}.nid={pi_result_presentations}.nid WHERE {pi_result_presentations}.key_question_id=%d";
+  $query_charts = "SELECT DISTINCT {node}.nid FROM {pi_result_presentations} LEFT JOIN {node} on {node}.nid={pi_result_presentations}.nid WHERE {pi_result_presentations}.key_question_id=%d ORDER BY {node}.created DESC";
   $result_charts = db_query($query_charts, $node->nid);
   $heading = TRUE;
   $output .= '<p>';
@@ -241,15 +240,17 @@ function moonrock_forum_manager_nodeapi($node, $op) {
 
   if ($node->type === 'pi_key_questions' && $op === 'update') {
     $questions[] = $node;
-  } else if ($node->type === 'pi_key_answers' && ($op === 'update' || $op === 'insert' || $op === 'update')) {
+  } else if ($node->type === 'pi_key_answers' && ($op === 'update' || $op === 'insert' || $op === 'delete')) {
     if ($op === 'update') {
       $node = node_load($node->nid, NULL, TRUE);
     }
     $questions[] = node_load($node->key_question_id);
-  } else if ($node->type === 'moonrock_method' && $op === 'update') {
+  } else if ($node->type === 'moonrock_method' && ($op === 'update' || $op === 'insert')) {
     foreach ($node->question_methods as $nid => $_) {
       $questions[] = node_load($nid);
     }
+  } else if ($node->type === 'pi_result_presentations' && ($op === 'delete' || $op === 'insert' || $op === 'update')) {
+    $questions[] = node_load($node->key_question_id);
   }
 
   foreach ($questions as $question) {

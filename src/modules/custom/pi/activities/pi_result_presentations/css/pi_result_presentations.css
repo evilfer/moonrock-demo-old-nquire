@@ -26,8 +26,8 @@
 
 #pi-result-presentations-preview-container {
   position: relative;
-  height: 250px;
-  width: 700px;
+/*  height: 250px;
+  width: 900px;*/
 }
 
 #pi-result-presentations-preview-loading {
@@ -40,11 +40,3 @@
   background: url(throbber.gif) no-repeat center;
 }
 
-@-webkit-keyframes spinnerRotate {
-	from {
-		-webkit-transform:rotate(0deg);
-	}
-	to {
-		-webkit-transform:rotate(360deg);
-	}
-}

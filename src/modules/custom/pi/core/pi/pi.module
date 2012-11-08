@@ -947,38 +947,16 @@ function get_selected_measures_headings_for_inquiry_and_user($inquiry_id, $selec
   return $headings;
 }
 
-function get_selected_measures_data_for_inquiry_and_user($inquiry_id, $selected_measures, $uid) {
+function get_selected_measures_data_for_inquiry_and_user($inquiry_id, $selected_measures, $question, $uid) {
   $result = array();
 
   foreach (explode(',', $selected_measures) as $measure_id) {
     //Just to make sure there are no spaces...
     $measure_id = trim($measure_id);
     if ($measure_id != 0) {
-      $result[] = get_data_for_inquiry_measure_and_user($inquiry_id, $measure_id, $uid);
+      $result[] = get_data_for_inquiry_measure_and_user($inquiry_id, $measure_id, $question, $uid);
     }
   }
-
-  //sort $result by up to first three columns
-  /*   * *
-    if (isset($result[2]) AND $result[2] != NULL AND $result[1] != NULL AND $result[0] != NULL) {
-    array_multisort(
-    $result[0], SORT_ASC, SORT_STRING,
-    $result[1], SORT_ASC, SORT_STRING,
-    $result[2], SORT_ASC, SORT_STRING
-    );
-    }
-    elseif (isset($result[1]) AND $result[1] != NULL AND $result[0] != NULL) {
-    array_multisort(
-    $result[0], SORT_ASC, SORT_STRING,
-    $result[1], SORT_ASC, SORT_STRING
-    );
-    }
-    elseif (isset($result[0]) AND $result[0] != NULL) {
-    array_multisort(
-    $result[0], SORT_ASC, SORT_STRING
-    );
-    };
-   */
 
   // Now rotate the values table so that each measure's data
   // is in a column (rather than a row)
@@ -1008,7 +986,7 @@ function get_selected_measures_data_for_inquiry_and_user($inquiry_id, $selected_
  * AND pi_activity_node.inquiry_id = '" . $inquiry_id . "' ";
  */
 
-function get_data_for_inquiry_measure_and_user($inquiry_id, $measure_id, $uid) {
+function get_data_for_inquiry_measure_and_user($inquiry_id, $measure_id, $question, $uid) {
 
   $query = "SELECT DISTINCT {pi_collected_data}.nid AS nid, {pi_collected_data}.value AS value "
           . "FROM {pi_collected_data} "
@@ -1016,12 +994,14 @@ function get_data_for_inquiry_measure_and_user($inquiry_id, $measure_id, $uid) {
           . "LEFT JOIN {node} ON {pi_collected_data}.nid = {node}.nid "
           . "LEFT JOIN {node_access} ON {node}.nid = {node_access}.nid "
           . "LEFT JOIN {og_uid} ON {node_access}.gid = {og_uid}.nid "
+          . "LEFT JOIN {pi_data_question} ON {node}.vid = {pi_data_question}.vid "
           . "WHERE ( {pi_collected_data}.available_measure_nid = %d) "
           . "AND ( {node}.uid = %d OR {og_uid}.uid = %d ) "
+          . "AND ({pi_data_question}.key_question = %d) "
           . "ORDER BY {pi_sort_data}.weight, {pi_collected_data}.vid ASC";
 
   // print $query;
-  $db_result = db_query($query, $measure_id, $uid, $uid);
+  $db_result = db_query($query, $measure_id, $uid, $uid, $question);
   //echo "\n" . $query;
 
   $values = array();
@@ -1036,6 +1016,7 @@ function get_data_for_inquiry_measure_and_user($inquiry_id, $measure_id, $uid) {
 
   return $values;
 }
+
 
 //interface parameters
 function show_activites($uid) {
