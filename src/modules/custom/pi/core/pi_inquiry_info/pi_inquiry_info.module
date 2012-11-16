@@ -1,45 +1,48 @@
 <?php
+
 // $Id: pi_inquiry_info.module,v 1.2 2009/06/24 09:17:48 ou_pm Exp $
 
 
 
 function pi_inquiry_info_block($op = 'list', $delta = 0, $edit = array()) {
 
-	switch ($op)
-	{
-		case 'list':
-			$blocks[0]['info'] = t('New Activity summary');
-			return $blocks;
+  switch ($op) {
+    case 'list':
+      $blocks[0]['info'] = t('New Activity summary');
+      return $blocks;
 
-		case 'view':
+    case 'view':
 
-			$show_activities = TRUE;
-			$show_phases = TRUE;
-			global $user;
-			$image_path = drupal_get_path('module', 'pi') . '/images/';
-			$node_details = get_inquiry_details_from_current_path();
+      $show_activities = TRUE;
+      $show_phases = TRUE;
+      global $user;
+      $image_path = drupal_get_path('module', 'pi') . '/images/';
+      $node_details = get_inquiry_details_from_current_path();
 
-			if($node_details->inquiry_id)
-			{
-				$loaded_inquiry = node_load($node_details->inquiry_id);
-				$block['subject'] = l(check_plain($loaded_inquiry->title), "inquiry/" . $node_details->inquiry_id);
-				$block['content'] = t($loaded_inquiry->body);
-			}
-			elseif(arg(0)=='home')
-			{
-				$block['subject'] = 'Choose investigation';
-				$block['content'] = 'Choose an inquiry from the table on the right.';
-			}
-			elseif ($user->uid)
-			{
-				$block['subject'] = 'nQuire';
-				$block['content'] = t('Click ' . l(t('here'),'home') . ' to access your inquiries.');
-			}
-			else {
-				$block['subject'] = 'nQuire';
-				$block['content'] = 'Login to access your inquiries.';
-			}
-			return $block;
-	}
+      if ($node_details->inquiry_id) {
+        $show_navigation = $node_details->stage_id && arg(0) != 'inquiry';
+        if (arg(0) == 'node') {
+          $current_node = node_load(arg(1));
+          if ($current_node->type == 'story') {
+            $show_navigation = FALSE;
+          }
+        }
+        if (!$show_navigation) {
+          $loaded_inquiry = node_load($node_details->inquiry_id);
+          $block['subject'] = l(check_plain($loaded_inquiry->title), "inquiry/" . $node_details->inquiry_id);
+          $block['content'] = t($loaded_inquiry->body);
+        }
+      } elseif (arg(0) == 'home') {
+        $block['subject'] = 'Choose investigation';
+        $block['content'] = 'Choose an inquiry from the table on the right.';
+      } elseif ($user->uid) {
+        $block['subject'] = 'nQuire';
+        $block['content'] = t('Click ' . l(t('here'), 'home') . ' to access your inquiries.');
+      } else {
+        $block['subject'] = 'nQuire';
+        $block['content'] = 'Login to access your inquiries.';
+      }
+      return $block;
+  }
 }
 

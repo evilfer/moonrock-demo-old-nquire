@@ -264,3 +264,23 @@ function moonrock_forum_manager_nodeapi($node, $op) {
     }
   }
 }
+
+function moonrock_forum_manager_comment(&$a1, $op) {
+  if ($op == 'insert' || $op == 'update') {
+    db_query('TRUNCATE TABLE {cache_page}');
+  }
+}
+
+//function moonrock_forum_manager_block($op = 'list', $delta = 0, $edit = array()) {
+//
+//  switch ($op) {
+//    case 'list':
+//      $blocks = array();
+//      $blocks[0]['info'] = t('Forums');
+//      return $blocks;
+//
+//    case 'view':
+//      $block['subject'] = t('Forums');
+//      $block['content'] = '...';
+//  }
+//}

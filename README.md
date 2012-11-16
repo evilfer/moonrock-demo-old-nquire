@@ -8,6 +8,11 @@ Moonrock demonstators.
 Changes:
 
 -----------------
+16-11-2012
+
+- Bug fixes.
+
+-----------------
 08-11-2012
 
 - Bug fixes.
