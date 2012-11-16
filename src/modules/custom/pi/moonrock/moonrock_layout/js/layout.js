@@ -20,8 +20,6 @@ var TabsManager = {
         if (self._selectTabContent(tab, content)) {
           VmManager.vmTabOpened(tab);
         }
-      } else {
-        alert('disabled');
       }
     });
 

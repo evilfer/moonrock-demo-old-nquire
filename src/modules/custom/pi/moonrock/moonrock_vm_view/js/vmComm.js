@@ -9,13 +9,15 @@ var MoonrockVMComm = {
   _vmMeasureMonitors: {},
   _getPositionCallback: null,
   _vmAvailableListeners: {},
+  _vmAvailable: false,
   init: function() {
     var self = this;
     window.addEventListener("message", function(event) {
       self._receiveMessage(event);
     }, false);
   },
-  iframeLoaded: function() {
+  _iframeLoaded: function() {
+    this._vmAvailable = true;
     this._post('monitor', 'PositionPixels');
     this._post('monitor', 'MeasureMM');
     console.log('VM ready');
@@ -27,6 +29,7 @@ var MoonrockVMComm = {
     }
   },
   saluteVm: function() {
+    this._vmAvailable = false;
     this._notifyVmAvailable(false);
     this._probing = true;
     var self = this;
@@ -98,7 +101,7 @@ var MoonrockVMComm = {
         if (self._probing) {
           console.log('vm answered');
           self._probing = false;
-          self.iframeLoaded();
+          self._iframeLoaded();
         }
         break;
       case 'monitor':
@@ -213,36 +216,41 @@ var MoonrockVMComm = {
     return "data:image/svg+xml;base64," + btoa(svg);
   },
   _post: function(action, param, value) {
-    var iframe = $('#moonrock-vm-iframe')[0].contentWindow;
-    if (!iframe.onerror) {
-      iframe.onerror = function(error) {
-        console.log('iframe error: ' + error);
-        return true;
+    try {
+      console.log(action);
+      var iframe = $('#moonrock-vm-iframe')[0].contentWindow;
+      if (!iframe.onerror) {
+        iframe.onerror = function(error) {
+          console.log('iframe error: ' + error);
+          return true;
+        };
+      }
+      var msg = {
+        action: action
       };
-    }
-    var msg = {
-      action: action
-    };
-    /*    if (this._activityId !== null) {
-     msg.activityId = this._activityId;
-     }-*/
-    if (action !== 'list') {
-      msg.activityId = 0;
-    }
+      /*    if (this._activityId !== null) {
+       msg.activityId = this._activityId;
+       }-*/
+      if (action !== 'list') {
+        msg.activityId = 0;
+      }
 
-    if (typeof(param) !== 'undefined') {
-      msg.param = param;
-    }
+      if (typeof(param) !== 'undefined') {
+        msg.param = param;
+      }
 
-    if (value) {
-      msg.value = value;
-    }
+      if (value) {
+        msg.value = value;
+      }
 
-    if (iframe && iframe.postMessage) {
-      iframe.postMessage(msg, location.href);
-      //      iframe.postMessage(msg, location.origin);
-    } else {
-      console.log('ERROR: Messaging is not available');
+      if (iframe && iframe.postMessage) {
+        iframe.postMessage(msg, location.href);
+        //      iframe.postMessage(msg, location.origin);
+      } else {
+        console.log('ERROR: Messaging is not available');
+      }
+    } catch (err) {
+      console.log(err);
     }
   },
   getVMSnapshot: function(callback) {

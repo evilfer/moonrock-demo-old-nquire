@@ -8,6 +8,11 @@ Moonrock demonstators.
 Changes:
 
 -----------------
+17-11-2012
+
+- IE compatibility fixes.
+
+-----------------
 16-11-2012
 
 - Bug fixes.

@@ -17,7 +17,9 @@ var VmManager = {
     });
 
     MoonrockVMComm.addVmAvailableListener('vm', function(available) {
-      TabsManager.enable();
+      if (available) {
+        TabsManager.enable();
+      }
     });
   },
   sampleSelected: function(sample) {

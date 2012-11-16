@@ -47,11 +47,15 @@
   -moz-box-sizing: border-box;    /* Firefox, other Gecko */
   box-sizing: border-box; 
 
+
   display: -moz-inline-box;
   display: -webkit-inline-box;
+  display: -ms-flexbox;
 
   -webkit-box-orient: horizontal;
   -moz-box-orient: horizontal;
+  -ms-flex-direction: row;
+
   height: 70px;
   width: 100%;
 }
@@ -64,6 +68,8 @@
 
   -webkit-box-flex: 1;
   -moz-box-flex: 1;
+  -ms-box-flex: 1;
+  -ms-flex: 1;
 }
 
 .item-browser-slider {
