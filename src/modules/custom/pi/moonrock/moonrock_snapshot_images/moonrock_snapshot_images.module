@@ -26,10 +26,10 @@ function moonrock_snapshot_images_access() {
 }*/
 
 function moonrock_snapshot_images_savesnapshot($uri, $nid) {
-  $parts = explode('|', $uri);
+  $parts = explode('|', $uri, 2);
   $types = array('png', 'svg');
   
-  for($i = 0; $i < 2; $i ++) {
+  for($i = 0; $i < count($parts); $i ++) {
     $data = substr($parts[$i], strpos($parts[$i], ",") + 1);
     file_put_contents(_moonrock_snapshot_images_filename($types[$i], $nid), base64_decode($data));
   }

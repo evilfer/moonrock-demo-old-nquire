@@ -8,6 +8,12 @@ Moonrock demonstators.
 Changes:
 
 -----------------
+18-11-2012
+
+- IE compatibility fixes.
+- Fixed issue with item browser not updating on window resize.
+
+-----------------
 17-11-2012
 
 - IE compatibility fixes.

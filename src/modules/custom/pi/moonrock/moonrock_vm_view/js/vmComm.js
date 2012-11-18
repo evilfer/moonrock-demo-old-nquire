@@ -33,7 +33,6 @@ var MoonrockVMComm = {
     this._notifyVmAvailable(false);
     this._probing = true;
     var self = this;
-
     var schedule = function() {
       setTimeout(probe, 10);
     };
@@ -44,7 +43,6 @@ var MoonrockVMComm = {
         schedule();
       }
     };
-
     schedule();
   },
   addPositionChangeListener: function(id, callback) {
@@ -63,7 +61,6 @@ var MoonrockVMComm = {
     });
     this._post('get', 'MeasureMM');
     this._post('monitor', 'MeasureMM');
-
     this._vmMeasureMonitors[id] = callback;
   },
   removeMeasureValueListener: function(id, keepMeasuring) {
@@ -95,7 +92,7 @@ var MoonrockVMComm = {
   },
   _receiveMessage: function(event) {
     var self = this;
-    var msg = event.data;
+    var msg = JSON.parse(event.data);
     switch (msg.action) {
       case 'list':
         if (self._probing) {
@@ -159,20 +156,16 @@ var MoonrockVMComm = {
               var _width = 200;
               var ratio = parseFloat(this.height) / this.width;
               var height = ratio * _width;
-
               var resizeCanvas = $('#moonrock-vm-resize-canvas')[0];
               resizeCanvas.width = _width;
               resizeCanvas.height = height;
-
               resizeCanvas.getContext("2d").drawImage(this, 0, 0, _width, height);
               self._snapshot.image = resizeCanvas.toDataURL();
               self._snapshot.image2 = self._getSVGAnnotation(_width, height, _width / this.width);
-
               var callback = self._snapshotCallback;
               self._snapshotCallback = null;
               callback(self._snapshot);
             };
-
             if (self._otherStuffCallback) {
               self._otherStuffCallback();
             }
@@ -200,20 +193,23 @@ var MoonrockVMComm = {
     }
   },
   _getSVGAnnotation: function(width, height, scale) {
-    var svgElement = $('#annotation-svg').clone();
-    svgElement.attr({
-      /*      'xmlns': 'http://www.w3.org/2000/svg',*/
-      'width': width,
-      'height': height
-    });
-    svgElement.removeClass();
-    var g = svgElement.children();
-    var transform = g.attr('transform');
-    g.attr('transform', 'scale(' + scale + ') ' + transform);
-
-    var serializer = new XMLSerializer();
-    var svg = serializer.serializeToString(svgElement[0]);
-    return "data:image/svg+xml;base64," + btoa(svg);
+    if (typeof btoa !== 'undefined') {
+      var svgElement = $('#annotation-svg').clone();
+      svgElement.attr({
+        /*      'xmlns': 'http://www.w3.org/2000/svg',*/
+        'width': width,
+        'height': height
+      });
+      svgElement.removeClass();
+      var g = svgElement.children();
+      var transform = g.attr('transform');
+      g.attr('transform', 'scale(' + scale + ') ' + transform);
+      var serializer = new XMLSerializer();
+      var svg = serializer.serializeToString(svgElement[0]);
+      return "data:image/svg+xml;base64," + btoa(svg);
+    } else {
+      return '';
+    }
   },
   _post: function(action, param, value) {
     try {
@@ -244,7 +240,7 @@ var MoonrockVMComm = {
       }
 
       if (iframe && iframe.postMessage) {
-        iframe.postMessage(msg, location.href);
+        iframe.postMessage(JSON.stringify(msg), location.href);
         //      iframe.postMessage(msg, location.origin);
       } else {
         console.log('ERROR: Messaging is not available');
@@ -260,7 +256,6 @@ var MoonrockVMComm = {
       vm_parameters: null,
       image: null
     };
-
     this._post('get', 'viewURL');
   },
   getVMSnapshotAndDoOtherStuffQuick: function(snapshotCallback, otherStuffCallback) {
@@ -270,11 +265,9 @@ var MoonrockVMComm = {
       vm_parameters: null,
       image: null
     };
-
     this._post('get', 'viewURL');
   }
 };
-
 $(function() {
   MoonrockModules.register('MoonrockVMComm', MoonrockVMComm);
 });

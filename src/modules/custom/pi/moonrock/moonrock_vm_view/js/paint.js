@@ -12,7 +12,6 @@ var GraphicAnnotation = {
   _buttonDown: false,
   _mode: 'blue',
   _changeListeners: {},
-  
   init: function() {
     if (this.annotationAvailable()) {
       var self = this;
@@ -22,23 +21,23 @@ var GraphicAnnotation = {
       $('.annotation-buttons > .annotation-mode-selector').click(function() {
         self._setMode($(this).attr('mode'));
       });
-    
+
       $('#annotation-done').click(function() {
         self._done();
       });
       $('#annotation-cancel').click(function() {
         self._cancel();
       });
-    
-    
+
+
       this._element.svg({
-        onLoad: function(svg) { 
-          self._svg = svg; 
-          self._group = svg.group(); 
-        
+        onLoad: function(svg) {
+          self._svg = svg;
+          self._group = svg.group();
+
           self._element.customMouseInput('rawdrag', function(action, point) {
             if (self._enabled) {
-              switch(action) {
+              switch (action) {
                 case 'dragstart':
                   self.startDrag(point);
                   break;
@@ -52,8 +51,8 @@ var GraphicAnnotation = {
             }
           });
         }
-      }); 
-    
+      });
+
       MoonrockVMComm.addVmAvailableListener('annotation', function(available) {
         if (available) {
           AnnotationTransform.vmLoaded();
@@ -62,11 +61,11 @@ var GraphicAnnotation = {
           self._element.hide();
         }
       });
-    
+
       MoonrockVMComm.addPositionChangeListener('annotation', function(pos) {
         AnnotationTransform.setVmPos(pos);
       });
-    
+
       TabsManager.addResizeListener('annotation', function() {
         self._element.attr({
           width: self._parent.width(),
@@ -74,14 +73,13 @@ var GraphicAnnotation = {
         });
         AnnotationTransform.resize();
       });
-    
-    
+
+
       self.setEnabled(false);
     } else {
       $('#annotation-svg').addClass('annotation-svg-hidden');
     }
   },
-  
   addChangeListener: function(id, callback) {
     this._changeListeners[id] = callback;
   },
@@ -96,25 +94,26 @@ var GraphicAnnotation = {
     this._notify('cancel');
   },
   _notify: function(action) {
-    for(var i in this._changeListeners) {
+    for (var i in this._changeListeners) {
       this._changeListeners[i](action);
     }
   },
-  
   acceptCurrentValue: function() {
     this.setEnabled(false);
     this._createAnnotation();
   },
-  annotationAvailable : function() {
+  annotationAvailable: function() {
+
     if (navigator.userAgent.match(/iPad/i)) {
       return navigator.userAgent.match(/CPU OS 6/i);
     } else if (navigator.userAgent.match(/Android/i)) {
+      return false;
+    } else if (navigator.userAgent.match(/MSIE/i)) {
       return false;
     } else {
       return true;
     }
   },
-  
   setEnabled: function(enabled) {
     this._enabled = enabled;
     if (enabled) {
@@ -124,7 +123,6 @@ var GraphicAnnotation = {
       $('.annotation-root-element').addClass('annotation-inactive');
     }
   },
-  
   _setMode: function(mode) {
     $('.annotation-buttons > .annotation-mode-selector').each(function() {
       if ($(this).attr('mode') == mode) {
@@ -135,11 +133,9 @@ var GraphicAnnotation = {
     });
     this._mode = mode;
   },
-  
   _setTransform: function(transform) {
     $(this._group).attr('transform', transform);
   },
-  
   clear: function() {
     if (this._group) {
       while (this._group.childElementCount > 0) {
@@ -157,13 +153,12 @@ var GraphicAnnotation = {
         color: polyline.getAttribute('stroke')
       });
     }
-    
-    this._currentAnnotation = JSON.stringify(obj);    
+
+    this._currentAnnotation = JSON.stringify(obj);
   },
   getCurrentAnnotation: function() {
     return this._currentAnnotation;
   },
-  
   importAnnotation: function(annotation) {
     this.clear();
     this._currentAnnotation = annotation;
@@ -184,15 +179,14 @@ var GraphicAnnotation = {
       }
     }
   },
-  
   getPoint: function(eventPoint) {
     var offset = this._offsetRefElement.offset();
     var point = AnnotationTransform.getVmPointForPolyline(eventPoint.x - offset.left, eventPoint.y - offset.top);
     return point;
-  },  
+  },
   startDrag: function(eventPoint) {
     this._buttonDown = true;
-    
+
     var point = this.getPoint(eventPoint);
     if (this._mode == 'erase') {
       this._lastErasePoint = point;
@@ -219,7 +213,7 @@ var GraphicAnnotation = {
         }
         this._currentPolyline = this._createPolyline(this._currentPointList, this._mode);
       }
-      
+
       this._notify('change');
     }
   },
@@ -250,10 +244,9 @@ var GraphicAnnotation = {
   _toArrayPoint: function(xyp) {
     return [xyp.x, xyp.y];
   },
-  
   _intersect: function(a, b, c, d) {
-    return this._lineSegmentIntersect(a, b, c, d) && 
-    this._lineSegmentIntersect(c, d, a, b);
+    return this._lineSegmentIntersect(a, b, c, d) &&
+            this._lineSegmentIntersect(c, d, a, b);
   },
   _lineSegmentIntersect: function(a, b, c, d) {
     var AB = this._segment(a, b);
@@ -262,10 +255,10 @@ var GraphicAnnotation = {
     return this._cross(AB, AC) * this._cross(AB, AD) <= 0;
   },
   _segment: function(a, b) {
-    return [b[0]-a[0], b[1]-a[1]];
+    return [b[0] - a[0], b[1] - a[1]];
   },
   _cross: function(A, B) {
-    return A[0]*B[1]-A[1]*B[0];
+    return A[0] * B[1] - A[1] * B[0];
   }
 }
 
